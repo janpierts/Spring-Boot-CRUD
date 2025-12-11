@@ -49,7 +49,7 @@ public class CrudController {
 
     @GetMapping("{repositoryType}/find_JPA_SP/{id}")
     public ResponseEntity<?> getEntity_JPA_SP_ById(@PathVariable String repositoryType,@PathVariable Long id) {
-        return crudService.find_Crud_Entity_JDBC_SP_ById(repositoryType,id)
+        return crudService.find_Crud_Entity_JPA_SP_ById(repositoryType,id)
                 .map(ResponseEntity::ok)
                 .orElseGet(ResponseEntity.notFound()::build);
     }

@@ -8,16 +8,56 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Table(name = "usuarios_crud") 
-@NamedStoredProcedureQuery(
-    name = "jbAPI_crud_insert_query",
-    procedureName = "jbAPI_crud_insert",
-    parameters = {
-        @StoredProcedureParameter(mode = ParameterMode.IN, name = "p_name", type = String.class), 
-        @StoredProcedureParameter(mode = ParameterMode.IN, name = "p_email", type = String.class), 
-        @StoredProcedureParameter(mode = ParameterMode.OUT, name = "p_id", type = Long.class), // Salida: ID
-        @StoredProcedureParameter(mode = ParameterMode.OUT, name = "p_created", type = java.sql.Timestamp.class) // Salida: Fecha
-    }
-)
+@NamedStoredProcedureQueries({
+    @NamedStoredProcedureQuery(
+        name = "jbAPI_crud_insert_query",
+        procedureName = "jbAPI_crud_insert",
+        parameters = {
+            @StoredProcedureParameter(mode = ParameterMode.IN, name = "p_name", type = String.class), 
+            @StoredProcedureParameter(mode = ParameterMode.IN, name = "p_email", type = String.class), 
+            @StoredProcedureParameter(mode = ParameterMode.OUT, name = "p_id", type = Long.class),
+            @StoredProcedureParameter(mode = ParameterMode.OUT, name = "p_created", type = java.sql.Timestamp.class)
+        }
+    ),
+    @NamedStoredProcedureQuery(
+        name = "jbAPI_crud_list_query",
+        procedureName = "jbAPI_crud_list",
+        resultClasses = CrudEntityJpa.class
+    ),
+    @NamedStoredProcedureQuery(
+        name = "jbAPI_crud_find_by_id_query",
+        procedureName = "jbAPI_crud_listId",
+        parameters = {
+            @StoredProcedureParameter(mode = ParameterMode.IN, name = "p_id", type = Long.class)
+        },
+        resultClasses = CrudEntityJpa.class
+    ),
+    @NamedStoredProcedureQuery(
+        name = "jbAPI_crud_update_query",
+        procedureName = "jbAPI_crud_update",
+        parameters = {
+            @StoredProcedureParameter(mode = ParameterMode.IN, name = "p_id", type = Long.class),
+            @StoredProcedureParameter(mode = ParameterMode.IN, name = "p_name", type = String.class), 
+            @StoredProcedureParameter(mode = ParameterMode.IN, name = "p_email", type = String.class)
+        }
+    ),
+    @NamedStoredProcedureQuery(
+        name = "jbAPI_crud_delete_physical_query",
+        procedureName = "jbAPI_crud_delete_phisical",
+        parameters = {
+            @StoredProcedureParameter(mode = ParameterMode.IN, name = "p_id", type = Long.class)
+        }
+    ),
+    @NamedStoredProcedureQuery(
+        name = "jbAPI_crud_delete_logical_query",
+        procedureName = "jbAPI_crud_delete_logical",
+        parameters = {
+            @StoredProcedureParameter(mode = ParameterMode.IN, name = "p_id", type = Long.class)
+        }
+    ),
+})
+
+
 public class CrudEntityJpa {
     
     @Id

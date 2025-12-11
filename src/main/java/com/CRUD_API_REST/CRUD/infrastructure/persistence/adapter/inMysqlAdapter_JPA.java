@@ -31,36 +31,21 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
     @Override
     public Crud_Entity save_Crud_Entity_JPA_SP(String typeBean, Crud_Entity entity) {
        
-    StoredProcedureQuery query = entityManager.createNamedStoredProcedureQuery("jbAPI_crud_insert_query");
-
-    // 2. Setear los parámetros de ENTRADA (IN)
-    // Usamos los datos de la entidad limpia del Dominio que recibimos
-    query.setParameter("p_name", entity.getName());
-    query.setParameter("p_email", entity.getEmail());
-
-    // 3. Ejecutar el Stored Procedure
-    query.execute();
-
-    // 4. Obtener los parámetros de SALIDA (OUT)
-    // Estos valores son asignados por la DB (LAST_INSERT_ID(), etc.)
-    Long generatedId = (Long) query.getOutputParameterValue("p_id");
-    // El parámetro OUT de fecha debe ser casteado a java.sql.Timestamp
-    Timestamp createdTimestamp = (Timestamp) query.getOutputParameterValue("p_created"); 
-
-    // 5. Actualizar la Entidad del Dominio con los valores generados
-    // NOTA: No necesitamos mapear a CrudEntityJpa aquí; actualizamos y retornamos la entidad limpia
-    entity.setId(generatedId);
+        StoredProcedureQuery query = entityManager.createNamedStoredProcedureQuery("jbAPI_crud_insert_query");
+        query.setParameter("p_name", entity.getName());
+        query.setParameter("p_email", entity.getEmail());
+        query.execute();
+        Long generatedId = (Long) query.getOutputParameterValue("p_id");
+        Timestamp createdTimestamp = (Timestamp) query.getOutputParameterValue("p_created"); 
+        entity.setId(generatedId);
     
-    // Convertir java.sql.Timestamp a LocalDateTime, que usa tu Entidad de Dominio
-    if (createdTimestamp != null) {
-        entity.setCreated(createdTimestamp.toLocalDateTime());
-    } else {
-        // Manejo de error o asignación de un valor por defecto si el SP no lo devuelve
-        entity.setCreated(LocalDateTime.now());
-    }
-    
-    // 6. Retornar la entidad del Dominio actualizada
-    return entity;   
+        if (createdTimestamp != null) {
+            entity.setCreated(createdTimestamp.toLocalDateTime());
+        } else {
+            entity.setCreated(LocalDateTime.now());
+        }
+        entity.setState(true);
+        return entity;   
     }
     
     @Override
@@ -71,8 +56,14 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
 
     @Override
     public Optional<Crud_Entity> find_Crud_Entity_JPA_SP_ById(String typeBean, Long id) {
-        Optional<CrudEntityJpa> jpaEntityOpt = jpaRepository.findById(id);
-        return jpaEntityOpt.map(CrudEntityJpa::toDomainEntity);
+        StoredProcedureQuery query = entityManager.createNamedStoredProcedureQuery("jbAPI_crud_find_by_id_query");
+        query.setParameter("p_id", id);
+        @SuppressWarnings("unchecked")
+        List<CrudEntityJpa> results = query.getResultList();
+
+        return results.stream()
+            .findFirst()
+            .map(CrudEntityJpa::toDomainEntity);
     }
 
     @Override
@@ -85,11 +76,13 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
 
     @Override
     public List<Crud_Entity> findAll_Crud_entity_JPA_SP(String typeBean) {
-        List<CrudEntityJpa> jpaEntityJpas = jpaRepository.findAll();
+        StoredProcedureQuery query = entityManager.createNamedStoredProcedureQuery("jbAPI_crud_list_query");
+        @SuppressWarnings("unchecked")
+        List<CrudEntityJpa> jpaEntityJpas = query.getResultList();
         return jpaEntityJpas.stream()
                 .map(CrudEntityJpa::toDomainEntity)
                 .toList();
-    }
+        }
 
     @Override
     public Crud_Entity update_Crud_Entity(String typeBean, Crud_Entity entity) {
@@ -106,15 +99,16 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
 
     @Override
     public Crud_Entity update_Crud_Entity_JPA_SP(String typeBean, Crud_Entity entity) {
-        Long id = entity.getId();
-        if (id == null || !jpaRepository.existsById(id)) {
-            throw new IllegalArgumentException("Entity with ID " + id + " does not exist.");
-        }
-        CrudEntityJpa jpaEntity_update = jpaRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Entity with ID " + id + " does not exist."));
-        jpaEntity_update.setName(entity.getName());
-        jpaEntity_update.setEmail(entity.getEmail());
-        CrudEntityJpa updatedJpaEntity = jpaRepository.save(jpaEntity_update);
-        return updatedJpaEntity.toDomainEntity();
+        StoredProcedureQuery query = entityManager.createNamedStoredProcedureQuery("jbAPI_crud_update_query");
+        query.setParameter("p_id", entity.getId());
+        query.setParameter("p_name", entity.getName());
+        query.setParameter("p_email", entity.getEmail());
+        query.execute();
+
+        return find_Crud_Entity_JPA_SP_ById(typeBean, entity.getId())
+           .orElseThrow(() -> 
+               new RuntimeException("Error al verificar la actualización del ID: " + entity.getId())
+           );
     }
 
     @Override
@@ -124,12 +118,14 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
 
     @Override
     public void delete_Crud_Entity_phisical_JPA_SP_ById(String typeBean, Long id) {
-        jpaRepository.deleteById(id);
+        StoredProcedureQuery query = entityManager.createNamedStoredProcedureQuery("jbAPI_crud_delete_physical_query");
+        query.setParameter("p_id", id);
+        query.execute();
     }
 
     @Override
     public Crud_Entity delete_Crud_Entity_logical_ById(String typeBean, Crud_Entity entity) {
-        Long id = entity.getId();
+       Long id = entity.getId();
         if (id == null || !jpaRepository.existsById(id)) {
             throw new IllegalArgumentException("Entity with ID " + id + " does not exist.");
         }
@@ -144,17 +140,14 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
 
     @Override
     public Crud_Entity delete_Crud_Entity_logical_JPA_SP_ById(String typeBean, Crud_Entity entity) {
-        Long id = entity.getId();
-        if (id == null || !jpaRepository.existsById(id)) {
-            throw new IllegalArgumentException("Entity with ID " + id + " does not exist.");
-        }
-        
-        CrudEntityJpa jpaEntity_update = jpaRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Entity with ID " + id + " does not exist."));
+        StoredProcedureQuery query = entityManager.createNamedStoredProcedureQuery("jbAPI_crud_delete_logical_query");
+        query.setParameter("p_id", entity.getId());
+        query.execute();
 
-        jpaEntity_update.setState(entity.getState());
-        
-        CrudEntityJpa updatedJpaEntity = jpaRepository.save(jpaEntity_update);
-        return updatedJpaEntity.toDomainEntity();
+        return find_Crud_Entity_JPA_SP_ById(typeBean, entity.getId())
+           .orElseThrow(() -> 
+               new RuntimeException("Error al verificar la actualización del ID: " + entity.getId())
+           );
     }
 
     @Override

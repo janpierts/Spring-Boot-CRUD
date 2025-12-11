@@ -31,6 +31,7 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
                 cs.execute();
                 entity.setId(cs.getLong(3));
                 entity.setCreated(cs.getTimestamp(4).toLocalDateTime());
+                entity.setState(true);
                 return entity.getId();
             });
         } catch (DataAccessException e) {
@@ -79,21 +80,29 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
 
     @Override
     public Crud_Entity update_Crud_Entity_JDBC_SP(String typeBean,Crud_Entity Entity) {
-        String sql = "UPDATE usuarios_crud SET name = ?, email = ? WHERE id = ?";
-        jdbcTemplate.update(sql, Entity.getName(), Entity.getEmail(), Entity.getId());
+        String sql = "{call jbAPI_crud_update(?,?,?)}";
+        jdbcTemplate.update(sql,  Entity.getId(), Entity.getName(), Entity.getEmail());
+        Optional<Crud_Entity> updatedEntityOpt = find_Crud_Entity_JDBC_SP_ById(typeBean, Entity.getId());
+        if (updatedEntityOpt.isPresent()) {
+            Entity = updatedEntityOpt.get();
+        }
         return Entity;
     }
 
     @Override
     public void delete_Crud_Entity_phisical_JDBC_SP_ById(String typeBean,Long id) {
-        String sql = "DELETE FROM usuarios_crud WHERE id = ?";
+        String sql = "{call jbAPI_crud_delete_phisical(?)}";
         jdbcTemplate.update(sql, id);
     }
 
     @Override
     public Crud_Entity delete_Crud_Entity_logical_JDBC_SP_ById(String typeBean,Crud_Entity Entity) {
-        String sql = "UPDATE usuarios_crud SET state = ? WHERE id = ?";
-        jdbcTemplate.update(sql, Entity.getState(), Entity.getId());
+        String sql = "{call jbAPI_crud_delete_logical(?)}";
+        jdbcTemplate.update(sql, Entity.getId());
+        Optional<Crud_Entity> updatedEntityOpt = find_Crud_Entity_JDBC_SP_ById(typeBean, Entity.getId());
+        if (updatedEntityOpt.isPresent()) {
+            Entity = updatedEntityOpt.get();
+        }
         return Entity;
     }
 

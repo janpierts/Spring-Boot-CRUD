@@ -42,14 +42,14 @@ public class CrudController {
 
     @GetMapping("{repositoryType}/find_JDBC_SP/{id}")
     public ResponseEntity<?> getEntity_JDBC_SP_ById(@PathVariable String repositoryType,@PathVariable Long id) {
-        return crudService.find_Crud_EntityById(repositoryType,id)
+        return crudService.find_Crud_Entity_JDBC_SP_ById(repositoryType,id)
                 .map(ResponseEntity::ok)
                 .orElseGet(ResponseEntity.notFound()::build);
     }
 
     @GetMapping("{repositoryType}/find_JPA_SP/{id}")
     public ResponseEntity<?> getEntity_JPA_SP_ById(@PathVariable String repositoryType,@PathVariable Long id) {
-        return crudService.find_Crud_EntityById(repositoryType,id)
+        return crudService.find_Crud_Entity_JDBC_SP_ById(repositoryType,id)
                 .map(ResponseEntity::ok)
                 .orElseGet(ResponseEntity.notFound()::build);
     }
@@ -61,12 +61,12 @@ public class CrudController {
 
     @GetMapping("{repositoryType}/find/all_JDBC_SP")
     public ResponseEntity<List<Crud_Entity>> getAllEntities_JDBC_SP(@PathVariable String repositoryType) {
-        return ResponseEntity.ok(crudService.findAll_Crud_entity(repositoryType));
+        return ResponseEntity.ok(crudService.findAll_Crud_entity_JDBC_SP(repositoryType));
     }
 
     @GetMapping("{repositoryType}/find/all_JPA_SP")
     public ResponseEntity<List<Crud_Entity>> getAllEntities_JPA_SP(@PathVariable String repositoryType) {
-        return ResponseEntity.ok(crudService.findAll_Crud_entity(repositoryType));
+        return ResponseEntity.ok(crudService.findAll_Crud_entity_JPA_SP(repositoryType));
     }
 
     @PutMapping("{repositoryType}/update/{id}")
@@ -79,14 +79,14 @@ public class CrudController {
     @PutMapping("{repositoryType}/update_JDBC_SP/{id}")
     public ResponseEntity<?> updateEntity_JDBC_SP(@PathVariable String repositoryType,@PathVariable Long id, @RequestBody Crud_Entity crudEntity) {
         crudEntity.setId(id);
-        Crud_Entity updatedEntity = crudService.update_Crud_Entity(repositoryType,crudEntity);
+        Crud_Entity updatedEntity = crudService.update_Crud_Entity_JDBC_SP(repositoryType,crudEntity);
         return ResponseEntity.ok(updatedEntity);
     }
 
     @PutMapping("{repositoryType}/update_JPA_SP/{id}")
     public ResponseEntity<?> updateEntity_JPA_SP(@PathVariable String repositoryType,@PathVariable Long id, @RequestBody Crud_Entity crudEntity) {
         crudEntity.setId(id);
-        Crud_Entity updatedEntity = crudService.update_Crud_Entity(repositoryType,crudEntity);
+        Crud_Entity updatedEntity = crudService.update_Crud_Entity_JPA_SP(repositoryType,crudEntity);
         return ResponseEntity.ok(updatedEntity);
     }
 
@@ -98,13 +98,13 @@ public class CrudController {
 
     @DeleteMapping("{repositoryType}/delete_phisical_JDBC_SP/{id}")
     public ResponseEntity<Void> deleteEntity_phisical_JDBC_SP_ById(@PathVariable String repositoryType,@PathVariable Long id) {
-        crudService.delete_Crud_Entity_phisical_ById(repositoryType,id);
+        crudService.delete_Crud_Entity_phisical_JDBC_SP_ById(repositoryType,id);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("{repositoryType}/delete_phisical_JPA_SP/{id}")
     public ResponseEntity<Void> deleteEntity_phisical_JPA_SP_ById(@PathVariable String repositoryType,@PathVariable Long id) {
-        crudService.delete_Crud_Entity_phisical_ById(repositoryType,id);
+        crudService.delete_Crud_Entity_phisical_JPA_SP_ById(repositoryType,id);
         return ResponseEntity.noContent().build();
     }
 
@@ -123,27 +123,27 @@ public class CrudController {
 
     @PutMapping("{repositoryType}/delete_logical_JDBC_SP/{id}")
     public ResponseEntity<?> deleteEntity_logical_JDBC_ById(@PathVariable String repositoryType,@PathVariable Long id) {
-        Optional<Crud_Entity> existingEntityOpt = crudService.find_Crud_EntityById(repositoryType, id);
+        Optional<Crud_Entity> existingEntityOpt = crudService.find_Crud_Entity_JDBC_SP_ById(repositoryType, id);
         if (existingEntityOpt.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
     
         Crud_Entity crudEntity = existingEntityOpt.get();
         crudEntity.setState(false); 
-        Crud_Entity updatedEntity = crudService.delete_Crud_Entity_logical_ById(repositoryType,crudEntity);
+        Crud_Entity updatedEntity = crudService.delete_Crud_Entity_logical_JDBC_SP_ById(repositoryType,crudEntity);
         return ResponseEntity.ok(updatedEntity);
     }
 
     @PutMapping("{repositoryType}/delete_logical_JPA_SP/{id}")
     public ResponseEntity<?> deleteEntity_logical_JPA_SP_ById(@PathVariable String repositoryType,@PathVariable Long id) {
-        Optional<Crud_Entity> existingEntityOpt = crudService.find_Crud_EntityById(repositoryType, id);
+        Optional<Crud_Entity> existingEntityOpt = crudService.find_Crud_Entity_JPA_SP_ById(repositoryType, id);
         if (existingEntityOpt.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
     
         Crud_Entity crudEntity = existingEntityOpt.get();
         crudEntity.setState(false); 
-        Crud_Entity updatedEntity = crudService.delete_Crud_Entity_logical_ById(repositoryType,crudEntity);
+        Crud_Entity updatedEntity = crudService.delete_Crud_Entity_logical_JPA_SP_ById(repositoryType,crudEntity);
         return ResponseEntity.ok(updatedEntity);
     }
 }

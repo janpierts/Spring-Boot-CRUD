@@ -33,13 +33,13 @@ public class Crud_Service implements Crud_ServicePort {
     @Override
     public Crud_Entity save_Crud_Entity_JDBC_SP(String typeBean, Crud_Entity entity) {
         Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
-        return repositoryPort.save_Crud_Entity(typeBean, entity);
+        return repositoryPort.save_Crud_Entity_JDBC_SP(typeBean, entity);
     }
 
     @Override
     public Crud_Entity save_Crud_Entity_JPA_SP(String typeBean, Crud_Entity entity) {
         Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
-        return repositoryPort.save_Crud_Entity(typeBean, entity);
+        return repositoryPort.save_Crud_Entity_JPA_SP(typeBean, entity);
     }
 
     @Override
@@ -49,9 +49,33 @@ public class Crud_Service implements Crud_ServicePort {
     }
 
     @Override
+    public Optional<Crud_Entity> find_Crud_Entity_JDBC_SP_ById(String typeBean, Long id) {
+        Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
+        return repositoryPort.find_Crud_Entity_JDBC_SP_ById(typeBean, id);
+    }
+
+    @Override
+    public Optional<Crud_Entity> find_Crud_Entity_JPA_SP_ById(String typeBean, Long id) {
+        Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
+        return repositoryPort.find_Crud_Entity_JPA_SP_ById(typeBean, id);
+    }
+
+    @Override
     public List<Crud_Entity> findAll_Crud_entity(String typeBean) {
         Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
         return repositoryPort.findAll_Crud_entity(typeBean);
+    }
+
+    @Override
+    public List<Crud_Entity> findAll_Crud_entity_JDBC_SP(String typeBean) {
+        Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
+        return repositoryPort.findAll_Crud_entity_JDBC_SP(typeBean);
+    }
+
+    @Override
+    public List<Crud_Entity> findAll_Crud_entity_JPA_SP(String typeBean) {
+        Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
+        return repositoryPort.findAll_Crud_entity_JPA_SP(typeBean);
     }
 
     @Override
@@ -61,8 +85,49 @@ public class Crud_Service implements Crud_ServicePort {
     }
 
     @Override
-    public void delete_Crud_Entity_ById(String typeBean, Long id) {
+    public Crud_Entity update_Crud_Entity_JDBC_SP(String typeBean, Crud_Entity entity) {
         Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
-        repositoryPort.delete_Crud_Entity_ById(typeBean, id);
+        return repositoryPort.update_Crud_Entity_JDBC_SP(typeBean, entity);
+    }
+
+    @Override
+    public Crud_Entity update_Crud_Entity_JPA_SP(String typeBean, Crud_Entity entity) {
+        Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
+        return repositoryPort.update_Crud_Entity_JPA_SP(typeBean, entity);
+    }
+
+    @Override
+    public void delete_Crud_Entity_phisical_ById(String typeBean, Long id) {
+        Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
+        repositoryPort.delete_Crud_Entity_phisical_ById(typeBean, id);
+    }
+
+    @Override
+    public void delete_Crud_Entity_phisical_JDBC_SP_ById(String typeBean, Long id) {
+        Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
+        repositoryPort.delete_Crud_Entity_phisical_JDBC_SP_ById(typeBean, id);
+    }
+    @Override
+    public void delete_Crud_Entity_phisical_JPA_SP_ById(String typeBean, Long id) {
+        Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
+        repositoryPort.delete_Crud_Entity_phisical_JPA_SP_ById(typeBean, id);
+    }
+
+    @Override
+    public Crud_Entity delete_Crud_Entity_logical_ById(String typeBean, Crud_Entity entity) {
+        Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
+        return repositoryPort.delete_Crud_Entity_logical_ById(typeBean, entity);
+    }
+
+    @Override
+    public Crud_Entity delete_Crud_Entity_logical_JDBC_SP_ById(String typeBean, Crud_Entity entity) {
+        Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
+        return repositoryPort.delete_Crud_Entity_logical_JDBC_SP_ById(typeBean, entity);
+    }
+
+    @Override
+    public Crud_Entity delete_Crud_Entity_logical_JPA_SP_ById(String typeBean, Crud_Entity entity) {
+        Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
+        return repositoryPort.delete_Crud_Entity_logical_JPA_SP_ById(typeBean, entity);
     }
 }

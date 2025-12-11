@@ -37,6 +37,9 @@ public class CrudEntityJpa {
     @UpdateTimestamp
     @Column(name = "updated", insertable = false)
     private LocalDateTime updated;
+    
+    @Column(name = "state", insertable = false, updatable = true)
+    private Boolean state;
 
     public CrudEntityJpa() {
 
@@ -47,6 +50,10 @@ public class CrudEntityJpa {
         this.email = domainEntity.getEmail();
         this.created = domainEntity.getCreated();
         this.updated = domainEntity.getUpdated();
+        this.state = domainEntity.getState() != null ? domainEntity.getState() : true;
+        //if (domainEntity.getState() != null) {
+        //    this.state = domainEntity.getState();
+        //}
     }
     public Long getId() {
         return id;
@@ -78,6 +85,13 @@ public class CrudEntityJpa {
     public void setUpdated(LocalDateTime updated) {
         this.updated = updated;
     }
+    public Boolean getState() {
+        return state;
+    }
+    public void setState(Boolean state) {
+        this.state = state;
+    }
+
     public com.CRUD_API_REST.CRUD.domain.model.Crud_Entity toDomainEntity() {
         LocalDateTime finalUpdated = this.updated;
         if(this.id != null && this.updated != null && (this.updated.withNano(0).equals(this.created.withNano(0)))) {
@@ -88,7 +102,8 @@ public class CrudEntityJpa {
             this.name, 
             this.email, 
             this.created == null ? null : this.created.withNano(0), 
-            finalUpdated == null ? null : finalUpdated.withNano(0) // -> this.updated
+            finalUpdated == null ? null : finalUpdated.withNano(0), // -> this.updated
+            this.state
         );
     }
 }

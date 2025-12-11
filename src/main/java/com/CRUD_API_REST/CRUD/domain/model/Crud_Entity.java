@@ -11,16 +11,18 @@ public class Crud_Entity {
     private LocalDateTime created;
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss",timezone = "UTC")
     private LocalDateTime updated;
+    private Boolean state;
 
     public Crud_Entity() {
     }
 
-    public Crud_Entity( Long id, String name, String email, LocalDateTime created,LocalDateTime updated) {
+    public Crud_Entity( Long id, String name, String email, LocalDateTime created, LocalDateTime updated, Boolean state) {
         this.id = id;
         this.name = name;
         this.email = email;
         this.created = created;
         this.updated = updated;
+        this.state = state;
     }
     public Long getId() {
         return id;
@@ -51,5 +53,11 @@ public class Crud_Entity {
     }
     public void setUpdated(LocalDateTime updated) {
         this.updated = updated;
+    }
+    public Boolean getState() {
+        return state;
+    }
+    public void setState(Boolean state) {
+        this.state = state;
     }
 }

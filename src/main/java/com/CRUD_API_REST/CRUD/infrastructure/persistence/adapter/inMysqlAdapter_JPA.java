@@ -70,7 +70,21 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
     }
 
     @Override
+    public Optional<Crud_Entity> find_Crud_Entity_JPA_SP_ById(String typeBean, Long id) {
+        Optional<CrudEntityJpa> jpaEntityOpt = jpaRepository.findById(id);
+        return jpaEntityOpt.map(CrudEntityJpa::toDomainEntity);
+    }
+
+    @Override
     public List<Crud_Entity> findAll_Crud_entity(String typeBean) {
+        List<CrudEntityJpa> jpaEntityJpas = jpaRepository.findAll();
+        return jpaEntityJpas.stream()
+                .map(CrudEntityJpa::toDomainEntity)
+                .toList();
+    }
+
+    @Override
+    public List<Crud_Entity> findAll_Crud_entity_JPA_SP(String typeBean) {
         List<CrudEntityJpa> jpaEntityJpas = jpaRepository.findAll();
         return jpaEntityJpas.stream()
                 .map(CrudEntityJpa::toDomainEntity)
@@ -89,13 +103,87 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
         CrudEntityJpa updatedJpaEntity = jpaRepository.save(jpaEntity_update);
         return updatedJpaEntity.toDomainEntity();
     }
+
     @Override
-    public void delete_Crud_Entity_ById(String typeBean, Long id) {
+    public Crud_Entity update_Crud_Entity_JPA_SP(String typeBean, Crud_Entity entity) {
+        Long id = entity.getId();
+        if (id == null || !jpaRepository.existsById(id)) {
+            throw new IllegalArgumentException("Entity with ID " + id + " does not exist.");
+        }
+        CrudEntityJpa jpaEntity_update = jpaRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Entity with ID " + id + " does not exist."));
+        jpaEntity_update.setName(entity.getName());
+        jpaEntity_update.setEmail(entity.getEmail());
+        CrudEntityJpa updatedJpaEntity = jpaRepository.save(jpaEntity_update);
+        return updatedJpaEntity.toDomainEntity();
+    }
+
+    @Override
+    public void delete_Crud_Entity_phisical_ById(String typeBean, Long id) {
         jpaRepository.deleteById(id);
     }
+
+    @Override
+    public void delete_Crud_Entity_phisical_JPA_SP_ById(String typeBean, Long id) {
+        jpaRepository.deleteById(id);
+    }
+
+    @Override
+    public Crud_Entity delete_Crud_Entity_logical_ById(String typeBean, Crud_Entity entity) {
+        Long id = entity.getId();
+        if (id == null || !jpaRepository.existsById(id)) {
+            throw new IllegalArgumentException("Entity with ID " + id + " does not exist.");
+        }
+        
+        CrudEntityJpa jpaEntity_update = jpaRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Entity with ID " + id + " does not exist."));
+
+        jpaEntity_update.setState(entity.getState());
+        
+        CrudEntityJpa updatedJpaEntity = jpaRepository.save(jpaEntity_update);
+        return updatedJpaEntity.toDomainEntity();
+    }
+
+    @Override
+    public Crud_Entity delete_Crud_Entity_logical_JPA_SP_ById(String typeBean, Crud_Entity entity) {
+        Long id = entity.getId();
+        if (id == null || !jpaRepository.existsById(id)) {
+            throw new IllegalArgumentException("Entity with ID " + id + " does not exist.");
+        }
+        
+        CrudEntityJpa jpaEntity_update = jpaRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Entity with ID " + id + " does not exist."));
+
+        jpaEntity_update.setState(entity.getState());
+        
+        CrudEntityJpa updatedJpaEntity = jpaRepository.save(jpaEntity_update);
+        return updatedJpaEntity.toDomainEntity();
+    }
+
     @Override
     public Crud_Entity save_Crud_Entity_JDBC_SP(String typeBean, Crud_Entity entity) {
-        // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'save_Crud_Entity_JDBC_SP'");
+    }
+
+    @Override
+    public Optional<Crud_Entity> find_Crud_Entity_JDBC_SP_ById(String typeBean, Long id) {
+        throw new UnsupportedOperationException("Unimplemented method 'find_Crud_Entity_JDBC_SP_ById'");
+    }
+
+    @Override
+    public List<Crud_Entity> findAll_Crud_entity_JDBC_SP(String typeBean) {
+        throw new UnsupportedOperationException("Unimplemented method 'findAll_Crud_entity_JDBC_SP'");
+    }
+
+    @Override
+    public Crud_Entity update_Crud_Entity_JDBC_SP(String typeBean, Crud_Entity entity) {
+        throw new UnsupportedOperationException("Unimplemented method 'update_Crud_Entity_JDBC_SP'");
+    }
+
+    @Override
+    public void delete_Crud_Entity_phisical_JDBC_SP_ById(String typeBean, Long id) {
+        throw new UnsupportedOperationException("Unimplemented method 'delete_Crud_Entity_phisical_JDBC_SP_ById'");
+    }
+
+    @Override
+    public Crud_Entity delete_Crud_Entity_logical_JDBC_SP_ById(String typeBean, Crud_Entity entity) {
+        throw new UnsupportedOperationException("Unimplemented method 'delete_Crud_Entity_logical_JDBC_SP_ById'");
     }
 }

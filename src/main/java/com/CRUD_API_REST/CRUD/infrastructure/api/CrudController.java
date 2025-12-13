@@ -15,6 +15,7 @@ public class CrudController {
     public CrudController(Crud_Service crudService) {
         this.crudService = crudService;
     }
+
     @PostMapping("{repositoryType}/create")
     public ResponseEntity<Crud_Entity> createEntity(@PathVariable String repositoryType,@RequestBody Crud_Entity crudEntity) {
         com.CRUD_API_REST.CRUD.domain.model.Crud_Entity createdEntity = crudService.save_Crud_Entity(repositoryType,crudEntity);
@@ -31,6 +32,12 @@ public class CrudController {
     public ResponseEntity<Crud_Entity> createEntity_JPA_SP(@PathVariable String repositoryType,@RequestBody Crud_Entity crudEntity) {
         com.CRUD_API_REST.CRUD.domain.model.Crud_Entity createdEntity = crudService.save_Crud_Entity_JPA_SP(repositoryType,crudEntity);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdEntity);
+    }
+
+    @PostMapping("{repositoryType}/create_multiple")
+    public ResponseEntity<List<Crud_Entity>> createMultipleEntities(@PathVariable String repositoryType,@RequestBody List<Crud_Entity> crudEntities) {
+        List<Crud_Entity> createdEntities = crudService.save_multi_Crud_Entity(repositoryType,crudEntities);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdEntities);
     }
          
     @GetMapping("{repositoryType}/find/{id}")
@@ -50,6 +57,13 @@ public class CrudController {
     @GetMapping("{repositoryType}/find_JPA_SP/{id}")
     public ResponseEntity<?> getEntity_JPA_SP_ById(@PathVariable String repositoryType,@PathVariable Long id) {
         return crudService.find_Crud_Entity_JPA_SP_ById(repositoryType,id)
+                .map(ResponseEntity::ok)
+                .orElseGet(ResponseEntity.notFound()::build);
+    }
+
+    @GetMapping("{repositoryType}/find/name/{name}")
+    public ResponseEntity<?> getEntityByName(@PathVariable String repositoryType,@PathVariable String name) {
+        return crudService.find_Crud_EntityByName(repositoryType,name)
                 .map(ResponseEntity::ok)
                 .orElseGet(ResponseEntity.notFound()::build);
     }

@@ -1,8 +1,12 @@
 package com.CRUD_API_REST.CRUD.infrastructure.persistence.adapter;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Component;
 import com.CRUD_API_REST.CRUD.domain.model.Crud_Entity;
 import com.CRUD_API_REST.CRUD.domain.ports.out.Crud_RepositoryPort;
@@ -10,6 +14,8 @@ import com.CRUD_API_REST.CRUD.infrastructure.persistence.entity.CrudEntityJpa;
 import com.CRUD_API_REST.CRUD.infrastructure.persistence.springdata.crudSpringDataRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.StoredProcedureQuery;
+import jakarta.transaction.Transactional;
+
 import java.sql.Timestamp; 
 
 @Component("inMysqlAdapter_JPA")
@@ -48,6 +54,37 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
         return entity;   
     }
     
+
+    @Override
+    @Transactional
+    public List<Crud_Entity> save_multi_Crud_Entity(String typeBean, List<Crud_Entity> entityList) {
+    
+        Set<String> namesToValidate = entityList.stream()
+            .map(Crud_Entity::getName)
+            .collect(Collectors.toSet());
+
+        List<CrudEntityJpa> existingEntities = jpaRepository.findByNameIn(namesToValidate);
+        Set<String> existingNamesInDB = existingEntities.stream()
+            .map(CrudEntityJpa::getName)
+            .collect(Collectors.toSet());
+        
+        Set<String> namesAlreadySeenInBatch = new HashSet<>(); 
+        List<CrudEntityJpa> entitiesToSave = entityList.stream()        
+            .filter(e -> !existingNamesInDB.contains(e.getName())) 
+            .filter(e -> namesAlreadySeenInBatch.add(e.getName())) 
+            .map(e -> {
+                CrudEntityJpa jpa = new CrudEntityJpa(e);
+                return jpa;
+            })
+            .toList();
+
+        List<CrudEntityJpa> savedJpaEntities = jpaRepository.saveAll(entitiesToSave);
+        
+        return savedJpaEntities.stream()
+            .map(CrudEntityJpa::toDomainEntity)
+            .toList();
+    }
+
     @Override
     public Optional<Crud_Entity> find_Crud_EntityById(String typeBean, Long id) {
         Optional<CrudEntityJpa> jpaEntityOpt = jpaRepository.findById(id);
@@ -64,6 +101,12 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
         return results.stream()
             .findFirst()
             .map(CrudEntityJpa::toDomainEntity);
+    }
+
+    @Override
+    public Optional<Crud_Entity> find_Crud_EntityByName(String typeBean, String name) {
+       Optional<CrudEntityJpa> jpaEntityOpt = jpaRepository.findByName(name);
+        return jpaEntityOpt.map(CrudEntityJpa::toDomainEntity);
     }
 
     @Override

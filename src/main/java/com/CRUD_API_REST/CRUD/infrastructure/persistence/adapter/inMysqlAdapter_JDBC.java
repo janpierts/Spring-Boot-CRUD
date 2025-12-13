@@ -165,4 +165,15 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
     public Crud_Entity delete_Crud_Entity_logical_JPA_SP_ById(String typeBean, Crud_Entity entity) {
         throw new UnsupportedOperationException("Unimplemented method 'delete_Crud_Entity_logical_JPA_SP_ById'");
     }
+
+    @Override
+    public List<Crud_Entity> save_multi_Crud_Entity(String typeBean, List<Crud_Entity> entity) {
+        throw new UnsupportedOperationException("Unimplemented method 'save_multi_Crud_Entity'");
+    }
+
+    @Override
+    public Optional<Crud_Entity> find_Crud_EntityByName(String typeBean, String name) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'find_Crud_EntityByName'");
+    }
 }

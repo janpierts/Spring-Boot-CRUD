@@ -43,6 +43,12 @@ public class Crud_Service implements Crud_ServicePort {
     }
 
     @Override
+    public List<Crud_Entity> save_multi_Crud_Entity(String typeBean, List<Crud_Entity> entityList) {
+        Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
+        return repositoryPort.save_multi_Crud_Entity(typeBean, entityList);
+    }
+
+    @Override
     public Optional<Crud_Entity> find_Crud_EntityById(String typeBean, Long id) {
         Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
         return repositoryPort.find_Crud_EntityById(typeBean, id);
@@ -58,6 +64,12 @@ public class Crud_Service implements Crud_ServicePort {
     public Optional<Crud_Entity> find_Crud_Entity_JPA_SP_ById(String typeBean, Long id) {
         Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
         return repositoryPort.find_Crud_Entity_JPA_SP_ById(typeBean, id);
+    }
+
+    @Override
+    public Optional<Crud_Entity> find_Crud_EntityByName(String typeBean, String name) {
+        Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
+        return repositoryPort.find_Crud_EntityByName(typeBean, name);
     }
 
     @Override

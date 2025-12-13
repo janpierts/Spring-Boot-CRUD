@@ -3,7 +3,6 @@ package com.CRUD_API_REST.CRUD.infrastructure.persistence.adapter;
 import com.CRUD_API_REST.CRUD.domain.model.Crud_Entity;
 import com.CRUD_API_REST.CRUD.domain.ports.out.Crud_RepositoryPort;
 import org.springframework.stereotype.Component;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,22 +16,46 @@ public class inMemoryRepository implements Crud_RepositoryPort{
     @Override
     public Crud_Entity save_Crud_Entity(String typeBean,Crud_Entity entity) {
         if (entity.getId() == null) {
-            LocalDateTime now = LocalDateTime.now();
-            entity.setId(nextId++);
-            entity.setCreated(now);
-            entity.setState(true);
-            entities.add(entity);
-
+            Optional<Crud_Entity> existingEntityOpt = find_Crud_EntityByName(typeBean,entity.getName());
+            if (existingEntityOpt.isEmpty()) {
+                LocalDateTime now = LocalDateTime.now();
+                entity.setId(nextId++);
+                entity.setCreated(now);
+                entity.setState(true);
+                entities.add(entity);
+                return entity;
+            }
+            else {
+                return null;
+            }
         } else {
-            update_Crud_Entity(typeBean,entity); 
+            return update_Crud_Entity(typeBean,entity); 
         }
-        return entity;
+    }
+
+    @Override
+    public List<Crud_Entity> save_multi_Crud_Entity(String typeBean, List<Crud_Entity> entityList) {
+        List<Crud_Entity> savedEntities = new ArrayList<>();
+        for (Crud_Entity entity : entityList) {
+            Crud_Entity savedEntity = save_Crud_Entity(typeBean, entity);
+            if (savedEntity != null){
+                savedEntities.add(savedEntity);
+            }
+        }
+        return savedEntities;
     }
 
     @Override
     public Optional<Crud_Entity> find_Crud_EntityById(String typeBean,Long id) {
         return entities.stream()
                 .filter(e -> e.getId() != null && e.getId().equals(id))
+                .findFirst();
+    }
+    
+    @Override
+    public Optional<Crud_Entity> find_Crud_EntityByName(String typeBean, String name) {
+        return entities.stream()
+                .filter(e -> e.getName() != null && e.getName().equals(name))
                 .findFirst();
     }
 

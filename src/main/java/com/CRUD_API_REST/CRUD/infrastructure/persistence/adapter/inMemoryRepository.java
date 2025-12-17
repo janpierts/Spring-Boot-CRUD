@@ -2,11 +2,19 @@ package com.CRUD_API_REST.CRUD.infrastructure.persistence.adapter;
 
 import com.CRUD_API_REST.CRUD.domain.model.Crud_Entity;
 import com.CRUD_API_REST.CRUD.domain.ports.out.Crud_RepositoryPort;
+import com.CRUD_API_REST.CRUD.infrastructure.utils.filesProcessor;
+
+import jakarta.transaction.Transactional;
+
+import org.apache.poi.ss.usermodel.Row;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 @Component("inMemoryRepository")
 public class inMemoryRepository implements Crud_RepositoryPort{
@@ -43,6 +51,35 @@ public class inMemoryRepository implements Crud_RepositoryPort{
             }
         }
         return savedEntities;
+    }
+
+    @Override
+    @Transactional
+    public Optional<Crud_Entity> save_import_Crud_Entity(String typeBean,MultipartFile file) {
+        try {
+            Function<Row, Crud_Entity> rowMapper = row -> {
+                String name = filesProcessor.getCellValueAsString(row.getCell(0)); // Columna 0
+                if (name == null || name.trim().isEmpty()) return null;
+            
+                Crud_Entity entity = new Crud_Entity();
+                entity.setName(name.trim());
+                // Aquí puedes setear más campos si el Excel los tiene
+                return entity;
+            };
+        
+            // 2. Convertir el Excel a Lista de Objetos de Dominio (usando la util genérica)
+            List<Crud_Entity> entitiesFromFile = FilesProcessor.excelToEntities(file, rowMapper);
+        
+            if (entitiesFromFile.isEmpty()) {
+                throw new RuntimeException("El archivo Excel está vacío o no tiene el formato correcto");
+            }
+        
+            // 3. REUTILIZAR tu método existente que ya tiene la lógica de validación y guardado
+            return this.save_multi_Crud_Entity(typeBean, entitiesFromFile);
+        
+        } catch (IOException e) {
+            throw new RuntimeException("Error al procesar el archivo Excel: " + e.getMessage());
+        }
     }
 
     @Override

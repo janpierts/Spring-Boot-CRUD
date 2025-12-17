@@ -49,7 +49,7 @@ public class Crud_Service implements Crud_ServicePort {
         return repositoryPort.save_multi_Crud_Entity(typeBean, entityList);
     }
     @Override
-    public Optional<Crud_Entity> save_import_Crud_Entity(String typeBean, MultipartFile file){
+    public List<Crud_Entity> save_import_Crud_Entity(String typeBean, MultipartFile file){
         Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
         return repositoryPort.save_import_Crud_Entity(typeBean, file);
     }

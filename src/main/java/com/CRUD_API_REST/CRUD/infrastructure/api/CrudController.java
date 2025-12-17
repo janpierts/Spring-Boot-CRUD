@@ -45,8 +45,8 @@ public class CrudController {
     }
 
     @PostMapping("{repositoryType}/import_save")
-    public ResponseEntity<Optional<Crud_Entity>> importSaveEntities(@PathVariable String repositoryType,@RequestParam("file") MultipartFile file) throws IOException {
-        Optional<Crud_Entity> createdEntities = crudService.save_import_Crud_Entity(repositoryType,file);
+    public ResponseEntity<List<Crud_Entity>> importSaveEntities(@PathVariable String repositoryType,@RequestParam("file") MultipartFile file) throws IOException {
+        List<Crud_Entity> createdEntities = crudService.save_import_Crud_Entity(repositoryType,file);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdEntities);
     }
          

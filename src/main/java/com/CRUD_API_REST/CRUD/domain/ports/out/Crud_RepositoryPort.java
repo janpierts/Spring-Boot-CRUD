@@ -14,7 +14,7 @@ public interface Crud_RepositoryPort {
     List<Crud_Entity> save_multi_Crud_Entity(String typeBean,List<Crud_Entity> entityList);
     //Crud_Entity save_multi_Crud_Entity_JDBC_SP(String typeBean,Crud_Entity entity);
     //Crud_Entity save_multi_Crud_Entity_JPA_SP(String typeBean,Crud_Entity entity);
-    Optional<Crud_Entity> save_import_Crud_Entity(String typeBean,MultipartFile file);
+    List<Crud_Entity> save_import_Crud_Entity(String typeBean,MultipartFile file);
     //Optional<Crud_Entity> save_import_Crud_Entity_JDBC_SP(String typeBean,MultipartFile file);
     //Optional<Crud_Entity> save_import_Crud_Entity_JPA_SP(String typeBean,MultipartFile file);
     Optional<Crud_Entity> find_Crud_EntityById(String typeBean,Long id);

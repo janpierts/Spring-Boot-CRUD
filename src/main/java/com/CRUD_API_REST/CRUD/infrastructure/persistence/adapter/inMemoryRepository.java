@@ -55,7 +55,7 @@ public class inMemoryRepository implements Crud_RepositoryPort{
 
     @Override
     @Transactional
-    public Optional<Crud_Entity> save_import_Crud_Entity(String typeBean,MultipartFile file) {
+    public List<Crud_Entity> save_import_Crud_Entity(String typeBean,MultipartFile file) {
         try {
             Function<Row, Crud_Entity> rowMapper = row -> {
                 String name = filesProcessor.getCellValueAsString(row.getCell(0)); // Columna 0
@@ -68,7 +68,7 @@ public class inMemoryRepository implements Crud_RepositoryPort{
             };
         
             // 2. Convertir el Excel a Lista de Objetos de Dominio (usando la util genérica)
-            List<Crud_Entity> entitiesFromFile = FilesProcessor.excelToEntities(file, rowMapper);
+            List<Crud_Entity> entitiesFromFile = filesProcessor.excelToEntities(file, rowMapper);
         
             if (entitiesFromFile.isEmpty()) {
                 throw new RuntimeException("El archivo Excel está vacío o no tiene el formato correcto");

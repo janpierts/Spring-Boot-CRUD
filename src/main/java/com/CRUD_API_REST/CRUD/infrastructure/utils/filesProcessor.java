@@ -40,7 +40,7 @@ public class filesProcessor {
         return entityList;
     }
 
-    private static String getCellValueAsString(Cell cell) {
+    public static String getCellValueAsString(Cell cell) {
         if (cell == null) {
             return null;
         }

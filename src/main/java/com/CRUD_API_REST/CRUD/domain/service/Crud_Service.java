@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class Crud_Service implements Crud_ServicePort {
@@ -46,6 +47,11 @@ public class Crud_Service implements Crud_ServicePort {
     public List<Crud_Entity> save_multi_Crud_Entity(String typeBean, List<Crud_Entity> entityList) {
         Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
         return repositoryPort.save_multi_Crud_Entity(typeBean, entityList);
+    }
+    @Override
+    public Optional<Crud_Entity> save_import_Crud_Entity(String typeBean, MultipartFile file){
+        Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
+        return repositoryPort.save_import_Crud_Entity(typeBean, file);
     }
 
     @Override

@@ -9,6 +9,7 @@ import org.springframework.jdbc.core.CallableStatementCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 import com.CRUD_API_REST.CRUD.domain.model.Crud_Entity;
 import com.CRUD_API_REST.CRUD.domain.ports.out.Crud_RepositoryPort;
 
@@ -175,5 +176,11 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
     public Optional<Crud_Entity> find_Crud_EntityByName(String typeBean, String name) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'find_Crud_EntityByName'");
+    }
+
+    @Override
+    public List<Crud_Entity> save_import_Crud_Entity(String typeBean, MultipartFile file) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'save_import_Crud_Entity'");
     }
 }

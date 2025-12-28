@@ -12,17 +12,13 @@ public class filesProcessor {
     public static final int NAME_COLUMN_INDEX = 0; 
     public static final int OTHER_FIELD_COLUMN_INDEX = 1;
 
-    public static <T> List<T> excelToEntities(
-            MultipartFile file, 
-            Function<Row, T> rowMapper) throws IOException {
+    public static <T> List<T> excelToEntities(MultipartFile file,Function<Row, T> rowMapper) throws IOException {
         
         List<T> entityList = new ArrayList<>();
 
-        try (InputStream is = file.getInputStream();
-             Workbook workbook = WorkbookFactory.create(is)) {
-
+        try (InputStream is = file.getInputStream(); 
+            Workbook workbook = WorkbookFactory.create(is)) {
             Sheet sheet = workbook.getSheetAt(0);
-            
             for (int i = 1; i <= sheet.getLastRowNum(); i++) {
                 Row currentRow = sheet.getRow(i);
                 
@@ -39,7 +35,6 @@ public class filesProcessor {
         }
         return entityList;
     }
-
     public static String getCellValueAsString(Cell cell) {
         if (cell == null) {
             return null;

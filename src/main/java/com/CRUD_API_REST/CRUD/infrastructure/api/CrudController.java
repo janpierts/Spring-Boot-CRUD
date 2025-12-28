@@ -4,10 +4,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import com.CRUD_API_REST.CRUD.domain.model.Crud_Entity;
 import com.CRUD_API_REST.CRUD.domain.service.Crud_Service;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
@@ -44,7 +42,7 @@ public class CrudController {
         return ResponseEntity.status(HttpStatus.CREATED).body(createdEntities);
     }
 
-    @PostMapping("{repositoryType}/import_save")
+    @PostMapping(value ="{repositoryType}/import_save",consumes = "multipart/form-data")//MediaType.MULTIPART_FORM_DATA_VALUE)//{"multipart/form-data"})
     public ResponseEntity<List<Crud_Entity>> importSaveEntities(@PathVariable String repositoryType,@RequestParam("file") MultipartFile file) throws IOException {
         List<Crud_Entity> createdEntities = crudService.save_import_Crud_Entity(repositoryType,file);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdEntities);

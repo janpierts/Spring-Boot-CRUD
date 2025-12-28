@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 import com.CRUD_API_REST.CRUD.domain.model.Crud_Entity;
 import com.CRUD_API_REST.CRUD.domain.ports.out.Crud_RepositoryPort;
 import com.CRUD_API_REST.CRUD.infrastructure.persistence.entity.CrudEntityJpa;
@@ -14,7 +15,6 @@ import com.CRUD_API_REST.CRUD.infrastructure.persistence.springdata.crudSpringDa
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.StoredProcedureQuery;
 import jakarta.transaction.Transactional;
-
 import java.sql.Timestamp; 
 
 @Component("inMysqlAdapter_JPA")
@@ -220,5 +220,11 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
     @Override
     public Crud_Entity delete_Crud_Entity_logical_JDBC_SP_ById(String typeBean, Crud_Entity entity) {
         throw new UnsupportedOperationException("Unimplemented method 'delete_Crud_Entity_logical_JDBC_SP_ById'");
+    }
+
+    @Override
+    public List<Crud_Entity> save_import_Crud_Entity(String typeBean, MultipartFile file) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'save_import_Crud_Entity'");
     }
 }

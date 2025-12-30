@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import org.springframework.boot.autoconfigure.ssl.JksSslBundleProperties.Store;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 import com.CRUD_API_REST.CRUD.domain.model.Crud_Entity;

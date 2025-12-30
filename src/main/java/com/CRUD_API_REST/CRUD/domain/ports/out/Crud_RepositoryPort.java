@@ -21,8 +21,8 @@ public interface Crud_RepositoryPort {
     Optional<Crud_Entity> find_Crud_Entity_JDBC_SP_ById(String typeBean,Long id);
     Optional<Crud_Entity> find_Crud_Entity_JPA_SP_ById(String typeBean,Long id);
     Optional<Crud_Entity> find_Crud_EntityByName(String typeBean, String name);
-    //Optional<Crud_Entity> find_Crud_Entity_JDBC_SP_ByName(String typeBean, String name);
-    //Optional<Crud_Entity> find_Crud_Entity_JPA_SP_ByName(String typeBean, String name);
+    Optional<Crud_Entity> find_Crud_Entity_JDBC_SP_ByName(String typeBean, String name);
+    Optional<Crud_Entity> find_Crud_Entity_JPA_SP_ByName(String typeBean, String name);
     List<Crud_Entity> findAll_Crud_entity(String typeBean);
     List<Crud_Entity> findAll_Crud_entity_JDBC_SP(String typeBean);
     List<Crud_Entity> findAll_Crud_entity_JPA_SP(String typeBean);

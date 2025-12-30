@@ -72,11 +72,24 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
             return entity;
         };
         List<Crud_Entity> results = jdbcTemplate.query(sql, rowMapper, id);
-        if (results.isEmpty()) {
-            return Optional.empty();
-        } else {
-            return Optional.of(results.get(0));
-        }
+        return results.isEmpty()? Optional.empty() : Optional.of(results.get(0));
+    }
+
+    @Override
+    public Optional<Crud_Entity> find_Crud_Entity_JDBC_SP_ByName(String typeBean, String name) {
+        String sql = "{call jbAPI_crud_list_byName(?)}";
+        RowMapper<Crud_Entity> rowMapper = (rs, rowNum) -> {
+            Crud_Entity entity = new Crud_Entity();
+            entity.setId(rs.getLong("id"));
+            entity.setName(rs.getString("name"));
+            entity.setEmail(rs.getString("email"));
+            entity.setCreated(rs.getObject("created",LocalDateTime.class));
+            entity.setUpdated(rs.getObject("updated",LocalDateTime.class));
+            entity.setState(rs.getBoolean("state"));
+            return entity;
+        };
+        List<Crud_Entity> results = jdbcTemplate.query(sql, rowMapper, name);
+        return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
     }
 
     @Override
@@ -174,13 +187,16 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
 
     @Override
     public Optional<Crud_Entity> find_Crud_EntityByName(String typeBean, String name) {
-        // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'find_Crud_EntityByName'");
     }
 
     @Override
     public List<Crud_Entity> save_import_Crud_Entity(String typeBean, MultipartFile file) {
-        // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'save_import_Crud_Entity'");
+    }
+    
+    @Override
+    public Optional<Crud_Entity> find_Crud_Entity_JPA_SP_ByName(String typeBean, String name){
+        throw new UnsupportedOperationException("Unimplemented method 'find_Crud_Entity_JPA_SP_ByName'");
     }
 }

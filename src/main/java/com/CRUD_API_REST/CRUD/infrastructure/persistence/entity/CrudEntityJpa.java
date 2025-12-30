@@ -33,6 +33,14 @@ import org.hibernate.annotations.UpdateTimestamp;
         resultClasses = CrudEntityJpa.class
     ),
     @NamedStoredProcedureQuery(
+        name = "jbAPI_crud_find_by_name_query",
+        procedureName = "jbAPI_crud_list_byName",
+        parameters = {
+            @StoredProcedureParameter(mode = ParameterMode.IN, name = "p_name", type = String.class)
+        },
+        resultClasses = CrudEntityJpa.class
+    ),
+    @NamedStoredProcedureQuery(
         name = "jbAPI_crud_update_query",
         procedureName = "jbAPI_crud_update",
         parameters = {

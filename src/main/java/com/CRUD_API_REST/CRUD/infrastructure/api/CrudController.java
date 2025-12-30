@@ -42,7 +42,19 @@ public class CrudController {
         return ResponseEntity.status(HttpStatus.CREATED).body(createdEntities);
     }
 
-    @PostMapping(value ="{repositoryType}/import_save",consumes = "multipart/form-data")//MediaType.MULTIPART_FORM_DATA_VALUE)//{"multipart/form-data"})
+    @PostMapping("{repositoryType}/create_multiple_JDBC_SP")
+    public ResponseEntity<List<Crud_Entity>> createMultipleEntities_JDBC_SP(@PathVariable String repositoryType,@RequestBody List<Crud_Entity> crudEntities) {
+        List<Crud_Entity> createdEntities = crudService.save_multi_Crud_Entity_JDBC_SP(repositoryType,crudEntities);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdEntities);
+    }
+
+    @PostMapping("{repositoryType}/create_multiple_JPA_SP")
+    public ResponseEntity<List<Crud_Entity>> createMultipleEntities_JPA_SP(@PathVariable String repositoryType,@RequestBody List<Crud_Entity> crudEntities) {
+        List<Crud_Entity> createdEntities = crudService.save_multi_Crud_Entity_JPA_SP(repositoryType,crudEntities);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdEntities);
+    }
+
+    @PostMapping(value ="{repositoryType}/import_save",consumes = "multipart/form-data")
     public ResponseEntity<List<Crud_Entity>> importSaveEntities(@PathVariable String repositoryType,@RequestParam("file") MultipartFile file) throws IOException {
         List<Crud_Entity> createdEntities = crudService.save_import_Crud_Entity(repositoryType,file);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdEntities);
@@ -72,6 +84,18 @@ public class CrudController {
     @GetMapping("{repositoryType}/find/name/{name}")
     public ResponseEntity<?> getEntityByName(@PathVariable String repositoryType,@PathVariable String name) {
         return crudService.find_Crud_EntityByName(repositoryType,name)
+                .map(ResponseEntity::ok)
+                .orElseGet(ResponseEntity.notFound()::build);
+    }
+    @GetMapping("{repositoryType}/find/name_JDBC_SP/{name}")
+    public ResponseEntity<?> getEntity_JDBC_SP_ByName(@PathVariable String repositoryType,@PathVariable String name) {
+        return crudService.find_Crud_Entity_JDBC_SP_ByName(repositoryType,name)
+                .map(ResponseEntity::ok)
+                .orElseGet(ResponseEntity.notFound()::build);
+    }
+    @GetMapping("{repositoryType}/find/name_JPA_SP/{name}")
+    public ResponseEntity<?> getEntity_JPA_SP_ByName(@PathVariable String repositoryType,@PathVariable String name) {
+        return crudService.find_Crud_Entity_JPA_SP_ByName(repositoryType,name)
                 .map(ResponseEntity::ok)
                 .orElseGet(ResponseEntity.notFound()::build);
     }

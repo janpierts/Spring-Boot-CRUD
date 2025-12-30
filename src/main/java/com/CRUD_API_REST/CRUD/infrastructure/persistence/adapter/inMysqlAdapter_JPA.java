@@ -85,6 +85,11 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
     }
 
     @Override
+    public List<Crud_Entity> save_multi_Crud_Entity_JPA_SP(String typeBean, List<Crud_Entity> entityList) {
+        throw new UnsupportedOperationException("Unimplemented method 'save_multi_Crud_Entity_JPA_SP'");
+    }
+
+    @Override
     public Optional<Crud_Entity> find_Crud_EntityById(String typeBean, Long id) {
         Optional<CrudEntityJpa> jpaEntityOpt = jpaRepository.findById(id);
         return jpaEntityOpt.map(CrudEntityJpa::toDomainEntity);
@@ -106,6 +111,17 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
     public Optional<Crud_Entity> find_Crud_EntityByName(String typeBean, String name) {
        Optional<CrudEntityJpa> jpaEntityOpt = jpaRepository.findByName(name);
         return jpaEntityOpt.map(CrudEntityJpa::toDomainEntity);
+    }
+
+    @Override
+    public Optional<Crud_Entity> find_Crud_Entity_JPA_SP_ByName(String typeBean, String name) {
+        StoredProcedureQuery query = entityManager.createNamedStoredProcedureQuery("jbAPI_crud_find_by_name_query");
+        query.setParameter("p_name", name);
+        @SuppressWarnings("unchecked")
+        List<CrudEntityJpa> results = query.getResultList();
+        return results.stream()
+            .findFirst()
+            .map(CrudEntityJpa::toDomainEntity);
     }
 
     @Override
@@ -224,7 +240,14 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
 
     @Override
     public List<Crud_Entity> save_import_Crud_Entity(String typeBean, MultipartFile file) {
-        // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'save_import_Crud_Entity'");
+    }
+    @Override
+    public Optional<Crud_Entity> find_Crud_Entity_JDBC_SP_ByName(String typeBean, String name){
+        throw new UnsupportedOperationException("Unimplemented method 'find_Crud_Entity_JDBC_SP_ByName'");
+    }
+    @Override
+    public List<Crud_Entity> save_multi_Crud_Entity_JDBC_SP(String typeBean, List<Crud_Entity> entityList) {
+        throw new UnsupportedOperationException("Unimplemented method 'save_multi_Crud_Entity_JDBC_SP'");
     }
 }

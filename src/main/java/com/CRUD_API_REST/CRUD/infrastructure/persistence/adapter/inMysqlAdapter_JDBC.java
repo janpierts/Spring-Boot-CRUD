@@ -2,6 +2,8 @@ package com.CRUD_API_REST.CRUD.infrastructure.persistence.adapter;
 
 import java.sql.Types;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.dao.DataAccessException;
@@ -39,6 +41,39 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
             throw new RuntimeException("Error al insertar la entidad CRUD: " + e.getMessage(), e);
         }
         return entity;
+    }
+
+    @Override
+    public List<Crud_Entity> save_multi_Crud_Entity_JDBC_SP(String typeBean, List<Crud_Entity> entityList) {
+        String sql = "{ call jbAPI_crud_insert_multi(?) }";
+        ObjectMapper objectMapper = new ObjectMapper();
+        try{
+            List<Crud_Entity> UnsavedEntities = new ArrayList<>();
+            for (Crud_Entity entity : entityList) {
+                Optional<Crud_Entity> existingEntityOpt = find_Crud_Entity_JDBC_SP_ByName(typeBean,entity.getName());
+                if (existingEntityOpt.isEmpty()) {
+                    UnsavedEntities.add(entity);
+                }
+            }
+            if (UnsavedEntities.isEmpty()) {
+                return new ArrayList<>();
+            }
+            String jsonEntities = objectMapper.writeValueAsString(UnsavedEntities);
+            jdbcTemplate.execute(sql, (CallableStatementCallback<Void>) cs -> {
+                cs.setString(1, jsonEntities);
+                cs.execute();
+                return null;
+            });
+
+            List<Crud_Entity> savedEntities = new ArrayList<>();
+            for (Crud_Entity entity : UnsavedEntities) {
+                Optional<Crud_Entity> savedEntityOpt = find_Crud_Entity_JDBC_SP_ByName(typeBean, entity.getName());
+                savedEntityOpt.ifPresent(savedEntities::add);
+            }
+            return savedEntities;
+        } catch (Exception e) {
+            throw new RuntimeException("Error al insertar las entidades CRUD: " + e.getMessage(), e);
+        }
     }
 
     @Override
@@ -198,5 +233,10 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
     @Override
     public Optional<Crud_Entity> find_Crud_Entity_JPA_SP_ByName(String typeBean, String name){
         throw new UnsupportedOperationException("Unimplemented method 'find_Crud_Entity_JPA_SP_ByName'");
+    }
+    
+    @Override
+    public List<Crud_Entity> save_multi_Crud_Entity_JPA_SP(String typeBean, List<Crud_Entity> entityList) {
+        throw new UnsupportedOperationException("Unimplemented method 'save_multi_Crud_Entity_JPA_SP'");
     }
 }

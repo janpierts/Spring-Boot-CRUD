@@ -42,6 +42,18 @@ public class CrudController {
         return ResponseEntity.status(HttpStatus.CREATED).body(createdEntities);
     }
 
+    @PostMapping("{repositoryType}/create_multiple_JDBC_SP")
+    public ResponseEntity<List<Crud_Entity>> createMultipleEntities_JDBC_SP(@PathVariable String repositoryType,@RequestBody List<Crud_Entity> crudEntities) {
+        List<Crud_Entity> createdEntities = crudService.save_multi_Crud_Entity_JDBC_SP(repositoryType,crudEntities);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdEntities);
+    }
+
+    @PostMapping("{repositoryType}/create_multiple_JPA_SP")
+    public ResponseEntity<List<Crud_Entity>> createMultipleEntities_JPA_SP(@PathVariable String repositoryType,@RequestBody List<Crud_Entity> crudEntities) {
+        List<Crud_Entity> createdEntities = crudService.save_multi_Crud_Entity_JPA_SP(repositoryType,crudEntities);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdEntities);
+    }
+
     @PostMapping(value ="{repositoryType}/import_save",consumes = "multipart/form-data")
     public ResponseEntity<List<Crud_Entity>> importSaveEntities(@PathVariable String repositoryType,@RequestParam("file") MultipartFile file) throws IOException {
         List<Crud_Entity> createdEntities = crudService.save_import_Crud_Entity(repositoryType,file);

@@ -75,6 +75,18 @@ public class CrudController {
                 .map(ResponseEntity::ok)
                 .orElseGet(ResponseEntity.notFound()::build);
     }
+    @GetMapping("{repositoryType}/find/name_JDBC_SP/{name}")
+    public ResponseEntity<?> getEntity_JDBC_SP_ByName(@PathVariable String repositoryType,@PathVariable String name) {
+        return crudService.find_Crud_Entity_JDBC_SP_ByName(repositoryType,name)
+                .map(ResponseEntity::ok)
+                .orElseGet(ResponseEntity.notFound()::build);
+    }
+    @GetMapping("{repositoryType}/find/name_JPA_SP/{name}")
+    public ResponseEntity<?> getEntity_JPA_SP_ByName(@PathVariable String repositoryType,@PathVariable String name) {
+        return crudService.find_Crud_Entity_JPA_SP_ByName(repositoryType,name)
+                .map(ResponseEntity::ok)
+                .orElseGet(ResponseEntity.notFound()::build);
+    }
 
     @GetMapping("{repositoryType}/find/all")
     public ResponseEntity<List<Crud_Entity>> getAllEntities(@PathVariable String repositoryType) {

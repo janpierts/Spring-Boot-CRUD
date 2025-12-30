@@ -3,7 +3,6 @@ package com.CRUD_API_REST.CRUD.domain.ports.in;
 import com.CRUD_API_REST.CRUD.domain.model.Crud_Entity;
 import java.util.List;
 import java.util.Optional;
-
 import org.springframework.web.multipart.MultipartFile;
 
 public interface Crud_ServicePort {

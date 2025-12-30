@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.springframework.boot.autoconfigure.ssl.JksSslBundleProperties.Store;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 import com.CRUD_API_REST.CRUD.domain.model.Crud_Entity;
@@ -106,6 +108,17 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
     public Optional<Crud_Entity> find_Crud_EntityByName(String typeBean, String name) {
        Optional<CrudEntityJpa> jpaEntityOpt = jpaRepository.findByName(name);
         return jpaEntityOpt.map(CrudEntityJpa::toDomainEntity);
+    }
+
+    @Override
+    public Optional<Crud_Entity> find_Crud_Entity_JPA_SP_ByName(String typeBean, String name) {
+        StoredProcedureQuery query = entityManager.createNamedStoredProcedureQuery("jbAPI_crud_find_by_name_query");
+        query.setParameter("p_name", name);
+        @SuppressWarnings("unchecked")
+        List<CrudEntityJpa> results = query.getResultList();
+        return results.stream()
+            .findFirst()
+            .map(CrudEntityJpa::toDomainEntity);
     }
 
     @Override
@@ -224,7 +237,11 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
 
     @Override
     public List<Crud_Entity> save_import_Crud_Entity(String typeBean, MultipartFile file) {
-        // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'save_import_Crud_Entity'");
     }
+    @Override
+    public Optional<Crud_Entity> find_Crud_Entity_JDBC_SP_ByName(String typeBean, String name){
+        throw new UnsupportedOperationException("Unimplemented method 'find_Crud_Entity_JDBC_SP_ByName'");
+    }
+
 }

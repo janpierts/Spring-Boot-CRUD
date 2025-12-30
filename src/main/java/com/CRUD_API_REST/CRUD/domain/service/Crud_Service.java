@@ -87,7 +87,7 @@ public class Crud_Service implements Crud_ServicePort {
     @Override
     public Optional<Crud_Entity> find_Crud_Entity_JPA_SP_ByName(String typeBean, String name) {
         Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
-        return repositoryPort.find_Crud_EntityByName(typeBean, name);
+        return repositoryPort.find_Crud_Entity_JPA_SP_ByName(typeBean, name);
     }
 
     @Override

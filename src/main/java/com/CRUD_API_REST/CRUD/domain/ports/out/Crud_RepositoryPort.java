@@ -2,9 +2,7 @@ package com.CRUD_API_REST.CRUD.domain.ports.out;
 
 import java.util.List;
 import java.util.Optional;
-
 import org.springframework.web.multipart.MultipartFile;
-
 import com.CRUD_API_REST.CRUD.domain.model.Crud_Entity;
 
 public interface Crud_RepositoryPort {

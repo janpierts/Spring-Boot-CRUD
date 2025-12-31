@@ -1,12 +1,16 @@
 package com.CRUD_API_REST.CRUD.infrastructure.persistence.adapter;
 
+import java.sql.ResultSet;
 import java.sql.Types;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.CallableStatementCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -128,6 +132,31 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
     }
 
     @Override
+    public Optional<List<Crud_Entity>> find_Crud_Entity_JDBC_SP_ByNames(String typeBean, List<Crud_Entity> entityList) {
+        String sql = "{ call jbAPI_crud_list_byNames(?) }";
+        ObjectMapper objectMapper = new ObjectMapper();
+        try{
+            String jsonEntities = objectMapper.writeValueAsString(entityList);
+            List<Crud_Entity> result = jdbcTemplate.execute(sql, (CallableStatementCallback<List<Crud_Entity>>) cs -> {
+                cs.setString(1, jsonEntities);
+                ResultSet rs = cs.executeQuery();
+                BeanPropertyRowMapper<Crud_Entity> rowMapper = new BeanPropertyRowMapper<>(Crud_Entity.class);
+                List<Crud_Entity> list = new ArrayList<>();
+                int rowNum = 0;
+                while (rs.next()) {
+                    list.add(rowMapper.mapRow(rs, rowNum++));
+                }
+                return list;
+            });
+            return Optional.ofNullable(result.isEmpty() ? null : result);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Error al serializar entityList a JSON", e);
+        } catch (Exception e) {
+            throw new RuntimeException("Error al insertar las entidades CRUD: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
     public Crud_Entity update_Crud_Entity_JDBC_SP(String typeBean,Crud_Entity Entity) {
         String sql = "{call jbAPI_crud_update(?,?,?)}";
         jdbcTemplate.update(sql,  Entity.getId(), Entity.getName(), Entity.getEmail());
@@ -238,5 +267,15 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
     @Override
     public List<Crud_Entity> save_multi_Crud_Entity_JPA_SP(String typeBean, List<Crud_Entity> entityList) {
         throw new UnsupportedOperationException("Unimplemented method 'save_multi_Crud_Entity_JPA_SP'");
+    }
+    
+    @Override
+    public Optional<List<Crud_Entity>> find_Crud_EntityByNames(String typeBean, List<Crud_Entity> names) {
+        throw new UnsupportedOperationException("Unimplemented method 'find_Crud_EntityByNames'");
+    }
+
+    @Override
+    public Optional<List<Crud_Entity>> find_Crud_Entity_JPA_SP_ByNames(String typeBean, List<Crud_Entity> names) {
+        throw new UnsupportedOperationException("Unimplemented method 'find_Crud_Entity_JPA_SP_ByNames'");
     }
 }

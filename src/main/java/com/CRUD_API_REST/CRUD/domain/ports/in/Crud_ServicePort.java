@@ -21,6 +21,11 @@ public interface Crud_ServicePort {
     Optional<Crud_Entity> find_Crud_EntityByName(String typeBean, String name);
     Optional<Crud_Entity> find_Crud_Entity_JDBC_SP_ByName(String typeBean, String name);
     Optional<Crud_Entity> find_Crud_Entity_JPA_SP_ByName(String typeBean, String name);
+
+    Optional<List<Crud_Entity>> find_Crud_EntityByNames(String typeBean, List<Crud_Entity> names);
+    Optional<List<Crud_Entity>> find_Crud_Entity_JDBC_SP_ByNames(String typeBean, List<Crud_Entity> names);
+    Optional<List<Crud_Entity>> find_Crud_Entity_JPA_SP_ByNames(String typeBean, List<Crud_Entity> names);
+
     List<Crud_Entity> findAll_Crud_entity(String typeBean);
     List<Crud_Entity> findAll_Crud_entity_JDBC_SP(String typeBean);
     List<Crud_Entity> findAll_Crud_entity_JPA_SP(String typeBean);

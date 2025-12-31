@@ -99,6 +99,28 @@ public class CrudController {
                 .map(ResponseEntity::ok)
                 .orElseGet(ResponseEntity.notFound()::build);
     }
+    @PostMapping("{repositoryType}/find/names")
+    public ResponseEntity<?> getEntityByNames(@PathVariable String repositoryType,@RequestBody List<Crud_Entity> names) {
+        return crudService.find_Crud_EntityByNames(repositoryType,names)
+                .map(ResponseEntity::ok)
+                .orElseGet(ResponseEntity.notFound()::build);
+       /*
+       Optional<Crud_Entity> createdEntities = crudService.find_Crud_EntityByNames(repositoryType,names);
+       return ResponseEntity.status(HttpStatus.CREATED).body(createdEntities);
+        */
+    }
+    @PostMapping("{repositoryType}/find/names_JDBC_SP/{names}")
+    public ResponseEntity<?> getEntity_JDBC_SP_ByName(@PathVariable String repositoryType,@RequestBody List<Crud_Entity> names) {
+        return crudService.find_Crud_Entity_JDBC_SP_ByNames(repositoryType,names)
+                .map(ResponseEntity::ok)
+                .orElseGet(ResponseEntity.notFound()::build);
+    }
+    @PostMapping("{repositoryType}/find/names_JPA_SP/{names}")
+    public ResponseEntity<?> getEntity_JPA_SP_ByNames(@PathVariable String repositoryType,@RequestBody List<Crud_Entity> names) {
+        return crudService.find_Crud_Entity_JPA_SP_ByNames(repositoryType,names)
+                .map(ResponseEntity::ok)
+                .orElseGet(ResponseEntity.notFound()::build);
+    }
 
     @GetMapping("{repositoryType}/find/all")
     public ResponseEntity<List<Crud_Entity>> getAllEntities(@PathVariable String repositoryType) {

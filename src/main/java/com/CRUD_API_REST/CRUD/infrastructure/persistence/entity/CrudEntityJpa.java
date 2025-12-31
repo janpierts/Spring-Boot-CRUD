@@ -33,6 +33,20 @@ import org.hibernate.annotations.UpdateTimestamp;
         resultClasses = CrudEntityJpa.class
     ),
     @NamedStoredProcedureQuery(
+        name = "jbAPI_crud_insert_multi_query",
+        procedureName = "jbAPI_crud_insert_multi",
+        parameters = {
+            @StoredProcedureParameter(mode = ParameterMode.IN, name = "p_data_json", type = String.class)
+        }
+    ),
+    @NamedStoredProcedureQuery(
+        name = "jbAPI_crud_list_byNames_query",
+        procedureName = "jbAPI_crud_list_byNames",
+        parameters = {
+            @StoredProcedureParameter(mode = ParameterMode.IN, name = "p_data_json", type = String.class)
+        }
+    ),
+    @NamedStoredProcedureQuery(
         name = "jbAPI_crud_find_by_name_query",
         procedureName = "jbAPI_crud_list_byName",
         parameters = {

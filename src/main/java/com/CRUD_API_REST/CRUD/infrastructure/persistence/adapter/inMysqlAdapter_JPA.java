@@ -86,6 +86,35 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
 
     @Override
     public List<Crud_Entity> save_multi_Crud_Entity_JPA_SP(String typeBean, List<Crud_Entity> entityList) {
+        /*String sql = "{ call jbAPI_crud_insert_multi(?) }";
+        ObjectMapper objectMapper = new ObjectMapper();
+        try{
+            List<Crud_Entity> UnsavedEntities = new ArrayList<>();
+            for (Crud_Entity entity : entityList) {
+                Optional<Crud_Entity> existingEntityOpt = find_Crud_Entity_JDBC_SP_ByName(typeBean,entity.getName());
+                if (existingEntityOpt.isEmpty()) {
+                    UnsavedEntities.add(entity);
+                }
+            }
+            if (UnsavedEntities.isEmpty()) {
+                return new ArrayList<>();
+            }
+            String jsonEntities = objectMapper.writeValueAsString(UnsavedEntities);
+            jdbcTemplate.execute(sql, (CallableStatementCallback<Void>) cs -> {
+                cs.setString(1, jsonEntities);
+                cs.execute();
+                return null;
+            });
+
+            List<Crud_Entity> savedEntities = new ArrayList<>();
+            for (Crud_Entity entity : UnsavedEntities) {
+                Optional<Crud_Entity> savedEntityOpt = find_Crud_Entity_JDBC_SP_ByName(typeBean, entity.getName());
+                savedEntityOpt.ifPresent(savedEntities::add);
+            }
+            return savedEntities;
+        } catch (Exception e) {
+            throw new RuntimeException("Error al insertar las entidades CRUD: " + e.getMessage(), e);
+        }*/
         throw new UnsupportedOperationException("Unimplemented method 'save_multi_Crud_Entity_JPA_SP'");
     }
 
@@ -122,6 +151,25 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
         return results.stream()
             .findFirst()
             .map(CrudEntityJpa::toDomainEntity);
+    }
+
+    @Override
+    public Optional<List<Crud_Entity>> find_Crud_EntityByNames(String typeBean, List<Crud_Entity> names) {
+        Set<String> namesToValidate = names.stream()
+            .map(Crud_Entity::getName)
+            .collect(Collectors.toSet());
+
+        List<CrudEntityJpa> existingEntities = jpaRepository.findByNameIn(namesToValidate);
+        List<Crud_Entity> domainEntities = existingEntities.stream()
+        .map(CrudEntityJpa::toDomainEntity)
+        .toList();
+
+        return domainEntities.isEmpty() ? Optional.empty() : Optional.of(domainEntities);
+    }
+
+    @Override
+    public Optional<List<Crud_Entity>> find_Crud_Entity_JPA_SP_ByNames(String typeBean, List<Crud_Entity> names) {
+        return null;
     }
 
     @Override
@@ -242,10 +290,17 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
     public List<Crud_Entity> save_import_Crud_Entity(String typeBean, MultipartFile file) {
         throw new UnsupportedOperationException("Unimplemented method 'save_import_Crud_Entity'");
     }
+    
     @Override
     public Optional<Crud_Entity> find_Crud_Entity_JDBC_SP_ByName(String typeBean, String name){
         throw new UnsupportedOperationException("Unimplemented method 'find_Crud_Entity_JDBC_SP_ByName'");
     }
+
+    @Override
+    public Optional<List<Crud_Entity>> find_Crud_Entity_JDBC_SP_ByNames(String typeBean, List<Crud_Entity> names){
+        throw new UnsupportedOperationException("Unimplemented method 'find_Crud_Entity_JDBC_SP_ByNames'");
+    }
+
     @Override
     public List<Crud_Entity> save_multi_Crud_Entity_JDBC_SP(String typeBean, List<Crud_Entity> entityList) {
         throw new UnsupportedOperationException("Unimplemented method 'save_multi_Crud_Entity_JDBC_SP'");

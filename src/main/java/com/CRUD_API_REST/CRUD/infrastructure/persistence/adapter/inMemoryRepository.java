@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Component("inMemoryRepository")
 public class inMemoryRepository implements Crud_RepositoryPort{
@@ -89,6 +90,16 @@ public class inMemoryRepository implements Crud_RepositoryPort{
         return entities.stream()
                 .filter(e -> e.getName() != null && e.getName().equals(name))
                 .findFirst();
+    }
+
+    @Override
+    public Optional<List<Crud_Entity>> find_Crud_EntityByNames(String typeBean, List<Crud_Entity> names) {
+        List<Crud_Entity> result = entities.stream()
+        .filter(e -> e.getName() != null && 
+                names.stream().anyMatch(n -> n.getName().equals(e.getName())))
+        .collect(Collectors.toList());
+
+        return result.isEmpty() ? Optional.empty() : Optional.of(result);
     }
 
     @Override
@@ -209,5 +220,13 @@ public class inMemoryRepository implements Crud_RepositoryPort{
     @Override
     public List<Crud_Entity> save_multi_Crud_Entity_JPA_SP(String typeBean, List<Crud_Entity> entity) {
         throw new UnsupportedOperationException("Unimplemented method 'save_multi_Crud_Entity_JPA_SP'");
+    }
+    @Override
+    public Optional<List<Crud_Entity>> find_Crud_Entity_JDBC_SP_ByNames(String typeBean, List<Crud_Entity> names) {
+        throw new UnsupportedOperationException("Unimplemented method 'find_Crud_Entity_JDBC_SP_ByNames'");
+    }
+    @Override
+    public Optional<List<Crud_Entity>> find_Crud_Entity_JPA_SP_ByNames(String typeBean, List<Crud_Entity> names) {
+        throw new UnsupportedOperationException("Unimplemented method 'find_Crud_Entity_JPA_SP_ByNames'");
     }
 }

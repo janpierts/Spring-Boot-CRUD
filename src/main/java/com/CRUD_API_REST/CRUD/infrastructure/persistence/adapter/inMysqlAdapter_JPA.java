@@ -12,6 +12,8 @@ import com.CRUD_API_REST.CRUD.domain.model.Crud_Entity;
 import com.CRUD_API_REST.CRUD.domain.ports.out.Crud_RepositoryPort;
 import com.CRUD_API_REST.CRUD.infrastructure.persistence.entity.CrudEntityJpa;
 import com.CRUD_API_REST.CRUD.infrastructure.persistence.springdata.crudSpringDataRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.StoredProcedureQuery;
 import jakarta.transaction.Transactional;
@@ -169,7 +171,20 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
 
     @Override
     public Optional<List<Crud_Entity>> find_Crud_Entity_JPA_SP_ByNames(String typeBean, List<Crud_Entity> names) {
-        return null;
+        try {
+            StoredProcedureQuery query = entityManager.createNamedStoredProcedureQuery("jbAPI_crud_list_byNames_query");
+            ObjectMapper objectMapper = new ObjectMapper();
+            String jsonObject = objectMapper.writeValueAsString(names);
+            query.setParameter("p_data_json", jsonObject);
+            @SuppressWarnings("unchecked")
+            List<Crud_Entity> resultList = query.getResultList();
+
+            return Optional.ofNullable(resultList.isEmpty() ? null : resultList);
+        }catch (JsonProcessingException e) {
+            throw new RuntimeException("Error al serializar lista a JSON", e);
+        }catch (Exception e) {
+            throw new RuntimeException("Error al buscar las entidades CRUD por nombres: " + e.getMessage(), e);
+        }
     }
 
     @Override

@@ -42,6 +42,7 @@ import org.hibernate.annotations.UpdateTimestamp;
     @NamedStoredProcedureQuery(
         name = "jbAPI_crud_list_byNames_query",
         procedureName = "jbAPI_crud_list_byNames",
+        resultClasses = CrudEntityJpa.class,
         parameters = {
             @StoredProcedureParameter(mode = ParameterMode.IN, name = "p_data_json", type = String.class)
         }

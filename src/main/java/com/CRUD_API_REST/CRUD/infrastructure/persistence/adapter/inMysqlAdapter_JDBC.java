@@ -4,11 +4,14 @@ import java.sql.ResultSet;
 import java.sql.Types;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.transaction.Transactional;
 import java.util.List;
+import java.io.IOException;
 import java.util.Optional;
+import java.util.function.Function;
+import org.apache.poi.ss.usermodel.Row;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.CallableStatementCallback;
@@ -18,6 +21,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 import com.CRUD_API_REST.CRUD.domain.model.Crud_Entity;
 import com.CRUD_API_REST.CRUD.domain.ports.out.Crud_RepositoryPort;
+import com.CRUD_API_REST.CRUD.infrastructure.utils.filesProcessor;
 
 @Component("inMysqlAdapter_JDBC")
 public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
@@ -81,8 +85,38 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
     }
 
     @Override
+    @Transactional
     public Optional<List<Crud_Entity>> save_import_Crud_Entity_JDBC_SP(String typeBean, MultipartFile file) {
-        throw new UnsupportedOperationException("Unimplemented method 'save_import_Crud_Entity'");
+        List<String> ExtentionsDone = List.of("xls","xlsx");
+        String fileNameInput = file.getOriginalFilename();
+        String [] filenameParts = fileNameInput != null ? fileNameInput.split("\\.") : new String[0];
+        String fileExtention =  filenameParts.length > 1 ? filenameParts[filenameParts.length - 1] : "";
+        if (!ExtentionsDone.contains(fileExtention.toLowerCase())) {
+            throw new RuntimeException("El archivo debe tener una extensión válida: .xls, .xlsx");
+        }
+        
+        try{
+            Function<Row, Crud_Entity> rowMapper = row -> {
+                String name = filesProcessor.getCellValueAsString(row.getCell(0));
+                String email = filesProcessor.getCellValueAsString(row.getCell(1));
+                if (name == null || name.trim().isEmpty()) return null;
+                if (email == null || email.trim().isEmpty()) return null;
+            
+                Crud_Entity entity = new Crud_Entity();
+                entity.setName(name.trim());
+                entity.setEmail(email.trim());
+                return entity;
+            };
+            List<Crud_Entity> entitiesFromFile = filesProcessor.excelToEntities(file, rowMapper);
+
+            if(entitiesFromFile.isEmpty()) {
+                throw new RuntimeException("El archivo Excel está vacío o no tiene el formato correcto");
+            }
+            List<Crud_Entity> result = this.save_multi_Crud_Entity_JDBC_SP(typeBean, entitiesFromFile);
+            return Optional.of(result);
+        }catch (IOException e) {
+            throw new RuntimeException("Error al procesar el archivo Excel: " + e.getMessage());
+        }
     }
 
     @Override

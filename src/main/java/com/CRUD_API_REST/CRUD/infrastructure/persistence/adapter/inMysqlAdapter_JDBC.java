@@ -1,12 +1,23 @@
 package com.CRUD_API_REST.CRUD.infrastructure.persistence.adapter;
 
+import java.sql.ResultSet;
 import java.sql.Types;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.transaction.Transactional;
 import java.util.List;
+import java.io.IOException;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import org.apache.poi.ss.usermodel.Row;
 import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.CallableStatementCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -14,6 +25,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 import com.CRUD_API_REST.CRUD.domain.model.Crud_Entity;
 import com.CRUD_API_REST.CRUD.domain.ports.out.Crud_RepositoryPort;
+import com.CRUD_API_REST.CRUD.infrastructure.utils.filesProcessor;
 
 @Component("inMysqlAdapter_JDBC")
 public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
@@ -47,32 +59,78 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
     public List<Crud_Entity> save_multi_Crud_Entity_JDBC_SP(String typeBean, List<Crud_Entity> entityList) {
         String sql = "{ call jbAPI_crud_insert_multi(?) }";
         ObjectMapper objectMapper = new ObjectMapper();
+        HashSet<String> namesSet = entityList.stream()
+                .map(Crud_Entity::getName)
+                .collect(Collectors.toCollection(HashSet::new));
+        List<Crud_Entity> uniqueEntities = entityList.stream()
+                .filter(e -> namesSet.contains(e.getName()))
+                .collect(Collectors.toMap(
+                    Crud_Entity::getName,
+                    e -> e, 
+                    (existing, replacement) -> existing
+                ))
+                .values()
+                .stream()
+                .collect(Collectors.toList());
+        List<String> existingNames = find_Crud_Entity_JDBC_SP_ByNames(typeBean, uniqueEntities)
+                .map(list -> list.stream()
+                        .map(Crud_Entity::getName)
+                        .collect(Collectors.toList()))
+                .orElse(new ArrayList<>());
+        List<Crud_Entity> filteredEntities = uniqueEntities.stream()
+                .filter(entity -> !existingNames.contains(entity.getName()))
+                .collect(Collectors.toList());
+        if(filteredEntities.isEmpty()) {
+            return filteredEntities;
+        }
         try{
-            List<Crud_Entity> UnsavedEntities = new ArrayList<>();
-            for (Crud_Entity entity : entityList) {
-                Optional<Crud_Entity> existingEntityOpt = find_Crud_Entity_JDBC_SP_ByName(typeBean,entity.getName());
-                if (existingEntityOpt.isEmpty()) {
-                    UnsavedEntities.add(entity);
-                }
-            }
-            if (UnsavedEntities.isEmpty()) {
-                return new ArrayList<>();
-            }
-            String jsonEntities = objectMapper.writeValueAsString(UnsavedEntities);
+            String jsonEntities = objectMapper.writeValueAsString(filteredEntities);
             jdbcTemplate.execute(sql, (CallableStatementCallback<Void>) cs -> {
                 cs.setString(1, jsonEntities);
                 cs.execute();
                 return null;
             });
 
-            List<Crud_Entity> savedEntities = new ArrayList<>();
-            for (Crud_Entity entity : UnsavedEntities) {
-                Optional<Crud_Entity> savedEntityOpt = find_Crud_Entity_JDBC_SP_ByName(typeBean, entity.getName());
-                savedEntityOpt.ifPresent(savedEntities::add);
-            }
+            List<Crud_Entity> savedEntities = this.find_Crud_Entity_JDBC_SP_ByNames(typeBean, filteredEntities)
+                    .orElse(new ArrayList<>());
             return savedEntities;
         } catch (Exception e) {
             throw new RuntimeException("Error al insertar las entidades CRUD: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    @Transactional
+    public Optional<List<Crud_Entity>> save_import_Crud_Entity_JDBC_SP(String typeBean, MultipartFile file) {
+        List<String> ExtentionsDone = List.of("xls","xlsx");
+        String fileNameInput = file.getOriginalFilename();
+        String [] filenameParts = fileNameInput != null ? fileNameInput.split("\\.") : new String[0];
+        String fileExtention =  filenameParts.length > 1 ? filenameParts[filenameParts.length - 1] : "";
+        if (!ExtentionsDone.contains(fileExtention.toLowerCase())) {
+            throw new RuntimeException("El archivo debe tener una extensión válida: .xls, .xlsx");
+        }
+        
+        try{
+            Function<Row, Crud_Entity> rowMapper = row -> {
+                String name = filesProcessor.getCellValueAsString(row.getCell(0));
+                String email = filesProcessor.getCellValueAsString(row.getCell(1));
+                if (name == null || name.trim().isEmpty()) return null;
+                if (email == null || email.trim().isEmpty()) return null;
+            
+                Crud_Entity entity = new Crud_Entity();
+                entity.setName(name.trim());
+                entity.setEmail(email.trim());
+                return entity;
+            };
+            List<Crud_Entity> entitiesFromFile = filesProcessor.excelToEntities(file, rowMapper);
+
+            if(entitiesFromFile.isEmpty()) {
+                throw new RuntimeException("El archivo Excel está vacío o no tiene el formato correcto");
+            }
+            List<Crud_Entity> result = this.save_multi_Crud_Entity_JDBC_SP(typeBean, entitiesFromFile);
+            return Optional.of(result);
+        }catch (IOException e) {
+            throw new RuntimeException("Error al procesar el archivo Excel: " + e.getMessage());
         }
     }
 
@@ -128,6 +186,31 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
     }
 
     @Override
+    public Optional<List<Crud_Entity>> find_Crud_Entity_JDBC_SP_ByNames(String typeBean, List<Crud_Entity> entityList) {
+        String sql = "{ call jbAPI_crud_list_byNames(?) }";
+        ObjectMapper objectMapper = new ObjectMapper();
+        try{
+            String jsonEntities = objectMapper.writeValueAsString(entityList);
+            List<Crud_Entity> result = jdbcTemplate.execute(sql, (CallableStatementCallback<List<Crud_Entity>>) cs -> {
+                cs.setString(1, jsonEntities);
+                ResultSet rs = cs.executeQuery();
+                BeanPropertyRowMapper<Crud_Entity> rowMapper = new BeanPropertyRowMapper<>(Crud_Entity.class);
+                List<Crud_Entity> list = new ArrayList<>();
+                int rowNum = 0;
+                while (rs.next()) {
+                    list.add(rowMapper.mapRow(rs, rowNum++));
+                }
+                return list;
+            });
+            return Optional.ofNullable(result.isEmpty() ? null : result);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Error al serializar entityList a JSON", e);
+        } catch (Exception e) {
+            throw new RuntimeException("Error al insertar las entidades CRUD: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
     public Crud_Entity update_Crud_Entity_JDBC_SP(String typeBean,Crud_Entity Entity) {
         String sql = "{call jbAPI_crud_update(?,?,?)}";
         jdbcTemplate.update(sql,  Entity.getId(), Entity.getName(), Entity.getEmail());
@@ -159,84 +242,80 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
     public Crud_Entity save_Crud_Entity(String typeBean, Crud_Entity entity) {
         throw new UnsupportedOperationException("Unimplemented method 'save_Crud_Entity'");
     }
-
     @Override
     public Crud_Entity save_Crud_Entity_JPA_SP(String typeBean, Crud_Entity entity) {
         throw new UnsupportedOperationException("Unimplemented method 'save_Crud_Entity_JPA_SP'");
     }
-
     @Override
     public Optional<Crud_Entity> find_Crud_EntityById(String typeBean, Long id) {
         throw new UnsupportedOperationException("Unimplemented method 'find_Crud_EntityById'");
     }
-
     @Override
     public Optional<Crud_Entity> find_Crud_Entity_JPA_SP_ById(String typeBean, Long id) {
         throw new UnsupportedOperationException("Unimplemented method 'find_Crud_Entity_JPA_SP_ById'");
     }
-
     @Override
     public List<Crud_Entity> findAll_Crud_entity(String typeBean) {
         throw new UnsupportedOperationException("Unimplemented method 'findAll_Crud_entity'");
     }
-
     @Override
     public List<Crud_Entity> findAll_Crud_entity_JPA_SP(String typeBean) {
         throw new UnsupportedOperationException("Unimplemented method 'findAll_Crud_entity_JPA_SP'");
     }
-
     @Override
     public Crud_Entity update_Crud_Entity(String typeBean, Crud_Entity entity) {
         throw new UnsupportedOperationException("Unimplemented method 'update_Crud_Entity'");
     }
-
     @Override
     public Crud_Entity update_Crud_Entity_JPA_SP(String typeBean, Crud_Entity entity) {
         throw new UnsupportedOperationException("Unimplemented method 'update_Crud_Entity_JPA_SP'");
     }
-
     @Override
     public void delete_Crud_Entity_phisical_ById(String typeBean, Long id) {
         throw new UnsupportedOperationException("Unimplemented method 'delete_Crud_Entity_phisical_ById'");
     }
-
     @Override
     public void delete_Crud_Entity_phisical_JPA_SP_ById(String typeBean, Long id) {
         throw new UnsupportedOperationException("Unimplemented method 'delete_Crud_Entity_phisical_JPA_SP_ById'");
     }
-
     @Override
     public Crud_Entity delete_Crud_Entity_logical_ById(String typeBean, Crud_Entity entity) {
         throw new UnsupportedOperationException("Unimplemented method 'delete_Crud_Entity_logical_ById'");
     }
-
     @Override
     public Crud_Entity delete_Crud_Entity_logical_JPA_SP_ById(String typeBean, Crud_Entity entity) {
         throw new UnsupportedOperationException("Unimplemented method 'delete_Crud_Entity_logical_JPA_SP_ById'");
     }
-
     @Override
     public List<Crud_Entity> save_multi_Crud_Entity(String typeBean, List<Crud_Entity> entity) {
         throw new UnsupportedOperationException("Unimplemented method 'save_multi_Crud_Entity'");
     }
-
     @Override
     public Optional<Crud_Entity> find_Crud_EntityByName(String typeBean, String name) {
         throw new UnsupportedOperationException("Unimplemented method 'find_Crud_EntityByName'");
     }
-
     @Override
-    public List<Crud_Entity> save_import_Crud_Entity(String typeBean, MultipartFile file) {
+    public Optional<List<Crud_Entity>> save_import_Crud_Entity(String typeBean, MultipartFile file) {
         throw new UnsupportedOperationException("Unimplemented method 'save_import_Crud_Entity'");
     }
-    
+    @Override
+    public Optional<List<Crud_Entity>> save_import_Crud_Entity_JPA_SP(String typeBean, MultipartFile file) {
+        throw new UnsupportedOperationException("Unimplemented method 'save_import_Crud_Entity'");
+    }
     @Override
     public Optional<Crud_Entity> find_Crud_Entity_JPA_SP_ByName(String typeBean, String name){
         throw new UnsupportedOperationException("Unimplemented method 'find_Crud_Entity_JPA_SP_ByName'");
     }
-    
     @Override
     public List<Crud_Entity> save_multi_Crud_Entity_JPA_SP(String typeBean, List<Crud_Entity> entityList) {
         throw new UnsupportedOperationException("Unimplemented method 'save_multi_Crud_Entity_JPA_SP'");
+    }
+    @Override
+    public Optional<List<Crud_Entity>> find_Crud_EntityByNames(String typeBean, List<Crud_Entity> names) {
+        throw new UnsupportedOperationException("Unimplemented method 'find_Crud_EntityByNames'");
+    }
+    @Override
+    public Optional<List<Crud_Entity>> find_Crud_Entity_JPA_SP_ByNames(String typeBean, List<Crud_Entity> names) {
+        throw new UnsupportedOperationException("Unimplemented method 'find_Crud_Entity_JPA_SP_ByNames'");
     }
 }

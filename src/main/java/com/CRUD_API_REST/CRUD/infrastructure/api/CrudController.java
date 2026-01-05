@@ -56,8 +56,20 @@ public class CrudController {
 
     @PostMapping(value ="{repositoryType}/import_save",consumes = "multipart/form-data")
     public ResponseEntity<List<Crud_Entity>> importSaveEntities(@PathVariable String repositoryType,@RequestParam("file") MultipartFile file) throws IOException {
-        List<Crud_Entity> createdEntities = crudService.save_import_Crud_Entity(repositoryType,file);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdEntities);
+        Optional<List<Crud_Entity>> createdEntities = crudService.save_import_Crud_Entity(repositoryType,file);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdEntities.isPresent() ? createdEntities.get() : List.of());
+    }
+
+    @PostMapping(value ="{repositoryType}/import_save_JDBC_SP",consumes = "multipart/form-data")
+    public ResponseEntity<List<Crud_Entity>> importSaveEntities_JDBC_SP(@PathVariable String repositoryType,@RequestParam("file") MultipartFile file) throws IOException {
+        Optional<List<Crud_Entity>> createdEntities = crudService.save_import_Crud_Entity_JDBC_SP(repositoryType,file);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdEntities.isPresent() ? createdEntities.get() : List.of());
+    }
+
+    @PostMapping(value ="{repositoryType}/import_save_JPA_SP",consumes = "multipart/form-data")
+    public ResponseEntity<List<Crud_Entity>> importSaveEntities_JPA_SP(@PathVariable String repositoryType,@RequestParam("file") MultipartFile file) throws IOException {
+        Optional<List<Crud_Entity>> createdEntities = crudService.save_import_Crud_Entity(repositoryType,file);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdEntities.isPresent() ? createdEntities.get() : List.of());
     }
          
     @GetMapping("{repositoryType}/find/{id}")
@@ -96,6 +108,24 @@ public class CrudController {
     @GetMapping("{repositoryType}/find/name_JPA_SP/{name}")
     public ResponseEntity<?> getEntity_JPA_SP_ByName(@PathVariable String repositoryType,@PathVariable String name) {
         return crudService.find_Crud_Entity_JPA_SP_ByName(repositoryType,name)
+                .map(ResponseEntity::ok)
+                .orElseGet(ResponseEntity.notFound()::build);
+    }
+    @PostMapping("{repositoryType}/find/names")
+    public ResponseEntity<?> getEntityByNames(@PathVariable String repositoryType,@RequestBody List<Crud_Entity> names) {
+        return crudService.find_Crud_EntityByNames(repositoryType,names)
+                .map(ResponseEntity::ok)
+                .orElseGet(ResponseEntity.notFound()::build);
+    }
+    @PostMapping("{repositoryType}/find/names_JDBC_SP")
+    public ResponseEntity<?> getEntity_JDBC_SP_ByName(@PathVariable String repositoryType,@RequestBody List<Crud_Entity> names) {
+        return crudService.find_Crud_Entity_JDBC_SP_ByNames(repositoryType,names)
+                .map(ResponseEntity::ok)
+                .orElseGet(ResponseEntity.notFound()::build);
+    }
+    @PostMapping("{repositoryType}/find/names_JPA_SP")
+    public ResponseEntity<?> getEntity_JPA_SP_ByNames(@PathVariable String repositoryType,@RequestBody List<Crud_Entity> names) {
+        return crudService.find_Crud_Entity_JPA_SP_ByNames(repositoryType,names)
                 .map(ResponseEntity::ok)
                 .orElseGet(ResponseEntity.notFound()::build);
     }

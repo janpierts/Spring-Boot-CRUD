@@ -10,9 +10,11 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Component("inMemoryRepository")
 public class inMemoryRepository implements Crud_RepositoryPort{
@@ -41,19 +43,51 @@ public class inMemoryRepository implements Crud_RepositoryPort{
 
     @Override
     public List<Crud_Entity> save_multi_Crud_Entity(String typeBean, List<Crud_Entity> entityList) {
-        List<Crud_Entity> savedEntities = new ArrayList<>();
-        for (Crud_Entity entity : entityList) {
-            Crud_Entity savedEntity = save_Crud_Entity(typeBean, entity);
-            if (savedEntity != null){
-                savedEntities.add(savedEntity);
-            }
+        HashSet<String> namesSet = entityList.stream()
+                .map(Crud_Entity::getName)
+                .collect(Collectors.toCollection(HashSet::new));
+        List<Crud_Entity> uniqueEntities = entityList.stream()
+                .filter(e -> namesSet.contains(e.getName()))
+                .collect(Collectors.toMap(
+                    Crud_Entity::getName,
+                    e -> e, 
+                    (existing, replacement) -> existing
+                ))
+                .values()
+                .stream()
+                .collect(Collectors.toList());
+        List<String> existingNames = find_Crud_EntityByNames(typeBean, uniqueEntities)
+                .map(list -> list.stream()
+                        .map(Crud_Entity::getName)
+                        .collect(Collectors.toList()))
+                .orElse(new ArrayList<>());
+        List<Crud_Entity> filteredEntities = uniqueEntities.stream()
+                .filter(entity -> !existingNames.contains(entity.getName()))
+                .collect(Collectors.toList());
+        if(filteredEntities.isEmpty()) {
+            return filteredEntities;
         }
-        return savedEntities;
+        for (Crud_Entity entity : filteredEntities) {
+            LocalDateTime now = LocalDateTime.now();
+            entity.setId(nextId++);
+            entity.setCreated(now);
+            entity.setState(true);
+            entities.add(entity);
+        }
+        return filteredEntities;
     }
 
     @Override
     @Transactional
-    public List<Crud_Entity> save_import_Crud_Entity(String typeBean,MultipartFile file) {
+    public Optional<List<Crud_Entity>> save_import_Crud_Entity(String typeBean,MultipartFile file) {
+        List<String> ExtentionsDone = List.of("xls","xlsx");
+        String fileNameInput = file.getOriginalFilename();
+        String [] filenameParts = fileNameInput != null ? fileNameInput.split("\\.") : new String[0];
+        String fileExtention =  filenameParts.length > 1 ? filenameParts[filenameParts.length - 1] : "";
+        if (!ExtentionsDone.contains(fileExtention.toLowerCase())) {
+            throw new RuntimeException("El archivo debe tener una extensión válida: .xls, .xlsx");
+        }
+
         try {
             Function<Row, Crud_Entity> rowMapper = row -> {
                 String name = filesProcessor.getCellValueAsString(row.getCell(0));
@@ -71,7 +105,8 @@ public class inMemoryRepository implements Crud_RepositoryPort{
             if (entitiesFromFile.isEmpty()) {
                 throw new RuntimeException("El archivo Excel está vacío o no tiene el formato correcto");
             }
-            return this.save_multi_Crud_Entity(typeBean, entitiesFromFile);
+            List<Crud_Entity> result = this.save_multi_Crud_Entity(typeBean, entitiesFromFile);
+            return Optional.of(result);            
         } catch (IOException e) {
             throw new RuntimeException("Error al procesar el archivo Excel: " + e.getMessage());
         }
@@ -89,6 +124,16 @@ public class inMemoryRepository implements Crud_RepositoryPort{
         return entities.stream()
                 .filter(e -> e.getName() != null && e.getName().equals(name))
                 .findFirst();
+    }
+
+    @Override
+    public Optional<List<Crud_Entity>> find_Crud_EntityByNames(String typeBean, List<Crud_Entity> names) {
+        List<Crud_Entity> result = entities.stream()
+        .filter(e -> e.getName() != null && 
+                names.stream().anyMatch(n -> n.getName().equals(e.getName())))
+        .collect(Collectors.toList());
+
+        return result.isEmpty() ? Optional.empty() : Optional.of(result);
     }
 
     @Override
@@ -209,5 +254,21 @@ public class inMemoryRepository implements Crud_RepositoryPort{
     @Override
     public List<Crud_Entity> save_multi_Crud_Entity_JPA_SP(String typeBean, List<Crud_Entity> entity) {
         throw new UnsupportedOperationException("Unimplemented method 'save_multi_Crud_Entity_JPA_SP'");
+    }
+    @Override
+    public Optional<List<Crud_Entity>> find_Crud_Entity_JDBC_SP_ByNames(String typeBean, List<Crud_Entity> names) {
+        throw new UnsupportedOperationException("Unimplemented method 'find_Crud_Entity_JDBC_SP_ByNames'");
+    }
+    @Override
+    public Optional<List<Crud_Entity>> find_Crud_Entity_JPA_SP_ByNames(String typeBean, List<Crud_Entity> names) {
+        throw new UnsupportedOperationException("Unimplemented method 'find_Crud_Entity_JPA_SP_ByNames'");
+    }
+    @Override
+    public Optional<List<Crud_Entity>> save_import_Crud_Entity_JDBC_SP(String typeBean, MultipartFile file) {
+        throw new UnsupportedOperationException("Unimplemented method 'save_import_Crud_Entity_JDBC_SP'");
+    }
+    @Override
+    public Optional<List<Crud_Entity>> save_import_Crud_Entity_JPA_SP(String typeBean, MultipartFile file) {
+        throw new UnsupportedOperationException("Unimplemented method 'save_import_Crud_Entity_JPA_SP'");
     }
 }

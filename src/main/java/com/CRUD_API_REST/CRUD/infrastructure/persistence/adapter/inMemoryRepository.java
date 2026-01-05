@@ -10,6 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -42,14 +43,38 @@ public class inMemoryRepository implements Crud_RepositoryPort{
 
     @Override
     public List<Crud_Entity> save_multi_Crud_Entity(String typeBean, List<Crud_Entity> entityList) {
-        List<Crud_Entity> savedEntities = new ArrayList<>();
-        for (Crud_Entity entity : entityList) {
-            Crud_Entity savedEntity = save_Crud_Entity(typeBean, entity);
-            if (savedEntity != null){
-                savedEntities.add(savedEntity);
-            }
+        HashSet<String> namesSet = entityList.stream()
+                .map(Crud_Entity::getName)
+                .collect(Collectors.toCollection(HashSet::new));
+        List<Crud_Entity> uniqueEntities = entityList.stream()
+                .filter(e -> namesSet.contains(e.getName()))
+                .collect(Collectors.toMap(
+                    Crud_Entity::getName,
+                    e -> e, 
+                    (existing, replacement) -> existing
+                ))
+                .values()
+                .stream()
+                .collect(Collectors.toList());
+        List<String> existingNames = find_Crud_EntityByNames(typeBean, uniqueEntities)
+                .map(list -> list.stream()
+                        .map(Crud_Entity::getName)
+                        .collect(Collectors.toList()))
+                .orElse(new ArrayList<>());
+        List<Crud_Entity> filteredEntities = uniqueEntities.stream()
+                .filter(entity -> !existingNames.contains(entity.getName()))
+                .collect(Collectors.toList());
+        if(filteredEntities.isEmpty()) {
+            return filteredEntities;
         }
-        return savedEntities;
+        for (Crud_Entity entity : filteredEntities) {
+            LocalDateTime now = LocalDateTime.now();
+            entity.setId(nextId++);
+            entity.setCreated(now);
+            entity.setState(true);
+            entities.add(entity);
+        }
+        return filteredEntities;
     }
 
     @Override

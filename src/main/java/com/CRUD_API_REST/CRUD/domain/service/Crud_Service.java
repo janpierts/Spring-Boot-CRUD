@@ -62,9 +62,21 @@ public class Crud_Service implements Crud_ServicePort {
     }
 
     @Override
-    public List<Crud_Entity> save_import_Crud_Entity(String typeBean, MultipartFile file){
+    public Optional<List<Crud_Entity>> save_import_Crud_Entity(String typeBean, MultipartFile file){
         Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
         return repositoryPort.save_import_Crud_Entity(typeBean, file);
+    }
+
+    @Override
+    public Optional<List<Crud_Entity>> save_import_Crud_Entity_JDBC_SP(String typeBean, MultipartFile file){
+        Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
+        return repositoryPort.save_import_Crud_Entity_JDBC_SP(typeBean, file);
+    }
+
+    @Override
+    public Optional<List<Crud_Entity>> save_import_Crud_Entity_JPA_SP(String typeBean, MultipartFile file){
+        Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
+        return repositoryPort.save_import_Crud_Entity_JPA_SP(typeBean, file);
     }
 
     @Override

@@ -81,6 +81,11 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
     }
 
     @Override
+    public Optional<List<Crud_Entity>> save_import_Crud_Entity_JDBC_SP(String typeBean, MultipartFile file) {
+        throw new UnsupportedOperationException("Unimplemented method 'save_import_Crud_Entity'");
+    }
+
+    @Override
     public List<Crud_Entity> findAll_Crud_entity_JDBC_SP(String typeBean) {
         String sql = "{call jbAPI_crud_list()}";
         RowMapper<Crud_Entity> rowMapper = (rs, rowNum) -> {
@@ -188,92 +193,78 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
     public Crud_Entity save_Crud_Entity(String typeBean, Crud_Entity entity) {
         throw new UnsupportedOperationException("Unimplemented method 'save_Crud_Entity'");
     }
-
     @Override
     public Crud_Entity save_Crud_Entity_JPA_SP(String typeBean, Crud_Entity entity) {
         throw new UnsupportedOperationException("Unimplemented method 'save_Crud_Entity_JPA_SP'");
     }
-
     @Override
     public Optional<Crud_Entity> find_Crud_EntityById(String typeBean, Long id) {
         throw new UnsupportedOperationException("Unimplemented method 'find_Crud_EntityById'");
     }
-
     @Override
     public Optional<Crud_Entity> find_Crud_Entity_JPA_SP_ById(String typeBean, Long id) {
         throw new UnsupportedOperationException("Unimplemented method 'find_Crud_Entity_JPA_SP_ById'");
     }
-
     @Override
     public List<Crud_Entity> findAll_Crud_entity(String typeBean) {
         throw new UnsupportedOperationException("Unimplemented method 'findAll_Crud_entity'");
     }
-
     @Override
     public List<Crud_Entity> findAll_Crud_entity_JPA_SP(String typeBean) {
         throw new UnsupportedOperationException("Unimplemented method 'findAll_Crud_entity_JPA_SP'");
     }
-
     @Override
     public Crud_Entity update_Crud_Entity(String typeBean, Crud_Entity entity) {
         throw new UnsupportedOperationException("Unimplemented method 'update_Crud_Entity'");
     }
-
     @Override
     public Crud_Entity update_Crud_Entity_JPA_SP(String typeBean, Crud_Entity entity) {
         throw new UnsupportedOperationException("Unimplemented method 'update_Crud_Entity_JPA_SP'");
     }
-
     @Override
     public void delete_Crud_Entity_phisical_ById(String typeBean, Long id) {
         throw new UnsupportedOperationException("Unimplemented method 'delete_Crud_Entity_phisical_ById'");
     }
-
     @Override
     public void delete_Crud_Entity_phisical_JPA_SP_ById(String typeBean, Long id) {
         throw new UnsupportedOperationException("Unimplemented method 'delete_Crud_Entity_phisical_JPA_SP_ById'");
     }
-
     @Override
     public Crud_Entity delete_Crud_Entity_logical_ById(String typeBean, Crud_Entity entity) {
         throw new UnsupportedOperationException("Unimplemented method 'delete_Crud_Entity_logical_ById'");
     }
-
     @Override
     public Crud_Entity delete_Crud_Entity_logical_JPA_SP_ById(String typeBean, Crud_Entity entity) {
         throw new UnsupportedOperationException("Unimplemented method 'delete_Crud_Entity_logical_JPA_SP_ById'");
     }
-
     @Override
     public List<Crud_Entity> save_multi_Crud_Entity(String typeBean, List<Crud_Entity> entity) {
         throw new UnsupportedOperationException("Unimplemented method 'save_multi_Crud_Entity'");
     }
-
     @Override
     public Optional<Crud_Entity> find_Crud_EntityByName(String typeBean, String name) {
         throw new UnsupportedOperationException("Unimplemented method 'find_Crud_EntityByName'");
     }
-
     @Override
-    public List<Crud_Entity> save_import_Crud_Entity(String typeBean, MultipartFile file) {
+    public Optional<List<Crud_Entity>> save_import_Crud_Entity(String typeBean, MultipartFile file) {
         throw new UnsupportedOperationException("Unimplemented method 'save_import_Crud_Entity'");
     }
-    
+    @Override
+    public Optional<List<Crud_Entity>> save_import_Crud_Entity_JPA_SP(String typeBean, MultipartFile file) {
+        throw new UnsupportedOperationException("Unimplemented method 'save_import_Crud_Entity'");
+    }
     @Override
     public Optional<Crud_Entity> find_Crud_Entity_JPA_SP_ByName(String typeBean, String name){
         throw new UnsupportedOperationException("Unimplemented method 'find_Crud_Entity_JPA_SP_ByName'");
     }
-    
     @Override
     public List<Crud_Entity> save_multi_Crud_Entity_JPA_SP(String typeBean, List<Crud_Entity> entityList) {
         throw new UnsupportedOperationException("Unimplemented method 'save_multi_Crud_Entity_JPA_SP'");
     }
-    
     @Override
     public Optional<List<Crud_Entity>> find_Crud_EntityByNames(String typeBean, List<Crud_Entity> names) {
         throw new UnsupportedOperationException("Unimplemented method 'find_Crud_EntityByNames'");
     }
-
     @Override
     public Optional<List<Crud_Entity>> find_Crud_Entity_JPA_SP_ByNames(String typeBean, List<Crud_Entity> names) {
         throw new UnsupportedOperationException("Unimplemented method 'find_Crud_Entity_JPA_SP_ByNames'");

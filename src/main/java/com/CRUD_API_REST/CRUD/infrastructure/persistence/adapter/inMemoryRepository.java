@@ -54,7 +54,7 @@ public class inMemoryRepository implements Crud_RepositoryPort{
 
     @Override
     @Transactional
-    public List<Crud_Entity> save_import_Crud_Entity(String typeBean,MultipartFile file) {
+    public Optional<List<Crud_Entity>> save_import_Crud_Entity(String typeBean,MultipartFile file) {
         List<String> ExtentionsDone = List.of("xls","xlsx");
         String fileNameInput = file.getOriginalFilename();
         String [] filenameParts = fileNameInput != null ? fileNameInput.split("\\.") : new String[0];
@@ -80,7 +80,8 @@ public class inMemoryRepository implements Crud_RepositoryPort{
             if (entitiesFromFile.isEmpty()) {
                 throw new RuntimeException("El archivo Excel está vacío o no tiene el formato correcto");
             }
-            return this.save_multi_Crud_Entity(typeBean, entitiesFromFile);
+            List<Crud_Entity> result = this.save_multi_Crud_Entity(typeBean, entitiesFromFile);
+            return Optional.of(result);            
         } catch (IOException e) {
             throw new RuntimeException("Error al procesar el archivo Excel: " + e.getMessage());
         }
@@ -236,5 +237,13 @@ public class inMemoryRepository implements Crud_RepositoryPort{
     @Override
     public Optional<List<Crud_Entity>> find_Crud_Entity_JPA_SP_ByNames(String typeBean, List<Crud_Entity> names) {
         throw new UnsupportedOperationException("Unimplemented method 'find_Crud_Entity_JPA_SP_ByNames'");
+    }
+    @Override
+    public Optional<List<Crud_Entity>> save_import_Crud_Entity_JDBC_SP(String typeBean, MultipartFile file) {
+        throw new UnsupportedOperationException("Unimplemented method 'save_import_Crud_Entity_JDBC_SP'");
+    }
+    @Override
+    public Optional<List<Crud_Entity>> save_import_Crud_Entity_JPA_SP(String typeBean, MultipartFile file) {
+        throw new UnsupportedOperationException("Unimplemented method 'save_import_Crud_Entity_JPA_SP'");
     }
 }

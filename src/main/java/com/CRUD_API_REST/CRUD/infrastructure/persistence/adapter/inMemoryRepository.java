@@ -55,6 +55,14 @@ public class inMemoryRepository implements Crud_RepositoryPort{
     @Override
     @Transactional
     public List<Crud_Entity> save_import_Crud_Entity(String typeBean,MultipartFile file) {
+        List<String> ExtentionsDone = List.of("xls","xlsx");
+        String fileNameInput = file.getOriginalFilename();
+        String [] filenameParts = fileNameInput != null ? fileNameInput.split("\\.") : new String[0];
+        String fileExtention =  filenameParts.length > 1 ? filenameParts[filenameParts.length - 1] : "";
+        if (!ExtentionsDone.contains(fileExtention.toLowerCase())) {
+            throw new RuntimeException("El archivo debe tener una extensión válida: .xls, .xlsx");
+        }
+
         try {
             Function<Row, Crud_Entity> rowMapper = row -> {
                 String name = filesProcessor.getCellValueAsString(row.getCell(0));

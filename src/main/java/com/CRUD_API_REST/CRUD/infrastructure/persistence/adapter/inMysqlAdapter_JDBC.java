@@ -4,6 +4,8 @@ import java.sql.ResultSet;
 import java.sql.Types;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
@@ -11,6 +13,8 @@ import java.util.List;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import org.apache.poi.ss.usermodel.Row;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
@@ -55,29 +59,40 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
     public List<Crud_Entity> save_multi_Crud_Entity_JDBC_SP(String typeBean, List<Crud_Entity> entityList) {
         String sql = "{ call jbAPI_crud_insert_multi(?) }";
         ObjectMapper objectMapper = new ObjectMapper();
+        HashSet<String> namesSet = entityList.stream()
+                .map(Crud_Entity::getName)
+                .collect(Collectors.toCollection(HashSet::new));
+        List<Crud_Entity> uniqueEntities = entityList.stream()
+                .filter(e -> namesSet.contains(e.getName()))
+                .collect(Collectors.toMap(
+                    Crud_Entity::getName,
+                    e -> e, 
+                    (existing, replacement) -> existing
+                ))
+                .values()
+                .stream()
+                .collect(Collectors.toList());
+        List<String> existingNames = find_Crud_Entity_JDBC_SP_ByNames(typeBean, uniqueEntities)
+                .map(list -> list.stream()
+                        .map(Crud_Entity::getName)
+                        .collect(Collectors.toList()))
+                .orElse(new ArrayList<>());
+        List<Crud_Entity> filteredEntities = uniqueEntities.stream()
+                .filter(entity -> !existingNames.contains(entity.getName()))
+                .collect(Collectors.toList());
+        if(filteredEntities.isEmpty()) {
+            return filteredEntities;
+        }
         try{
-            List<Crud_Entity> UnsavedEntities = new ArrayList<>();
-            for (Crud_Entity entity : entityList) {
-                Optional<Crud_Entity> existingEntityOpt = find_Crud_Entity_JDBC_SP_ByName(typeBean,entity.getName());
-                if (existingEntityOpt.isEmpty()) {
-                    UnsavedEntities.add(entity);
-                }
-            }
-            if (UnsavedEntities.isEmpty()) {
-                return new ArrayList<>();
-            }
-            String jsonEntities = objectMapper.writeValueAsString(UnsavedEntities);
+            String jsonEntities = objectMapper.writeValueAsString(filteredEntities);
             jdbcTemplate.execute(sql, (CallableStatementCallback<Void>) cs -> {
                 cs.setString(1, jsonEntities);
                 cs.execute();
                 return null;
             });
 
-            List<Crud_Entity> savedEntities = new ArrayList<>();
-            for (Crud_Entity entity : UnsavedEntities) {
-                Optional<Crud_Entity> savedEntityOpt = find_Crud_Entity_JDBC_SP_ByName(typeBean, entity.getName());
-                savedEntityOpt.ifPresent(savedEntities::add);
-            }
+            List<Crud_Entity> savedEntities = this.find_Crud_Entity_JDBC_SP_ByNames(typeBean, filteredEntities)
+                    .orElse(new ArrayList<>());
             return savedEntities;
         } catch (Exception e) {
             throw new RuntimeException("Error al insertar las entidades CRUD: " + e.getMessage(), e);

@@ -57,7 +57,6 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
     @Override
     @Transactional
     public List<Crud_Entity> save_multi_Crud_Entity(String typeBean, List<Crud_Entity> entityList) {
-    
         Set<String> namesToValidate = entityList.stream()
             .map(Crud_Entity::getName)
             .collect(Collectors.toSet());
@@ -91,17 +90,30 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
 
     @Override
     public List<Crud_Entity> save_multi_Crud_Entity_JPA_SP(String typeBean, List<Crud_Entity> entityList) {
-        Optional<List<Crud_Entity>> alreadyNames = find_Crud_Entity_JPA_SP_ByNames(typeBean, entityList);
+        Set<String> namesToValidate = entityList.stream()
+            .map(Crud_Entity::getName)
+            .collect(Collectors.toSet());
+        List<Crud_Entity> uniqueEntityList = entityList.stream()
+            .filter(e -> namesToValidate.contains(e.getName()))
+            .collect(Collectors.toMap(
+                Crud_Entity::getName,
+                e -> e,
+                (existing, replacement) -> existing
+            ))
+            .values()
+            .stream()
+            .collect(Collectors.toList());
+        Optional<List<Crud_Entity>> alreadyNames = find_Crud_Entity_JPA_SP_ByNames(typeBean, uniqueEntityList);
         List<Crud_Entity> filteredEntities = null;
         if (alreadyNames.isPresent()) {
             List<String> namesExistentes = alreadyNames.get().stream()
                 .map(Crud_Entity::getName)
                 .toList();
-            filteredEntities = entityList.stream()
+            filteredEntities = uniqueEntityList.stream()
                 .filter(e -> !namesExistentes.contains(e.getName()))
                 .toList();
         }else{
-            filteredEntities = entityList;
+            filteredEntities = uniqueEntityList;
         }
         try {
             StoredProcedureQuery query = entityManager.createNamedStoredProcedureQuery("jbAPI_crud_insert_multi_query");

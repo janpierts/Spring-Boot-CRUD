@@ -10,7 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Set;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -43,9 +43,9 @@ public class inMemoryRepository implements Crud_RepositoryPort{
 
     @Override
     public List<Crud_Entity> save_multi_Crud_Entity(String typeBean, List<Crud_Entity> entityList) {
-        HashSet<String> namesSet = entityList.stream()
+        Set<String> namesSet = entityList.stream()
                 .map(Crud_Entity::getName)
-                .collect(Collectors.toCollection(HashSet::new));
+                .collect(Collectors.toSet()); 
         List<Crud_Entity> uniqueEntities = entityList.stream()
                 .filter(e -> namesSet.contains(e.getName()))
                 .collect(Collectors.toMap(

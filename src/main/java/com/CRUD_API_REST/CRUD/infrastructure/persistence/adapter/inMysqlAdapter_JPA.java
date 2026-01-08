@@ -1,7 +1,6 @@
 package com.CRUD_API_REST.CRUD.infrastructure.persistence.adapter;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -62,22 +61,27 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
         Set<String> namesToValidate = entityList.stream()
             .map(Crud_Entity::getName)
             .collect(Collectors.toSet());
-
+        List<Crud_Entity> uniqueEntityList = entityList.stream()
+            .filter(e -> namesToValidate.contains(e.getName()))
+            .collect(Collectors.toMap(
+                Crud_Entity::getName,
+                e -> e,
+                (existing, replacement) -> existing
+            ))
+            .values()
+            .stream()
+            .collect(Collectors.toList());
         List<CrudEntityJpa> existingEntities = jpaRepository.findByNameIn(namesToValidate);
         Set<String> existingNamesInDB = existingEntities.stream()
             .map(CrudEntityJpa::getName)
             .collect(Collectors.toSet());
-        
-        Set<String> namesAlreadySeenInBatch = new HashSet<>(); 
-        List<CrudEntityJpa> entitiesToSave = entityList.stream()        
+        List<CrudEntityJpa> entitiesToSave = uniqueEntityList.stream()        
             .filter(e -> !existingNamesInDB.contains(e.getName())) 
-            .filter(e -> namesAlreadySeenInBatch.add(e.getName())) 
             .map(e -> {
                 CrudEntityJpa jpa = new CrudEntityJpa(e);
                 return jpa;
             })
             .toList();
-
         List<CrudEntityJpa> savedJpaEntities = jpaRepository.saveAll(entitiesToSave);
         
         return savedJpaEntities.stream()

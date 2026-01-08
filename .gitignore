@@ -34,3 +34,4 @@ build/
 
 ### github/workflows ###
 .github/workflows
+maven.yml

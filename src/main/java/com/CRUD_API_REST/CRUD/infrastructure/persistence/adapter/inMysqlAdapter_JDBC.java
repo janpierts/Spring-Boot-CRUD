@@ -4,8 +4,7 @@ import java.sql.ResultSet;
 import java.sql.Types;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashSet;
-
+import java.util.Set;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
@@ -14,7 +13,6 @@ import java.io.IOException;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
 import org.apache.poi.ss.usermodel.Row;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
@@ -59,9 +57,9 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
     public List<Crud_Entity> save_multi_Crud_Entity_JDBC_SP(String typeBean, List<Crud_Entity> entityList) {
         String sql = "{ call jbAPI_crud_insert_multi(?) }";
         ObjectMapper objectMapper = new ObjectMapper();
-        HashSet<String> namesSet = entityList.stream()
+        Set<String> namesSet = entityList.stream()
                 .map(Crud_Entity::getName)
-                .collect(Collectors.toCollection(HashSet::new));
+                .collect(Collectors.toSet());
         List<Crud_Entity> uniqueEntities = entityList.stream()
                 .filter(e -> namesSet.contains(e.getName()))
                 .collect(Collectors.toMap(
@@ -102,20 +100,21 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
     @Override
     @Transactional
     public Optional<List<Crud_Entity>> save_import_Crud_Entity_JDBC_SP(String typeBean, MultipartFile file) {
-        List<String> ExtentionsDone = List.of("xls","xlsx");
+        List<String> ExtentionsDone = List.of("csv","xls","xlsx");
         String fileNameInput = file.getOriginalFilename();
         String [] filenameParts = fileNameInput != null ? fileNameInput.split("\\.") : new String[0];
-        String fileExtention =  filenameParts.length > 1 ? filenameParts[filenameParts.length - 1] : "";
+        String fileExtention =  filenameParts.length > 1 ? filenameParts[filenameParts.length - 1].toLowerCase() : "";
         if (!ExtentionsDone.contains(fileExtention.toLowerCase())) {
-            throw new RuntimeException("El archivo debe tener una extensión válida: .xls, .xlsx");
+            throw new RuntimeException("El archivo debe tener una extensión válida: .csv, .xls, .xlsx");
         }
         
         try{
             Function<Row, Crud_Entity> rowMapper = row -> {
                 String name = filesProcessor.getCellValueAsString(row.getCell(0));
                 String email = filesProcessor.getCellValueAsString(row.getCell(1));
-                if (name == null || name.trim().isEmpty()) return null;
-                if (email == null || email.trim().isEmpty()) return null;
+                if(name == null || name.isEmpty() || email == null || email.isEmpty()){
+                    return null; 
+                }
             
                 Crud_Entity entity = new Crud_Entity();
                 entity.setName(name.trim());

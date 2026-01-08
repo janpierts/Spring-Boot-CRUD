@@ -80,20 +80,21 @@ public class inMemoryRepository implements Crud_RepositoryPort{
     @Override
     @Transactional
     public Optional<List<Crud_Entity>> save_import_Crud_Entity(String typeBean,MultipartFile file) {
-        List<String> ExtentionsDone = List.of("xls","xlsx");
+        List<String> ExtentionsDone = List.of("csv","xls","xlsx");
         String fileNameInput = file.getOriginalFilename();
         String [] filenameParts = fileNameInput != null ? fileNameInput.split("\\.") : new String[0];
-        String fileExtention =  filenameParts.length > 1 ? filenameParts[filenameParts.length - 1] : "";
+        String fileExtention =  filenameParts.length > 1 ? filenameParts[filenameParts.length - 1].toLowerCase() : "";
         if (!ExtentionsDone.contains(fileExtention.toLowerCase())) {
-            throw new RuntimeException("El archivo debe tener una extensión válida: .xls, .xlsx");
+            throw new RuntimeException("El archivo debe tener una extensión válida: .csv, .xls, .xlsx");
         }
 
         try {
             Function<Row, Crud_Entity> rowMapper = row -> {
                 String name = filesProcessor.getCellValueAsString(row.getCell(0));
                 String email = filesProcessor.getCellValueAsString(row.getCell(1));
-                if (name == null || name.trim().isEmpty()) return null;
-                if (email == null || email.trim().isEmpty()) return null;
+                if(name == null || name.isEmpty() || email == null || email.isEmpty()){
+                    return null; 
+                }
             
                 Crud_Entity entity = new Crud_Entity();
                 entity.setName(name.trim());

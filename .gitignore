@@ -31,7 +31,3 @@ build/
 
 ### VS Code ###
 .vscode/
-
-### github/workflows ###
-.github/workflows
-maven.yml

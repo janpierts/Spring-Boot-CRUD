@@ -28,11 +28,6 @@ public class CrudController {
             return ResponseEntity.badRequest()
             .body(helperEndpoints.buildResponse(-1,e.getMessage(), null, crudEntity));
         }
-        /* -> Generic Version Response
-        Object result = crudServicePort.getAlgo();
-        Crud_Entity createdEntity = crudService.save_Crud_Entity(repositoryType,crudEntity);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdEntity);
-         */
     }
 
     @PostMapping("{repositoryType}/create_JDBC_SP")

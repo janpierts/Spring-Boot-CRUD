@@ -34,9 +34,17 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
 
     @Override
     public Crud_Entity save_Crud_Entity(String typeBean, Crud_Entity entity) {
-        CrudEntityJpa jpaEntity = new CrudEntityJpa(entity); 
-        CrudEntityJpa savedJpaEntity = jpaRepository.save(jpaEntity);
-        return savedJpaEntity.toDomainEntity(); 
+        try{
+            Optional<Crud_Entity> existName = find_Crud_EntityByName(typeBean, entity.getName());
+            if(existName.isPresent()){
+                throw new RuntimeException("El nombre '"+entity.getName()+"' ya existe en la base de datos.");
+            }
+            CrudEntityJpa jpaEntity = new CrudEntityJpa(entity); 
+            CrudEntityJpa savedJpaEntity = jpaRepository.save(jpaEntity);
+            return savedJpaEntity.toDomainEntity(); 
+        }catch(Exception e){
+            throw new RuntimeException(e.getMessage());
+        }
     }
     
     @Override

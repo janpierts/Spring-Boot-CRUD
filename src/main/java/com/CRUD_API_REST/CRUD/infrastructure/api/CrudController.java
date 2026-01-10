@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import com.CRUD_API_REST.CRUD.domain.model.Crud_Entity;
 import com.CRUD_API_REST.CRUD.domain.service.Crud_Service;
+import com.CRUD_API_REST.CRUD.infrastructure.utils.helperEndpoints;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
@@ -19,9 +20,19 @@ public class CrudController {
     }
 
     @PostMapping("{repositoryType}/create")
-    public ResponseEntity<Crud_Entity> createEntity(@PathVariable String repositoryType,@RequestBody Crud_Entity crudEntity) {
-        com.CRUD_API_REST.CRUD.domain.model.Crud_Entity createdEntity = crudService.save_Crud_Entity(repositoryType,crudEntity);
+    public ResponseEntity<?> createEntity(@PathVariable String repositoryType,@RequestBody Crud_Entity crudEntity) {
+        try {
+            Crud_Entity createdEntity = crudService.save_Crud_Entity(repositoryType,crudEntity);
+            return ResponseEntity.ok(helperEndpoints.buildResponse(1, "Registro exitoso", createdEntity, null));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+            .body(helperEndpoints.buildResponse(-1,e.getMessage(), null, crudEntity));
+        }
+        /* -> Generic Version Response
+        Object result = crudServicePort.getAlgo();
+        Crud_Entity createdEntity = crudService.save_Crud_Entity(repositoryType,crudEntity);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdEntity);
+         */
     }
 
     @PostMapping("{repositoryType}/create_JDBC_SP")

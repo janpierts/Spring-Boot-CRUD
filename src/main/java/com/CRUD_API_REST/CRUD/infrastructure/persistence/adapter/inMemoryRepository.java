@@ -25,6 +25,9 @@ public class inMemoryRepository implements Crud_RepositoryPort{
     public Crud_Entity save_Crud_Entity(String typeBean,Crud_Entity entity) {
         if (entity.getId() == null) {
             try{
+                if(entity.getName() == null || entity.getName().isEmpty()) {
+                    throw new RuntimeException("El nombre no puede estar vacío.");
+                }
                 Optional<Crud_Entity> existingEntityOpt = find_Crud_EntityByName(typeBean,entity.getName());
                 if (existingEntityOpt.isEmpty()) {
                     LocalDateTime now = LocalDateTime.now();
@@ -40,18 +43,6 @@ public class inMemoryRepository implements Crud_RepositoryPort{
             } catch(Exception e){
                 throw new RuntimeException(e.getMessage());
             }
-           // Optional<Crud_Entity> existingEntityOpt = find_Crud_EntityByName(typeBean,entity.getName());
-            //if (existingEntityOpt.isEmpty()) {
-            //    LocalDateTime now = LocalDateTime.now();
-            //    entity.setId(nextId++);
-            //    entity.setCreated(now);
-            //    entity.setState(true);
-            //    entities.add(entity);
-            //    return entity;
-            //}
-            //else {
-            //    throw new RuntimeException("Error al guardar: el nombre ya existe.");
-            //}
         } else {
             return update_Crud_Entity(typeBean,entity); 
         }

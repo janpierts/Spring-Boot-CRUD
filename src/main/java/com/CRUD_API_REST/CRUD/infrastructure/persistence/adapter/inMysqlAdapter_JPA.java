@@ -35,6 +35,9 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
     @Override
     public Crud_Entity save_Crud_Entity(String typeBean, Crud_Entity entity) {
         try{
+            if(entity.getName() == null || entity.getName().isEmpty()) {
+                throw new RuntimeException("El nombre no puede estar vacío.");
+            }
             Optional<Crud_Entity> existName = find_Crud_EntityByName(typeBean, entity.getName());
             if(existName.isPresent()){
                 throw new RuntimeException("El nombre '"+entity.getName()+"' ya existe en la base de datos.");
@@ -49,22 +52,32 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
     
     @Override
     public Crud_Entity save_Crud_Entity_JPA_SP(String typeBean, Crud_Entity entity) {
-       
-        StoredProcedureQuery query = entityManager.createNamedStoredProcedureQuery("jbAPI_crud_insert_query");
-        query.setParameter("p_name", entity.getName());
-        query.setParameter("p_email", entity.getEmail());
-        query.execute();
-        Long generatedId = (Long) query.getOutputParameterValue("p_id");
-        Timestamp createdTimestamp = (Timestamp) query.getOutputParameterValue("p_created"); 
-        entity.setId(generatedId);
-    
-        if (createdTimestamp != null) {
-            entity.setCreated(createdTimestamp.toLocalDateTime());
-        } else {
-            entity.setCreated(LocalDateTime.now());
+        try{
+            if(entity.getName() == null || entity.getName().isEmpty()) {
+                throw new RuntimeException("El nombre no puede estar vacío.");
+            }
+            StoredProcedureQuery query = entityManager.createNamedStoredProcedureQuery("jbAPI_crud_insert_query");
+            query.setParameter("p_name", entity.getName());
+            query.setParameter("p_email", entity.getEmail());
+            Optional<Crud_Entity> existName = find_Crud_Entity_JPA_SP_ByName(typeBean, entity.getName());
+            if(existName.isPresent()){
+                throw new RuntimeException("El nombre '"+entity.getName()+"' ya existe en la base de datos.");
+            }
+            query.execute();
+            Long generatedId = (Long) query.getOutputParameterValue("p_id");
+            Timestamp createdTimestamp = (Timestamp) query.getOutputParameterValue("p_created"); 
+            entity.setId(generatedId);
+        
+            if (createdTimestamp != null) {
+                entity.setCreated(createdTimestamp.toLocalDateTime());
+            } else {
+                entity.setCreated(LocalDateTime.now());
+            }
+            entity.setState(true);
+            return entity;   
+        }catch(Exception e){
+            throw new RuntimeException(e.getMessage());
         }
-        entity.setState(true);
-        return entity;   
     }
     
     @Override

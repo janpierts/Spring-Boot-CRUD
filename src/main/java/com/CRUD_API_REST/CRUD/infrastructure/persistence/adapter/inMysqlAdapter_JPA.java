@@ -83,7 +83,38 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
     @Override
     @Transactional
     public List<Crud_Entity> save_multi_Crud_Entity(String typeBean, List<Crud_Entity> entityList) {
-        Set<String> namesToValidate = entityList.stream()
+        List<Crud_Entity> entitiesToSave = entityList.stream()
+            .filter(e -> e.getName() != null && !e.getName().isEmpty())
+            .collect(Collectors.toList());
+        try {
+            if (entitiesToSave.isEmpty()) {
+                throw new RuntimeException("La lista de entidades a guardar está vacía o no tiene nombres válidos.");
+            }
+            List<String> namesToValidate = entitiesToSave.stream()
+                .map(Crud_Entity::getName)
+                .collect(Collectors.toList());
+            List<CrudEntityJpa> existingEntities = jpaRepository.findByNameIn(namesToValidate);
+            Set<String> existingNamesInDB = existingEntities.stream()
+                .map(CrudEntityJpa::getName)
+                .collect(Collectors.toSet());
+            List<CrudEntityJpa> filteredEntities = entitiesToSave.stream()
+                .filter(e -> !existingNamesInDB.contains(e.getName()))
+                .map(e -> new CrudEntityJpa(e))
+                .collect(Collectors.toList());
+
+            if(filteredEntities.isEmpty()) {
+                throw new RuntimeException("Ninguna entidad para guardar después de filtrar los nombres existentes en base de datos.");
+            }
+            List<CrudEntityJpa> savedJpaEntities = jpaRepository.saveAll(filteredEntities);
+
+            return savedJpaEntities.stream()
+                .map(CrudEntityJpa::toDomainEntity)
+                .toList();
+        } catch(Exception e){
+            throw new RuntimeException(e.getMessage());
+        }
+
+        /* Set<String> namesToValidate = entityList.stream()
             .map(Crud_Entity::getName)
             .collect(Collectors.toSet());
         List<Crud_Entity> uniqueEntityList = entityList.stream()
@@ -111,7 +142,7 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
         
         return savedJpaEntities.stream()
             .map(CrudEntityJpa::toDomainEntity)
-            .toList();
+            .toList(); */
     }
 
     @Override

@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -26,11 +27,13 @@ public class helperEndpoints {
                 ));
     }
 
-    public static <T> List<T> getDifference(List<T> listA, List<T> listB) {
-        Set<T> setB = new HashSet<>(listB);
-
+    public static <T, R> List<T> getDifference(List<T> listA, List<T> listB, Function<? super T, ? extends R> keyExtractor) {
+        Set<R> setB = listB.stream()
+            .map(keyExtractor)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toSet());
         return listA.stream()
-                .filter(element -> !setB.contains(element))
+                .filter(element -> !setB.contains(keyExtractor.apply(element)))
                 .toList();
     }
 }

@@ -67,12 +67,12 @@ public class CrudController {
             if(createdEntities.size() == 0){
                 state = -1;
             }else{
-                diffEntities = helperEndpoints.getDifference(splitList.getOrDefault("successBody", List.of()), createdEntities);
+                diffEntities = helperEndpoints.getDifference(splitList.getOrDefault("successBody", List.of()),createdEntities,Crud_Entity::getName);
                 state = diffEntities.isEmpty() && state == 1 ? 1 : 0;
             }
             List<Crud_Entity> duplicaList = splitList.getOrDefault("errorBody", List.of()); 
             errorEntities = duplicaList;
-            if(diffEntities != null && !diffEntities.isEmpty()){
+            if(diffEntities!=null && diffEntities.size()>0){
                 errorEntities.addAll(diffEntities);
             }    
             if(state == 1){

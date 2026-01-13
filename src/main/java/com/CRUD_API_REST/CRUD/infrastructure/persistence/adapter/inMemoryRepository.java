@@ -10,7 +10,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Set;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -25,6 +24,9 @@ public class inMemoryRepository implements Crud_RepositoryPort{
     public Crud_Entity save_Crud_Entity(String typeBean,Crud_Entity entity) {
         if (entity.getId() == null) {
             try{
+                if(entity.getName() == null || entity.getName().isEmpty()) {
+                    throw new RuntimeException("El nombre no puede estar vacío.");
+                }
                 Optional<Crud_Entity> existingEntityOpt = find_Crud_EntityByName(typeBean,entity.getName());
                 if (existingEntityOpt.isEmpty()) {
                     LocalDateTime now = LocalDateTime.now();
@@ -40,18 +42,6 @@ public class inMemoryRepository implements Crud_RepositoryPort{
             } catch(Exception e){
                 throw new RuntimeException(e.getMessage());
             }
-           // Optional<Crud_Entity> existingEntityOpt = find_Crud_EntityByName(typeBean,entity.getName());
-            //if (existingEntityOpt.isEmpty()) {
-            //    LocalDateTime now = LocalDateTime.now();
-            //    entity.setId(nextId++);
-            //    entity.setCreated(now);
-            //    entity.setState(true);
-            //    entities.add(entity);
-            //    return entity;
-            //}
-            //else {
-            //    throw new RuntimeException("Error al guardar: el nombre ya existe.");
-            //}
         } else {
             return update_Crud_Entity(typeBean,entity); 
         }
@@ -59,38 +49,37 @@ public class inMemoryRepository implements Crud_RepositoryPort{
 
     @Override
     public List<Crud_Entity> save_multi_Crud_Entity(String typeBean, List<Crud_Entity> entityList) {
-        Set<String> namesSet = entityList.stream()
-                .map(Crud_Entity::getName)
-                .collect(Collectors.toSet()); 
-        List<Crud_Entity> uniqueEntities = entityList.stream()
-                .filter(e -> namesSet.contains(e.getName()))
-                .collect(Collectors.toMap(
-                    Crud_Entity::getName,
-                    e -> e, 
-                    (existing, replacement) -> existing
-                ))
-                .values()
-                .stream()
+        List<Crud_Entity> entitiesToSave = entityList.stream()
+                .filter(e -> e.getName() != null && !e.getName().isEmpty())
                 .collect(Collectors.toList());
-        List<String> existingNames = find_Crud_EntityByNames(typeBean, uniqueEntities)
+        try {
+            if (entitiesToSave.isEmpty()) {
+                throw new RuntimeException("La lista de entidades a guardar está vacía o no tiene nombres válidos.");
+            }
+            List<String> existingNames = find_Crud_EntityByNames(typeBean, entitiesToSave)
                 .map(list -> list.stream()
                         .map(Crud_Entity::getName)
                         .collect(Collectors.toList()))
                 .orElse(new ArrayList<>());
-        List<Crud_Entity> filteredEntities = uniqueEntities.stream()
+                
+            List<Crud_Entity> filteredEntities = entitiesToSave.stream()
                 .filter(entity -> !existingNames.contains(entity.getName()))
                 .collect(Collectors.toList());
-        if(filteredEntities.isEmpty()) {
+            
+            if(filteredEntities.isEmpty()) {
+                throw new RuntimeException("Ninguna entidad para guardar después de filtrar los nombres existentes en base de datos.");
+            }
+            for (Crud_Entity entity : filteredEntities) {
+                LocalDateTime now = LocalDateTime.now();
+                entity.setId(nextId++);
+                entity.setCreated(now);
+                entity.setState(true);
+                entities.add(entity);
+            }
             return filteredEntities;
+        } catch(Exception e){
+            throw new RuntimeException(e.getMessage());
         }
-        for (Crud_Entity entity : filteredEntities) {
-            LocalDateTime now = LocalDateTime.now();
-            entity.setId(nextId++);
-            entity.setCreated(now);
-            entity.setState(true);
-            entities.add(entity);
-        }
-        return filteredEntities;
     }
 
     @Override

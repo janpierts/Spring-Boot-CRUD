@@ -36,6 +36,13 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
     public Crud_Entity save_Crud_Entity_JDBC_SP (String typeBean,Crud_Entity entity) {
         String sql = "{ call jbAPI_crud_insert(?,?,?,?) }";        
         try {
+            if(entity.getName() == null || entity.getName().isEmpty()) {
+                throw new RuntimeException("El nombre no puede estar vacío.");
+            }
+            Optional<Crud_Entity> existingEntityOpt = find_Crud_Entity_JDBC_SP_ByName(typeBean,entity.getName());
+            if (existingEntityOpt.isPresent()) {
+                throw new RuntimeException("Error al guardar: el nombre ya existe.");
+            }
             jdbcTemplate.execute(sql, (CallableStatementCallback<Long>) cs -> {
                 cs.setString(1, entity.getName());
                 cs.setString(2, entity.getEmail());
@@ -48,7 +55,7 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
                 return entity.getId();
             });
         } catch (DataAccessException e) {
-            throw new RuntimeException("Error al insertar la entidad CRUD: " + e.getMessage(), e);
+            throw new RuntimeException(e.getMessage());
         }
         return entity;
     }

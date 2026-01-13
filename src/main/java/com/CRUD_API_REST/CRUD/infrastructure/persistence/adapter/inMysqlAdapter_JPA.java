@@ -35,6 +35,9 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
     @Override
     public Crud_Entity save_Crud_Entity(String typeBean, Crud_Entity entity) {
         try{
+            if(entity.getName() == null || entity.getName().isEmpty()) {
+                throw new RuntimeException("El nombre no puede estar vacío.");
+            }
             Optional<Crud_Entity> existName = find_Crud_EntityByName(typeBean, entity.getName());
             if(existName.isPresent()){
                 throw new RuntimeException("El nombre '"+entity.getName()+"' ya existe en la base de datos.");
@@ -49,28 +52,69 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
     
     @Override
     public Crud_Entity save_Crud_Entity_JPA_SP(String typeBean, Crud_Entity entity) {
-       
-        StoredProcedureQuery query = entityManager.createNamedStoredProcedureQuery("jbAPI_crud_insert_query");
-        query.setParameter("p_name", entity.getName());
-        query.setParameter("p_email", entity.getEmail());
-        query.execute();
-        Long generatedId = (Long) query.getOutputParameterValue("p_id");
-        Timestamp createdTimestamp = (Timestamp) query.getOutputParameterValue("p_created"); 
-        entity.setId(generatedId);
-    
-        if (createdTimestamp != null) {
-            entity.setCreated(createdTimestamp.toLocalDateTime());
-        } else {
-            entity.setCreated(LocalDateTime.now());
+        try{
+            if(entity.getName() == null || entity.getName().isEmpty()) {
+                throw new RuntimeException("El nombre no puede estar vacío.");
+            }
+            StoredProcedureQuery query = entityManager.createNamedStoredProcedureQuery("jbAPI_crud_insert_query");
+            query.setParameter("p_name", entity.getName());
+            query.setParameter("p_email", entity.getEmail());
+            Optional<Crud_Entity> existName = find_Crud_Entity_JPA_SP_ByName(typeBean, entity.getName());
+            if(existName.isPresent()){
+                throw new RuntimeException("El nombre '"+entity.getName()+"' ya existe en la base de datos.");
+            }
+            query.execute();
+            Long generatedId = (Long) query.getOutputParameterValue("p_id");
+            Timestamp createdTimestamp = (Timestamp) query.getOutputParameterValue("p_created"); 
+            entity.setId(generatedId);
+        
+            if (createdTimestamp != null) {
+                entity.setCreated(createdTimestamp.toLocalDateTime());
+            } else {
+                entity.setCreated(LocalDateTime.now());
+            }
+            entity.setState(true);
+            return entity;   
+        }catch(Exception e){
+            throw new RuntimeException(e.getMessage());
         }
-        entity.setState(true);
-        return entity;   
     }
     
     @Override
     @Transactional
     public List<Crud_Entity> save_multi_Crud_Entity(String typeBean, List<Crud_Entity> entityList) {
-        Set<String> namesToValidate = entityList.stream()
+        List<Crud_Entity> entitiesToSave = entityList.stream()
+            .filter(e -> e.getName() != null && !e.getName().isEmpty())
+            .collect(Collectors.toList());
+        try {
+            if (entitiesToSave.isEmpty()) {
+                throw new RuntimeException("La lista de entidades a guardar está vacía o no tiene nombres válidos.");
+            }
+            List<String> namesToValidate = entitiesToSave.stream()
+                .map(Crud_Entity::getName)
+                .collect(Collectors.toList());
+            List<CrudEntityJpa> existingEntities = jpaRepository.findByNameIn(namesToValidate);
+            Set<String> existingNamesInDB = existingEntities.stream()
+                .map(CrudEntityJpa::getName)
+                .collect(Collectors.toSet());
+            List<CrudEntityJpa> filteredEntities = entitiesToSave.stream()
+                .filter(e -> !existingNamesInDB.contains(e.getName()))
+                .map(e -> new CrudEntityJpa(e))
+                .collect(Collectors.toList());
+
+            if(filteredEntities.isEmpty()) {
+                throw new RuntimeException("Ninguna entidad para guardar después de filtrar los nombres existentes en base de datos.");
+            }
+            List<CrudEntityJpa> savedJpaEntities = jpaRepository.saveAll(filteredEntities);
+
+            return savedJpaEntities.stream()
+                .map(CrudEntityJpa::toDomainEntity)
+                .toList();
+        } catch(Exception e){
+            throw new RuntimeException(e.getMessage());
+        }
+
+        /* Set<String> namesToValidate = entityList.stream()
             .map(Crud_Entity::getName)
             .collect(Collectors.toSet());
         List<Crud_Entity> uniqueEntityList = entityList.stream()
@@ -98,7 +142,7 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
         
         return savedJpaEntities.stream()
             .map(CrudEntityJpa::toDomainEntity)
-            .toList();
+            .toList(); */
     }
 
     @Override

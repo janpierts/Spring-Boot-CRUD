@@ -6,10 +6,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import com.CRUD_API_REST.CRUD.domain.model.Crud_Entity;
 import com.CRUD_API_REST.CRUD.domain.service.Crud_Service;
-import com.CRUD_API_REST.CRUD.infrastructure.utils.helperEndpoints;
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -21,82 +19,38 @@ public class CrudController {
     }
 
     @PostMapping("{repositoryType}/create")
-    public ResponseEntity<?> createEntity(@PathVariable String repositoryType,@RequestBody Crud_Entity crudEntity) {
-        try {
-            Crud_Entity createdEntity = crudService.save_Crud_Entity(repositoryType,crudEntity);
-            return ResponseEntity.ok(helperEndpoints.buildResponse(1, "Registro exitoso", createdEntity, null));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest()
-            .body(helperEndpoints.buildResponse(-1,e.getMessage(), null, crudEntity));
-        }
+    public ResponseEntity<Object> createEntity(@PathVariable String repositoryType,@RequestBody Crud_Entity crudEntity) {
+        Object createdEntity = crudService.save_Crud_Entity(repositoryType,crudEntity);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdEntity);
     }
 
     @PostMapping("{repositoryType}/create_JDBC_SP")
-    public ResponseEntity<?> createEntity_JDBC_SP(@PathVariable String repositoryType,@RequestBody Crud_Entity crudEntity) {
-        try{
-            Crud_Entity createdEntity = crudService.save_Crud_Entity_JDBC_SP(repositoryType,crudEntity);
-            return ResponseEntity.ok(helperEndpoints.buildResponse(1, "Registro exitoso", createdEntity, null));
-        }catch(Exception e){
-            return ResponseEntity.badRequest()
-            .body(helperEndpoints.buildResponse(-1,e.getMessage(), null, crudEntity));
-        }
+    public ResponseEntity<Object> createEntity_JDBC_SP(@PathVariable String repositoryType,@RequestBody Crud_Entity crudEntity) {
+        Object createdEntity = crudService.save_Crud_Entity_JDBC_SP(repositoryType,crudEntity);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdEntity);
     }
 
     @PostMapping("{repositoryType}/create_JPA_SP")
-    public ResponseEntity<?> createEntity_JPA_SP(@PathVariable String repositoryType,@RequestBody Crud_Entity crudEntity) {
-        try{
-            Crud_Entity createdEntity = crudService.save_Crud_Entity_JPA_SP(repositoryType,crudEntity);
-            return ResponseEntity.ok(helperEndpoints.buildResponse(1, "Registro exitoso", createdEntity, null));
-        }catch(Exception e){
-            return ResponseEntity.badRequest()
-            .body(helperEndpoints.buildResponse(-1, e.getMessage(), null, crudEntity));
-        }
+    public ResponseEntity<Object> createEntity_JPA_SP(@PathVariable String repositoryType,@RequestBody Crud_Entity crudEntity) {
+        Object createdEntity = crudService.save_Crud_Entity_JPA_SP(repositoryType,crudEntity);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdEntity);
     }
 
     @PostMapping("{repositoryType}/create_multiple")
-    public ResponseEntity<?> createMultipleEntities(@PathVariable String repositoryType,@RequestBody List<Crud_Entity> crudEntities) {
-        Map<String, List<Crud_Entity>> splitList = helperEndpoints.splitByDuplicates(crudEntities, Crud_Entity::getName);
-        try{
-            int state = -1;
-            List<Crud_Entity> diffEntities = null;
-            List<Crud_Entity> errorEntities = null;
-            if(splitList.getOrDefault("errorBody", List.of()).isEmpty()){
-                state = 1;
-            }
-            List<Crud_Entity> createdEntities = crudService.save_multi_Crud_Entity(repositoryType,splitList.getOrDefault("successBody", List.of()));
-            if(createdEntities.size() == 0){
-                state = -1;
-            }else{
-                diffEntities = helperEndpoints.getDifference(splitList.getOrDefault("successBody", List.of()),createdEntities,Crud_Entity::getName);
-                state = diffEntities.isEmpty() && state == 1 ? 1 : 0;
-            }
-            List<Crud_Entity> duplicaList = splitList.getOrDefault("errorBody", List.of()); 
-            errorEntities = duplicaList;
-            if(diffEntities!=null && diffEntities.size()>0){
-                errorEntities.addAll(diffEntities);
-            }    
-            if(state == 1){
-                return ResponseEntity.ok(helperEndpoints.buildResponse(state, "Registros exitosos", createdEntities, null));
-            }else if(state == 0){
-                return ResponseEntity.ok(helperEndpoints.buildResponse(state, "Algunos registros no se pudieron crear por duplicados y/o vacios", createdEntities, errorEntities));
-            }else{
-                throw new RuntimeException("Ningun registro fue creado"); 
-            }
-        }catch(Exception e){
-            return ResponseEntity.badRequest()
-            .body(helperEndpoints.buildResponse(-1, e.getMessage(), null, crudEntities));
-        }
+    public ResponseEntity<Object> createMultipleEntities(@PathVariable String repositoryType,@RequestBody List<Crud_Entity> crudEntities) {
+        Object createdEntities = crudService.save_multi_Crud_Entity(repositoryType,crudEntities);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdEntities);
     }
 
     @PostMapping("{repositoryType}/create_multiple_JDBC_SP")
-    public ResponseEntity<List<Crud_Entity>> createMultipleEntities_JDBC_SP(@PathVariable String repositoryType,@RequestBody List<Crud_Entity> crudEntities) {
-        List<Crud_Entity> createdEntities = crudService.save_multi_Crud_Entity_JDBC_SP(repositoryType,crudEntities);
+    public ResponseEntity<Object> createMultipleEntities_JDBC_SP(@PathVariable String repositoryType,@RequestBody List<Crud_Entity> crudEntities) {
+        Object createdEntities = crudService.save_multi_Crud_Entity_JDBC_SP(repositoryType,crudEntities);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdEntities);
     }
 
     @PostMapping("{repositoryType}/create_multiple_JPA_SP")
-    public ResponseEntity<List<Crud_Entity>> createMultipleEntities_JPA_SP(@PathVariable String repositoryType,@RequestBody List<Crud_Entity> crudEntities) {
-        List<Crud_Entity> createdEntities = crudService.save_multi_Crud_Entity_JPA_SP(repositoryType,crudEntities);
+    public ResponseEntity<Object> createMultipleEntities_JPA_SP(@PathVariable String repositoryType,@RequestBody List<Crud_Entity> crudEntities) {
+        Object createdEntities = crudService.save_multi_Crud_Entity_JPA_SP(repositoryType,crudEntities);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdEntities);
     }
 

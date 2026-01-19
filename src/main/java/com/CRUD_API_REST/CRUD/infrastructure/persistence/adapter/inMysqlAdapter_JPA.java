@@ -33,7 +33,7 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
     }
 
     @Override
-    public Crud_Entity save_Crud_Entity(String typeBean, Crud_Entity entity) {
+    public Object save_Crud_Entity(String typeBean, Crud_Entity entity) {
         try{
             if(entity.getName() == null || entity.getName().isEmpty()) {
                 throw new RuntimeException("El nombre no puede estar vacío.");
@@ -51,7 +51,7 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
     }
     
     @Override
-    public Crud_Entity save_Crud_Entity_JPA_SP(String typeBean, Crud_Entity entity) {
+    public Object save_Crud_Entity_JPA_SP(String typeBean, Crud_Entity entity) {
         try{
             if(entity.getName() == null || entity.getName().isEmpty()) {
                 throw new RuntimeException("El nombre no puede estar vacío.");
@@ -113,36 +113,6 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
         } catch(Exception e){
             throw new RuntimeException(e.getMessage());
         }
-
-        /* Set<String> namesToValidate = entityList.stream()
-            .map(Crud_Entity::getName)
-            .collect(Collectors.toSet());
-        List<Crud_Entity> uniqueEntityList = entityList.stream()
-            .filter(e -> namesToValidate.contains(e.getName()))
-            .collect(Collectors.toMap(
-                Crud_Entity::getName,
-                e -> e,
-                (existing, replacement) -> existing
-            ))
-            .values()
-            .stream()
-            .collect(Collectors.toList());
-        List<CrudEntityJpa> existingEntities = jpaRepository.findByNameIn(namesToValidate);
-        Set<String> existingNamesInDB = existingEntities.stream()
-            .map(CrudEntityJpa::getName)
-            .collect(Collectors.toSet());
-        List<CrudEntityJpa> entitiesToSave = uniqueEntityList.stream()        
-            .filter(e -> !existingNamesInDB.contains(e.getName())) 
-            .map(e -> {
-                CrudEntityJpa jpa = new CrudEntityJpa(e);
-                return jpa;
-            })
-            .toList();
-        List<CrudEntityJpa> savedJpaEntities = jpaRepository.saveAll(entitiesToSave);
-        
-        return savedJpaEntities.stream()
-            .map(CrudEntityJpa::toDomainEntity)
-            .toList(); */
     }
 
     @Override

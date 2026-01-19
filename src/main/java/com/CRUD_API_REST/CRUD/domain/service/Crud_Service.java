@@ -3,6 +3,8 @@ package com.CRUD_API_REST.CRUD.domain.service;
 import com.CRUD_API_REST.CRUD.domain.model.Crud_Entity;
 import com.CRUD_API_REST.CRUD.domain.ports.in.Crud_ServicePort;
 import com.CRUD_API_REST.CRUD.domain.ports.out.Crud_RepositoryPort;
+import com.CRUD_API_REST.CRUD.infrastructure.utils.helperEndpoints;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -26,39 +28,185 @@ public class Crud_Service implements Crud_ServicePort {
     }
 
     @Override
-    public Crud_Entity save_Crud_Entity(String typeBean, Crud_Entity entity) {
-        Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
-        return repositoryPort.save_Crud_Entity(typeBean, entity);
+    public Object save_Crud_Entity(String typeBean, Crud_Entity entity) {
+        try{
+            if(entity.getName() == null || entity.getName().trim().isEmpty()){
+                throw new IllegalArgumentException("El nombre no puede ser nulo o vacío");
+            }
+            Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
+            Object result = repositoryPort.save_Crud_Entity(typeBean, entity);
+            //return repositoryPort.save_Crud_Entity(typeBean, entity);
+
+            return helperEndpoints.buildResponse(1, "Registro exitoso", result, null);
+        }catch(IllegalArgumentException e){
+            return helperEndpoints.buildResponse(-1, e.getMessage(), null, entity);
+        }catch(Exception e){
+            //return repositoryPort.save_Crud_Entity(typeBean, entity);
+            return helperEndpoints.buildResponse(-1, e.getMessage(), null, entity);
+        }
     }
 
     @Override
-    public Crud_Entity save_Crud_Entity_JDBC_SP(String typeBean, Crud_Entity entity) {
+    public Object save_Crud_Entity_JDBC_SP(String typeBean, Crud_Entity entity) {
+        try{
+            if(entity.getName() == null || entity.getName().trim().isEmpty()){
+                throw new IllegalArgumentException("El nombre no puede ser nulo o vacío");
+            }
+            Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
+            Object result = repositoryPort.save_Crud_Entity_JDBC_SP(typeBean, entity);
+
+            return helperEndpoints.buildResponse(1, "Registro exitoso", result, null);
+        }catch(IllegalArgumentException e){
+            return helperEndpoints.buildResponse(-1, e.getMessage(), null, entity);
+        }catch(Exception e){
+            return helperEndpoints.buildResponse(-1, e.getMessage(), null, entity);
+        }
+        /*
         Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
         return repositoryPort.save_Crud_Entity_JDBC_SP(typeBean, entity);
+        */
     }
 
     @Override
-    public Crud_Entity save_Crud_Entity_JPA_SP(String typeBean, Crud_Entity entity) {
+    public Object save_Crud_Entity_JPA_SP(String typeBean, Crud_Entity entity) {
+        try{
+            if(entity.getName() == null || entity.getName().trim().isEmpty()){
+                throw new RuntimeException("El nombre no puede ser nulo o vacío");
+            }
+            Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
+            Object result = repositoryPort.save_Crud_Entity_JPA_SP(typeBean, entity);
+
+            return helperEndpoints.buildResponse(1, "Registro exitoso", result, null);
+        //}catch(IllegalArgumentException e){
+        //    return helperEndpoints.buildResponse(-1, e.getMessage(), null, entity);
+        }catch(Exception e){
+            return helperEndpoints.buildResponse(-1, e.getMessage(), null, entity);
+        }
+        /*
         Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
         return repositoryPort.save_Crud_Entity_JPA_SP(typeBean, entity);
+        */
     }
 
     @Override
-    public List<Crud_Entity> save_multi_Crud_Entity(String typeBean, List<Crud_Entity> entityList) {
-        Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
-        return repositoryPort.save_multi_Crud_Entity(typeBean, entityList);
+    public Object save_multi_Crud_Entity(String typeBean, List<Crud_Entity> entityList) {
+        int state = -1;
+        try{
+            if(entityList == null || entityList.isEmpty()){
+                throw new RuntimeException("Ningun dato para procesar"); 
+            }
+            Map<String, List<Crud_Entity>> splitListMap = helperEndpoints.splitByDuplicates(entityList, Crud_Entity::getName);
+            List<Crud_Entity> uniqueEntities = splitListMap.getOrDefault("successBody", List.of());
+            List<Crud_Entity> ErrorEntities = splitListMap.getOrDefault("errorBody", new ArrayList<>());
+            if(ErrorEntities == null){
+                ErrorEntities = new ArrayList<>();
+            }
+            Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
+            if(ErrorEntities == null || ErrorEntities.isEmpty()){
+                state = 1;
+            }
+            Object result = repositoryPort.save_multi_Crud_Entity(typeBean, uniqueEntities);
+            if(result instanceof List<?>){
+                @SuppressWarnings("unchecked")
+                List<Crud_Entity> resultList = (List<Crud_Entity>) result;
+                List<Crud_Entity> diffEntities = helperEndpoints.getDifference(uniqueEntities, resultList, Crud_Entity::getName);
+                if(diffEntities!=null && diffEntities.size()>0){
+                    state = 0;
+                    ErrorEntities.addAll(diffEntities);
+                }else{
+                    state = state == -1 ? 0 : state;
+                }
+                return helperEndpoints.buildResponse(state, state == 0 ? "Algunos registros no se pudieron guardar" : "Todos los registros guardados exitosamente", resultList, state == 0 ? ErrorEntities : null);
+            }else{
+                state = -1;
+                throw new RuntimeException("Error al guardar los datos, no se guardó ningun registro");
+            }
+        }catch(Exception e){
+            return helperEndpoints.buildResponse(state, e.getMessage(), null, entityList);
+        }
+
+        /* Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
+        return repositoryPort.save_multi_Crud_Entity(typeBean, entityList); */
     }
 
     @Override
-    public List<Crud_Entity> save_multi_Crud_Entity_JDBC_SP(String typeBean, List<Crud_Entity> entityList) {
-        Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
-        return repositoryPort.save_multi_Crud_Entity_JDBC_SP(typeBean, entityList);
+    public Object save_multi_Crud_Entity_JDBC_SP(String typeBean, List<Crud_Entity> entityList) {
+        int state = -1;
+        try{
+            if(entityList == null || entityList.isEmpty()){
+                throw new RuntimeException("Ningun dato para procesar"); 
+            }
+            Map<String, List<Crud_Entity>> splitListMap = helperEndpoints.splitByDuplicates(entityList, Crud_Entity::getName);
+            List<Crud_Entity> uniqueEntities = splitListMap.getOrDefault("successBody", List.of());
+            List<Crud_Entity> ErrorEntities = splitListMap.getOrDefault("errorBody", new ArrayList<>());
+            if(ErrorEntities == null){
+                ErrorEntities = new ArrayList<>();
+            }
+            Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
+            if(ErrorEntities == null || ErrorEntities.isEmpty()){
+                state = 1;
+            }
+            Object result = repositoryPort.save_multi_Crud_Entity_JDBC_SP(typeBean, uniqueEntities);
+            if(result instanceof List<?>){
+                @SuppressWarnings("unchecked")
+                List<Crud_Entity> resultList = (List<Crud_Entity>) result;
+                List<Crud_Entity> diffEntities = helperEndpoints.getDifference(uniqueEntities, resultList, Crud_Entity::getName);
+                if(diffEntities!=null && diffEntities.size()>0){
+                    state = 0;
+                    ErrorEntities.addAll(diffEntities);
+                }else{
+                    state = state == -1 ? 0 : state;
+                }
+                return helperEndpoints.buildResponse(state, state == 0 ? "Algunos registros no se pudieron guardar" : "Todos los registros guardados exitosamente", resultList, state == 0 ? ErrorEntities : null);
+            }else{
+                state = -1;
+                throw new RuntimeException("Error al guardar los datos, no se guardó ningun registro");
+            }
+        }catch(Exception e){
+            return helperEndpoints.buildResponse(state, e.getMessage(), null, entityList);
+        }
+        /* Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
+        return repositoryPort.save_multi_Crud_Entity_JDBC_SP(typeBean, entityList); */
     }
 
     @Override
-    public List<Crud_Entity> save_multi_Crud_Entity_JPA_SP(String typeBean, List<Crud_Entity> entityList) {
-        Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
-        return repositoryPort.save_multi_Crud_Entity_JPA_SP(typeBean, entityList);
+    public Object save_multi_Crud_Entity_JPA_SP(String typeBean, List<Crud_Entity> entityList) {
+        int state = -1;
+        try{
+            if(entityList == null || entityList.isEmpty()){
+                throw new RuntimeException("Ningun dato para procesar"); 
+            }
+            Map<String, List<Crud_Entity>> splitListMap = helperEndpoints.splitByDuplicates(entityList, Crud_Entity::getName);
+            List<Crud_Entity> uniqueEntities = splitListMap.getOrDefault("successBody", List.of());
+            List<Crud_Entity> ErrorEntities = splitListMap.getOrDefault("errorBody", new ArrayList<>());
+            if(ErrorEntities == null){
+                ErrorEntities = new ArrayList<>();
+            }
+            Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
+            if(ErrorEntities == null || ErrorEntities.isEmpty()){
+                state = 1;
+            }
+            Object result = repositoryPort.save_multi_Crud_Entity_JPA_SP(typeBean, uniqueEntities);
+            if(result instanceof List<?>){
+                @SuppressWarnings("unchecked")
+                List<Crud_Entity> resultList = (List<Crud_Entity>) result;
+                List<Crud_Entity> diffEntities = helperEndpoints.getDifference(uniqueEntities, resultList, Crud_Entity::getName);
+                if(diffEntities!=null && diffEntities.size()>0){
+                    state = 0;
+                    ErrorEntities.addAll(diffEntities);
+                }else{
+                    state = state == -1 ? 0 : state;
+                }
+                return helperEndpoints.buildResponse(state, state == 0 ? "Algunos registros no se pudieron guardar" : "Todos los registros guardados exitosamente", resultList, state == 0 ? ErrorEntities : null);
+            }else{
+                state = -1;
+                throw new RuntimeException("Error al guardar los datos, no se guardó ningun registro");
+            }
+        }catch(Exception e){
+            return helperEndpoints.buildResponse(state, e.getMessage(), null, entityList);
+        }
+        /* Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
+        return repositoryPort.save_multi_Crud_Entity_JPA_SP(typeBean, entityList); */
     }
 
     @Override

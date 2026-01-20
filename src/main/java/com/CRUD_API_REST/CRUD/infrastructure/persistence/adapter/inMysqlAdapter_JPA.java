@@ -6,7 +6,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
 import org.apache.poi.ss.usermodel.Row;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -82,7 +81,7 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
     
     @Override
     @Transactional
-    public List<Crud_Entity> save_multi_Crud_Entity(String typeBean, List<Crud_Entity> entityList) {
+    public /* List<Crud_Entity> */ Object save_multi_Crud_Entity(String typeBean, List<Crud_Entity> entityList) {
         List<Crud_Entity> entitiesToSave = entityList.stream()
             .filter(e -> e.getName() != null && !e.getName().isEmpty())
             .collect(Collectors.toList());
@@ -116,7 +115,7 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
     }
 
     @Override
-    public List<Crud_Entity> save_multi_Crud_Entity_JPA_SP(String typeBean, List<Crud_Entity> entityList) {
+    public /* List<Crud_Entity> */Object save_multi_Crud_Entity_JPA_SP(String typeBean, List<Crud_Entity> entityList) {
         Set<String> namesToValidate = entityList.stream()
             .map(Crud_Entity::getName)
             .collect(Collectors.toSet());
@@ -158,39 +157,33 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
     }
 
     @Override
-    public Optional<List<Crud_Entity>> save_import_Crud_Entity(String typeBean, MultipartFile file) {
-        List<String> ExtentionsDone = List.of("csv","xlsx","xls");
-        String fileNameInput = file.getOriginalFilename();
-        String[] filenameParts = fileNameInput != null ? fileNameInput.split("\\.") : new String[0];
-        String fileExtension = filenameParts.length > 1 ? filenameParts[filenameParts.length - 1].toLowerCase() : "";
-        if (!ExtentionsDone.contains(fileExtension)) {
-            throw new RuntimeException("El archivo debe tener una extensión válida: .csv, .xlsx, .xls");
-        }
+    public /* Optional<List<Crud_Entity>> */Object save_import_Crud_Entity(String typeBean, MultipartFile file) {
         try {
-            Function<Row, Crud_Entity> rowToEntityMapper = row -> {
+            Function<Row, Crud_Entity> rowMapper = row -> {
                 String name = filesProcessor.getCellValueAsString(row.getCell(0));
                 String email = filesProcessor.getCellValueAsString(row.getCell(1));
                 if(name == null || name.isEmpty() || email == null || email.isEmpty()){
                     return null; 
                 }
+            
                 Crud_Entity entity = new Crud_Entity();
-                entity.setName(name);
-                entity.setEmail(email);
+                entity.setName(name.trim());
+                entity.setEmail(email.trim());
                 return entity;
             };
-            List<Crud_Entity> entitiesFromFile = filesProcessor.excelToEntities(file, rowToEntityMapper);
-            if(entitiesFromFile.isEmpty()){
-                throw new RuntimeException("El archivo no contiene datos válidos o no tiene se encuentra vacio.");
+            List<Crud_Entity> entitiesFromFile = filesProcessor.excelToEntities(file, rowMapper);
+        
+            if (entitiesFromFile.isEmpty()) {
+                throw new RuntimeException("El archivo Excel está vacío o no tiene el formato correcto");
             }
-            List<Crud_Entity> savedEntities = this.save_multi_Crud_Entity(typeBean, entitiesFromFile);
-            return Optional.ofNullable(savedEntities);
-        }catch (IOException e){
-            throw new RuntimeException("Error al procesar el archivo: " + e.getMessage(), e);
+            return this.save_multi_Crud_Entity(typeBean, entitiesFromFile);           
+        } catch (IOException e) {
+            throw new RuntimeException("Error al procesar el archivo Excel: " + e.getMessage());
         }
     }
 
     @Override
-    public Optional<List<Crud_Entity>> save_import_Crud_Entity_JPA_SP(String typeBean, MultipartFile file) {
+    public /* Optional<List<Crud_Entity>> */ Object save_import_Crud_Entity_JPA_SP(String typeBean, MultipartFile file) {
         List<String> ExtentionsDone = List.of("csv","xlsx","xls");
         String fileNameInput = file.getOriginalFilename();
         String[] filenameParts = fileNameInput != null ? fileNameInput.split("\\.") : new String[0];
@@ -214,8 +207,7 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
             if(entitiesFromFile.isEmpty()){
                 throw new RuntimeException("El archivo no contiene datos válidos o no tiene se encuentra vacio.");
             }
-            List<Crud_Entity> savedEntities = this.save_multi_Crud_Entity_JPA_SP(typeBean, entitiesFromFile);
-            return Optional.ofNullable(savedEntities);
+            return this.save_multi_Crud_Entity_JPA_SP(typeBean, entitiesFromFile);
         }catch (IOException e){
             throw new RuntimeException("Error al procesar el archivo: " + e.getMessage(), e);
         }

@@ -48,7 +48,7 @@ public class inMemoryRepository implements Crud_RepositoryPort{
     }
 
     @Override
-    public List<Crud_Entity> save_multi_Crud_Entity(String typeBean, List<Crud_Entity> entityList) {
+    public /* List<Crud_Entity> */ Object save_multi_Crud_Entity(String typeBean, List<Crud_Entity> entityList) {
         List<Crud_Entity> entitiesToSave = entityList.stream()
                 .filter(e -> e.getName() != null && !e.getName().isEmpty())
                 .collect(Collectors.toList());
@@ -84,15 +84,7 @@ public class inMemoryRepository implements Crud_RepositoryPort{
 
     @Override
     @Transactional
-    public Optional<List<Crud_Entity>> save_import_Crud_Entity(String typeBean,MultipartFile file) {
-        List<String> ExtentionsDone = List.of("csv","xls","xlsx");
-        String fileNameInput = file.getOriginalFilename();
-        String [] filenameParts = fileNameInput != null ? fileNameInput.split("\\.") : new String[0];
-        String fileExtention =  filenameParts.length > 1 ? filenameParts[filenameParts.length - 1].toLowerCase() : "";
-        if (!ExtentionsDone.contains(fileExtention.toLowerCase())) {
-            throw new RuntimeException("El archivo debe tener una extensión válida: .csv, .xls, .xlsx");
-        }
-
+    public /* Optional<List<Crud_Entity>> */Object save_import_Crud_Entity(String typeBean,MultipartFile file) {
         try {
             Function<Row, Crud_Entity> rowMapper = row -> {
                 String name = filesProcessor.getCellValueAsString(row.getCell(0));
@@ -111,8 +103,7 @@ public class inMemoryRepository implements Crud_RepositoryPort{
             if (entitiesFromFile.isEmpty()) {
                 throw new RuntimeException("El archivo Excel está vacío o no tiene el formato correcto");
             }
-            List<Crud_Entity> result = this.save_multi_Crud_Entity(typeBean, entitiesFromFile);
-            return Optional.of(result);            
+            return this.save_multi_Crud_Entity(typeBean, entitiesFromFile);           
         } catch (IOException e) {
             throw new RuntimeException("Error al procesar el archivo Excel: " + e.getMessage());
         }

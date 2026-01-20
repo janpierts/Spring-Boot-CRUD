@@ -61,7 +61,7 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
     }
 
     @Override
-    public List<Crud_Entity> save_multi_Crud_Entity_JDBC_SP(String typeBean, List<Crud_Entity> entityList) {
+    public Object save_multi_Crud_Entity_JDBC_SP(String typeBean, List<Crud_Entity> entityList) {
         String sql = "{ call jbAPI_crud_insert_multi(?) }";
         ObjectMapper objectMapper = new ObjectMapper();
         Set<String> namesSet = entityList.stream()
@@ -106,7 +106,7 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
 
     @Override
     @Transactional
-    public Optional<List<Crud_Entity>> save_import_Crud_Entity_JDBC_SP(String typeBean, MultipartFile file) {
+    public Object save_import_Crud_Entity_JDBC_SP(String typeBean, MultipartFile file) {
         List<String> ExtentionsDone = List.of("csv","xls","xlsx");
         String fileNameInput = file.getOriginalFilename();
         String [] filenameParts = fileNameInput != null ? fileNameInput.split("\\.") : new String[0];
@@ -133,8 +133,7 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
             if(entitiesFromFile.isEmpty()) {
                 throw new RuntimeException("El archivo Excel está vacío o no tiene el formato correcto");
             }
-            List<Crud_Entity> result = this.save_multi_Crud_Entity_JDBC_SP(typeBean, entitiesFromFile);
-            return Optional.of(result);
+            return this.save_multi_Crud_Entity_JDBC_SP(typeBean, entitiesFromFile);
         }catch (IOException e) {
             throw new RuntimeException("Error al procesar el archivo Excel: " + e.getMessage());
         }

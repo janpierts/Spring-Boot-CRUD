@@ -210,21 +210,156 @@ public class Crud_Service implements Crud_ServicePort {
     }
 
     @Override
-    public Optional<List<Crud_Entity>> save_import_Crud_Entity(String typeBean, MultipartFile file){
-        Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
-        return repositoryPort.save_import_Crud_Entity(typeBean, file);
+    public /* Optional<List<Crud_Entity>> */Object save_import_Crud_Entity(String typeBean, MultipartFile file){
+        int state = -1;
+        List<String>ExtentionsDone = List.of("csv","xlsx","xls");
+        List<Crud_Entity> errorEntities = new ArrayList<>();
+        try{
+            String fileName = file.getOriginalFilename();
+            if(fileName == null || fileName.trim().isEmpty()){
+                throw new RuntimeException("El nombre del archivo no puede ser nulo o vacío");
+                //return helperEndpoints.buildResponse(-1, "El nombre del archivo no puede ser nulo o vacío", null, null);
+            }
+            String fileExtension = fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase();
+            if(!ExtentionsDone.contains(fileExtension)){
+                throw new RuntimeException("Extensión de archivo no soportada: " + fileExtension + ". Solo se permiten: " + String.join(", ", ExtentionsDone));
+                //return helperEndpoints.buildResponse(-1, "Extensión de archivo no soportada: " + fileExtension, null, null);
+            }
+            Object entitiesFromFile = save_import_Crud_Entity(typeBean, file);
+            @SuppressWarnings("unchecked")
+            Map<String, List<Crud_Entity>> splitListMap = helperEndpoints.splitByDuplicates((List<Crud_Entity>)entitiesFromFile, Crud_Entity::getName);
+            List<Crud_Entity> uniqueEntities = splitListMap.getOrDefault("successBody", List.of());
+            errorEntities = splitListMap.getOrDefault("errorBody", new ArrayList<>());
+            if(errorEntities == null){
+                errorEntities = new ArrayList<>();
+            }
+            Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
+            if(errorEntities == null || errorEntities.isEmpty()){
+                state = 1;
+            }
+            Object result = repositoryPort.save_multi_Crud_Entity(typeBean, uniqueEntities);
+            if(result instanceof List<?>){
+                @SuppressWarnings("unchecked")
+                List<Crud_Entity> resultList = (List<Crud_Entity>) result;
+                List<Crud_Entity> diffEntities = helperEndpoints.getDifference(uniqueEntities, resultList, Crud_Entity::getName);
+                if(diffEntities!=null && diffEntities.size()>0){
+                    state = 0;
+                    errorEntities.addAll(diffEntities);
+                }else{
+                    state = state == -1 ? 0 : state;
+                }
+                return helperEndpoints.buildResponse(state, state == 0 ? "Algunos registros no se pudieron guardar" : "Todos los registros guardados exitosamente", resultList, state == 0 ? errorEntities : null);
+            }else{
+                state = -1;
+                throw new RuntimeException("Error al guardar los datos, no se guardó ningun registro");
+            }
+        }catch(Exception e){
+            return helperEndpoints.buildResponse(state, e.getMessage(), null, errorEntities);
+        }
+        /* Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
+        return repositoryPort.save_import_Crud_Entity(typeBean, file); */
     }
 
     @Override
-    public Optional<List<Crud_Entity>> save_import_Crud_Entity_JDBC_SP(String typeBean, MultipartFile file){
-        Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
-        return repositoryPort.save_import_Crud_Entity_JDBC_SP(typeBean, file);
+    public /* Optional<List<Crud_Entity>> */Object save_import_Crud_Entity_JDBC_SP(String typeBean, MultipartFile file){
+        int state = -1;
+        List<String>ExtentionsDone = List.of("csv","xlsx","xls");
+        List<Crud_Entity> errorEntities = new ArrayList<>();
+        try{
+            String fileName = file.getOriginalFilename();
+            if(fileName == null || fileName.trim().isEmpty()){
+                throw new RuntimeException("El nombre del archivo no puede ser nulo o vacío");
+                //return helperEndpoints.buildResponse(-1, "El nombre del archivo no puede ser nulo o vacío", null, null);
+            }
+            String fileExtension = fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase();
+            if(!ExtentionsDone.contains(fileExtension)){
+                throw new RuntimeException("Extensión de archivo no soportada: " + fileExtension + ". Solo se permiten: " + String.join(", ", ExtentionsDone));
+                //return helperEndpoints.buildResponse(-1, "Extensión de archivo no soportada: " + fileExtension, null, null);
+            }
+            Object entitiesFromFile = save_import_Crud_Entity_JDBC_SP(typeBean, file);
+            @SuppressWarnings("unchecked")
+            Map<String, List<Crud_Entity>> splitListMap = helperEndpoints.splitByDuplicates((List<Crud_Entity>)entitiesFromFile, Crud_Entity::getName);
+            List<Crud_Entity> uniqueEntities = splitListMap.getOrDefault("successBody", List.of());
+            errorEntities = splitListMap.getOrDefault("errorBody", new ArrayList<>());
+            if(errorEntities == null){
+                errorEntities = new ArrayList<>();
+            }
+            Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
+            if(errorEntities == null || errorEntities.isEmpty()){
+                state = 1;
+            }
+            Object result = repositoryPort.save_multi_Crud_Entity_JDBC_SP(typeBean, uniqueEntities);
+            if(result instanceof List<?>){
+                @SuppressWarnings("unchecked")
+                List<Crud_Entity> resultList = (List<Crud_Entity>) result;
+                List<Crud_Entity> diffEntities = helperEndpoints.getDifference(uniqueEntities, resultList, Crud_Entity::getName);
+                if(diffEntities!=null && diffEntities.size()>0){
+                    state = 0;
+                    errorEntities.addAll(diffEntities);
+                }else{
+                    state = state == -1 ? 0 : state;
+                }
+                return helperEndpoints.buildResponse(state, state == 0 ? "Algunos registros no se pudieron guardar" : "Todos los registros guardados exitosamente", resultList, state == 0 ? errorEntities : null);
+            }else{
+                state = -1;
+                throw new RuntimeException("Error al guardar los datos, no se guardó ningun registro");
+            }
+        }catch(Exception e){
+            return helperEndpoints.buildResponse(state, e.getMessage(), null, errorEntities);
+        }
+        /* Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
+        return repositoryPort.save_import_Crud_Entity_JDBC_SP(typeBean, file); */
     }
 
     @Override
-    public Optional<List<Crud_Entity>> save_import_Crud_Entity_JPA_SP(String typeBean, MultipartFile file){
-        Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
-        return repositoryPort.save_import_Crud_Entity_JPA_SP(typeBean, file);
+    public /* Optional<List<Crud_Entity>>  */Object save_import_Crud_Entity_JPA_SP(String typeBean, MultipartFile file){
+        int state = -1;
+        List<String>ExtentionsDone = List.of("csv","xlsx","xls");
+        List<Crud_Entity> errorEntities = new ArrayList<>();
+        try{
+            String fileName = file.getOriginalFilename();
+            if(fileName == null || fileName.trim().isEmpty()){
+                throw new RuntimeException("El nombre del archivo no puede ser nulo o vacío");
+                //return helperEndpoints.buildResponse(-1, "El nombre del archivo no puede ser nulo o vacío", null, null);
+            }
+            String fileExtension = fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase();
+            if(!ExtentionsDone.contains(fileExtension)){
+                throw new RuntimeException("Extensión de archivo no soportada: " + fileExtension + ". Solo se permiten: " + String.join(", ", ExtentionsDone));
+                //return helperEndpoints.buildResponse(-1, "Extensión de archivo no soportada: " + fileExtension, null, null);
+            }
+            Object entitiesFromFile = save_import_Crud_Entity_JPA_SP(typeBean, file);
+            @SuppressWarnings("unchecked")
+            Map<String, List<Crud_Entity>> splitListMap = helperEndpoints.splitByDuplicates((List<Crud_Entity>)entitiesFromFile, Crud_Entity::getName);
+            List<Crud_Entity> uniqueEntities = splitListMap.getOrDefault("successBody", List.of());
+            errorEntities = splitListMap.getOrDefault("errorBody", new ArrayList<>());
+            if(errorEntities == null){
+                errorEntities = new ArrayList<>();
+            }
+            Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
+            if(errorEntities == null || errorEntities.isEmpty()){
+                state = 1;
+            }
+            Object result = repositoryPort.save_multi_Crud_Entity_JPA_SP(typeBean, uniqueEntities);
+            if(result instanceof List<?>){
+                @SuppressWarnings("unchecked")
+                List<Crud_Entity> resultList = (List<Crud_Entity>) result;
+                List<Crud_Entity> diffEntities = helperEndpoints.getDifference(uniqueEntities, resultList, Crud_Entity::getName);
+                if(diffEntities!=null && diffEntities.size()>0){
+                    state = 0;
+                    errorEntities.addAll(diffEntities);
+                }else{
+                    state = state == -1 ? 0 : state;
+                }
+                return helperEndpoints.buildResponse(state, state == 0 ? "Algunos registros no se pudieron guardar" : "Todos los registros guardados exitosamente", resultList, state == 0 ? errorEntities : null);
+            }else{
+                state = -1;
+                throw new RuntimeException("Error al guardar los datos, no se guardó ningun registro");
+            }
+        }catch(Exception e){
+            return helperEndpoints.buildResponse(state, e.getMessage(), null, errorEntities);
+        }
+        /* Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
+        return repositoryPort.save_import_Crud_Entity_JPA_SP(typeBean, file); */
     }
 
     @Override

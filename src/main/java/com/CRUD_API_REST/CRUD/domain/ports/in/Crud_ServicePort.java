@@ -12,9 +12,9 @@ public interface Crud_ServicePort {
     Object save_multi_Crud_Entity(String typeBean,List<Crud_Entity> entityList);
     Object save_multi_Crud_Entity_JDBC_SP(String typeBean,List<Crud_Entity> entityList);
     Object save_multi_Crud_Entity_JPA_SP(String typeBean,List<Crud_Entity> entityList);
-    Optional<List<Crud_Entity>> save_import_Crud_Entity(String typeBean,MultipartFile file);
-    Optional<List<Crud_Entity>> save_import_Crud_Entity_JDBC_SP(String typeBean,MultipartFile file);
-    Optional<List<Crud_Entity>> save_import_Crud_Entity_JPA_SP(String typeBean,MultipartFile file);
+    /* Optional<List<Crud_Entity>>  */Object save_import_Crud_Entity(String typeBean,MultipartFile file);
+    /* Optional<List<Crud_Entity>> */Object save_import_Crud_Entity_JDBC_SP(String typeBean,MultipartFile file);
+    /* Optional<List<Crud_Entity>> */Object save_import_Crud_Entity_JPA_SP(String typeBean,MultipartFile file);
     Optional<Crud_Entity> find_Crud_EntityById(String typeBean,Long id);
     Optional<Crud_Entity> find_Crud_Entity_JDBC_SP_ById(String typeBean,Long id);
     Optional<Crud_Entity> find_Crud_Entity_JPA_SP_ById(String typeBean,Long id);

@@ -55,21 +55,21 @@ public class CrudController {
     }
 
     @PostMapping(value ="{repositoryType}/import_save",consumes = "multipart/form-data")
-    public ResponseEntity<List<Crud_Entity>> importSaveEntities(@PathVariable String repositoryType,@RequestParam("file") MultipartFile file) throws IOException {
-        Optional<List<Crud_Entity>> createdEntities = crudService.save_import_Crud_Entity(repositoryType,file);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdEntities.isPresent() ? createdEntities.get() : List.of());
+    public ResponseEntity<Object> importSaveEntities(@PathVariable String repositoryType,@RequestParam("file") MultipartFile file) throws IOException {
+        Object createdEntities = crudService.save_import_Crud_Entity(repositoryType,file);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdEntities);
     }
 
     @PostMapping(value ="{repositoryType}/import_save_JDBC_SP",consumes = "multipart/form-data")
-    public ResponseEntity<List<Crud_Entity>> importSaveEntities_JDBC_SP(@PathVariable String repositoryType,@RequestParam("file") MultipartFile file) throws IOException {
-        Optional<List<Crud_Entity>> createdEntities = crudService.save_import_Crud_Entity_JDBC_SP(repositoryType,file);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdEntities.isPresent() ? createdEntities.get() : List.of());
+    public ResponseEntity<Object> importSaveEntities_JDBC_SP(@PathVariable String repositoryType,@RequestParam("file") MultipartFile file) throws IOException {
+        Object createdEntities = crudService.save_import_Crud_Entity_JDBC_SP(repositoryType,file);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdEntities);
     }
 
     @PostMapping(value ="{repositoryType}/import_save_JPA_SP",consumes = "multipart/form-data")
-    public ResponseEntity<List<Crud_Entity>> importSaveEntities_JPA_SP(@PathVariable String repositoryType,@RequestParam("file") MultipartFile file) throws IOException {
-        Optional<List<Crud_Entity>> createdEntities = crudService.save_import_Crud_Entity(repositoryType,file);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdEntities.isPresent() ? createdEntities.get() : List.of());
+    public ResponseEntity<Object> importSaveEntities_JPA_SP(@PathVariable String repositoryType,@RequestParam("file") MultipartFile file) throws IOException {
+        Object createdEntities = crudService.save_import_Crud_Entity_JPA_SP(repositoryType,file);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdEntities);
     }
          
     @GetMapping("{repositoryType}/find/{id}")

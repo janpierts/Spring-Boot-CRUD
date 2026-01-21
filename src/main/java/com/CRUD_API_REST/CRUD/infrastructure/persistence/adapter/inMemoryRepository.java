@@ -2,17 +2,12 @@ package com.CRUD_API_REST.CRUD.infrastructure.persistence.adapter;
 
 import com.CRUD_API_REST.CRUD.domain.model.Crud_Entity;
 import com.CRUD_API_REST.CRUD.domain.ports.out.Crud_RepositoryPort;
-import com.CRUD_API_REST.CRUD.infrastructure.utils.filesProcessor;
 import jakarta.transaction.Transactional;
-import org.apache.poi.ss.usermodel.Row;
 import org.springframework.stereotype.Component;
-import org.springframework.web.multipart.MultipartFile;
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Component("inMemoryRepository")
@@ -48,7 +43,7 @@ public class inMemoryRepository implements Crud_RepositoryPort{
     }
 
     @Override
-    public /* List<Crud_Entity> */ Object save_multi_Crud_Entity(String typeBean, List<Crud_Entity> entityList) {
+    public Optional<List<Crud_Entity>> save_multi_Crud_Entity(String typeBean, List<Crud_Entity> entityList) {
         List<Crud_Entity> entitiesToSave = entityList.stream()
                 .filter(e -> e.getName() != null && !e.getName().isEmpty())
                 .collect(Collectors.toList());
@@ -76,7 +71,7 @@ public class inMemoryRepository implements Crud_RepositoryPort{
                 entity.setState(true);
                 entities.add(entity);
             }
-            return filteredEntities;
+            return Optional.of(filteredEntities);
         } catch(Exception e){
             throw new RuntimeException(e.getMessage());
         }
@@ -84,28 +79,11 @@ public class inMemoryRepository implements Crud_RepositoryPort{
 
     @Override
     @Transactional
-    public /* Optional<List<Crud_Entity>> */Object save_import_Crud_Entity(String typeBean,MultipartFile file) {
-        try {
-            Function<Row, Crud_Entity> rowMapper = row -> {
-                String name = filesProcessor.getCellValueAsString(row.getCell(0));
-                String email = filesProcessor.getCellValueAsString(row.getCell(1));
-                if(name == null || name.isEmpty() || email == null || email.isEmpty()){
-                    return null; 
-                }
-            
-                Crud_Entity entity = new Crud_Entity();
-                entity.setName(name.trim());
-                entity.setEmail(email.trim());
-                return entity;
-            };
-            List<Crud_Entity> entitiesFromFile = filesProcessor.excelToEntities(file, rowMapper);
-        
-            if (entitiesFromFile.isEmpty()) {
-                throw new RuntimeException("El archivo Excel está vacío o no tiene el formato correcto");
-            }
-            return this.save_multi_Crud_Entity(typeBean, entitiesFromFile);           
-        } catch (IOException e) {
-            throw new RuntimeException("Error al procesar el archivo Excel: " + e.getMessage());
+    public Optional<List<Crud_Entity>> save_import_Crud_Entity(String typeBean,List<Crud_Entity> entityList) {
+        try{
+            return save_multi_Crud_Entity(typeBean, entityList);
+        }catch(Exception e){
+            throw new RuntimeException(e.getMessage());
         }
     }
 
@@ -245,11 +223,11 @@ public class inMemoryRepository implements Crud_RepositoryPort{
         throw new UnsupportedOperationException("Unimplemented method 'find_Crud_Entity_JPA_SP_ByName'");
     }
     @Override
-    public List<Crud_Entity> save_multi_Crud_Entity_JDBC_SP(String typeBean, List<Crud_Entity> entity) {
+    public Optional<List<Crud_Entity>> save_multi_Crud_Entity_JDBC_SP(String typeBean, List<Crud_Entity> entity) {
         throw new UnsupportedOperationException("Unimplemented method 'save_multi_Crud_Entity_JDBC_SP'");
     }
     @Override
-    public List<Crud_Entity> save_multi_Crud_Entity_JPA_SP(String typeBean, List<Crud_Entity> entity) {
+    public Optional<List<Crud_Entity>> save_multi_Crud_Entity_JPA_SP(String typeBean, List<Crud_Entity> entity) {
         throw new UnsupportedOperationException("Unimplemented method 'save_multi_Crud_Entity_JPA_SP'");
     }
     @Override
@@ -261,11 +239,11 @@ public class inMemoryRepository implements Crud_RepositoryPort{
         throw new UnsupportedOperationException("Unimplemented method 'find_Crud_Entity_JPA_SP_ByNames'");
     }
     @Override
-    public Optional<List<Crud_Entity>> save_import_Crud_Entity_JDBC_SP(String typeBean, MultipartFile file) {
+    public Optional<List<Crud_Entity>> save_import_Crud_Entity_JDBC_SP(String typeBean, List<Crud_Entity> entityList) {
         throw new UnsupportedOperationException("Unimplemented method 'save_import_Crud_Entity_JDBC_SP'");
     }
     @Override
-    public Optional<List<Crud_Entity>> save_import_Crud_Entity_JPA_SP(String typeBean, MultipartFile file) {
+    public Optional<List<Crud_Entity>> save_import_Crud_Entity_JPA_SP(String typeBean, List<Crud_Entity> entityList) {
         throw new UnsupportedOperationException("Unimplemented method 'save_import_Crud_Entity_JPA_SP'");
     }
 }

@@ -4,22 +4,17 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-import org.apache.poi.ss.usermodel.Row;
 import org.springframework.stereotype.Component;
-import org.springframework.web.multipart.MultipartFile;
 import com.CRUD_API_REST.CRUD.domain.model.Crud_Entity;
 import com.CRUD_API_REST.CRUD.domain.ports.out.Crud_RepositoryPort;
 import com.CRUD_API_REST.CRUD.infrastructure.persistence.entity.CrudEntityJpa;
 import com.CRUD_API_REST.CRUD.infrastructure.persistence.springdata.crudSpringDataRepository;
-import com.CRUD_API_REST.CRUD.infrastructure.utils.filesProcessor;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.StoredProcedureQuery;
 import jakarta.transaction.Transactional;
-import java.io.IOException;
 import java.sql.Timestamp; 
 
 @Component("inMysqlAdapter_JPA")
@@ -81,7 +76,7 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
     
     @Override
     @Transactional
-    public /* List<Crud_Entity> */ Object save_multi_Crud_Entity(String typeBean, List<Crud_Entity> entityList) {
+    public Optional<List<Crud_Entity>> save_multi_Crud_Entity(String typeBean, List<Crud_Entity> entityList) {
         List<Crud_Entity> entitiesToSave = entityList.stream()
             .filter(e -> e.getName() != null && !e.getName().isEmpty())
             .collect(Collectors.toList());
@@ -108,14 +103,18 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
 
             return savedJpaEntities.stream()
                 .map(CrudEntityJpa::toDomainEntity)
-                .toList();
+                .toList().isEmpty() ? Optional.empty() : Optional.of(
+                    savedJpaEntities.stream()
+                        .map(CrudEntityJpa::toDomainEntity)
+                        .toList()
+                );
         } catch(Exception e){
             throw new RuntimeException(e.getMessage());
         }
     }
 
     @Override
-    public /* List<Crud_Entity> */Object save_multi_Crud_Entity_JPA_SP(String typeBean, List<Crud_Entity> entityList) {
+    public Optional<List<Crud_Entity>> save_multi_Crud_Entity_JPA_SP(String typeBean, List<Crud_Entity> entityList) {
         Set<String> namesToValidate = entityList.stream()
             .map(Crud_Entity::getName)
             .collect(Collectors.toSet());
@@ -148,7 +147,7 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
             query.setParameter("p_data_json", jsonObject);
             query.execute();
             Optional<List<Crud_Entity>> result = find_Crud_Entity_JPA_SP_ByNames(typeBean, filteredEntities);
-            return result.orElseThrow(() -> new RuntimeException("No se pudieron guardar las entidades CRUD."));
+            return Optional.of(result.orElseThrow(() -> new RuntimeException("No se pudieron guardar las entidades CRUD.")));
         }catch (JsonProcessingException e) {
             throw new RuntimeException("Error al serializar lista a JSON", e);
         }catch (Exception e) {
@@ -157,59 +156,20 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
     }
 
     @Override
-    public /* Optional<List<Crud_Entity>> */Object save_import_Crud_Entity(String typeBean, MultipartFile file) {
-        try {
-            Function<Row, Crud_Entity> rowMapper = row -> {
-                String name = filesProcessor.getCellValueAsString(row.getCell(0));
-                String email = filesProcessor.getCellValueAsString(row.getCell(1));
-                if(name == null || name.isEmpty() || email == null || email.isEmpty()){
-                    return null; 
-                }
-            
-                Crud_Entity entity = new Crud_Entity();
-                entity.setName(name.trim());
-                entity.setEmail(email.trim());
-                return entity;
-            };
-            List<Crud_Entity> entitiesFromFile = filesProcessor.excelToEntities(file, rowMapper);
-        
-            if (entitiesFromFile.isEmpty()) {
-                throw new RuntimeException("El archivo Excel está vacío o no tiene el formato correcto");
-            }
-            return this.save_multi_Crud_Entity(typeBean, entitiesFromFile);           
-        } catch (IOException e) {
-            throw new RuntimeException("Error al procesar el archivo Excel: " + e.getMessage());
+    public Optional<List<Crud_Entity>> save_import_Crud_Entity(String typeBean,List<Crud_Entity>entityList) {
+        try{
+            return save_multi_Crud_Entity(typeBean, entityList);
+        }catch(Exception e){
+            throw new RuntimeException(e.getMessage());
         }
     }
 
     @Override
-    public /* Optional<List<Crud_Entity>> */ Object save_import_Crud_Entity_JPA_SP(String typeBean, MultipartFile file) {
-        List<String> ExtentionsDone = List.of("csv","xlsx","xls");
-        String fileNameInput = file.getOriginalFilename();
-        String[] filenameParts = fileNameInput != null ? fileNameInput.split("\\.") : new String[0];
-        String fileExtension = filenameParts.length > 1 ? filenameParts[filenameParts.length - 1].toLowerCase() : "";
-        if (!ExtentionsDone.contains(fileExtension)) {
-            throw new RuntimeException("El archivo debe tener una extensión válida: .csv, .xlsx, .xls");
-        }
-        try {
-            Function<Row, Crud_Entity> rowToEntityMapper = row -> {
-                String name = filesProcessor.getCellValueAsString(row.getCell(0));
-                String email = filesProcessor.getCellValueAsString(row.getCell(1));
-                if(name == null || name.isEmpty() || email == null || email.isEmpty()){
-                    return null; 
-                }
-                Crud_Entity entity = new Crud_Entity();
-                entity.setName(name);
-                entity.setEmail(email);
-                return entity;
-            };
-            List<Crud_Entity> entitiesFromFile = filesProcessor.excelToEntities(file, rowToEntityMapper);
-            if(entitiesFromFile.isEmpty()){
-                throw new RuntimeException("El archivo no contiene datos válidos o no tiene se encuentra vacio.");
-            }
-            return this.save_multi_Crud_Entity_JPA_SP(typeBean, entitiesFromFile);
-        }catch (IOException e){
-            throw new RuntimeException("Error al procesar el archivo: " + e.getMessage(), e);
+    public Optional<List<Crud_Entity>> save_import_Crud_Entity_JPA_SP(String typeBean, List<Crud_Entity>entityList) {
+        try{
+            return save_multi_Crud_Entity_JPA_SP(typeBean, entityList);
+        }catch(Exception e){
+            throw new RuntimeException(e.getMessage());
         }
     }
 
@@ -391,7 +351,7 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
         throw new UnsupportedOperationException("Unimplemented method 'delete_Crud_Entity_logical_JDBC_SP_ById'");
     }
     @Override
-    public Optional<List<Crud_Entity>> save_import_Crud_Entity_JDBC_SP(String typeBean, MultipartFile file) {
+    public Optional<List<Crud_Entity>> save_import_Crud_Entity_JDBC_SP(String typeBean, List<Crud_Entity>entityList) {
         throw new UnsupportedOperationException("Unimplemented method 'save_import_Crud_Entity'");
     }    
     @Override
@@ -403,7 +363,7 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
         throw new UnsupportedOperationException("Unimplemented method 'find_Crud_Entity_JDBC_SP_ByNames'");
     }
     @Override
-    public List<Crud_Entity> save_multi_Crud_Entity_JDBC_SP(String typeBean, List<Crud_Entity> entityList) {
+    public Optional<List<Crud_Entity>> save_multi_Crud_Entity_JDBC_SP(String typeBean, List<Crud_Entity> entityList) {
         throw new UnsupportedOperationException("Unimplemented method 'save_multi_Crud_Entity_JDBC_SP'");
     }
 }

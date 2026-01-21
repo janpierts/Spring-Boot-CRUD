@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import com.CRUD_API_REST.CRUD.domain.model.Crud_Entity;
+
 
 @Entity
 @Table(name = "usuarios_crud") 
@@ -155,12 +157,12 @@ public class CrudEntityJpa {
         this.state = state;
     }
 
-    public com.CRUD_API_REST.CRUD.domain.model.Crud_Entity toDomainEntity() {
+    public Crud_Entity toDomainEntity() {
         LocalDateTime finalUpdated = this.updated;
         if(this.id != null && this.updated != null && (this.updated.withNano(0).equals(this.created.withNano(0)))) {
             finalUpdated = null;
         }
-        return new com.CRUD_API_REST.CRUD.domain.model.Crud_Entity(
+        return new Crud_Entity(
             this.id, 
             this.name, 
             this.email, 

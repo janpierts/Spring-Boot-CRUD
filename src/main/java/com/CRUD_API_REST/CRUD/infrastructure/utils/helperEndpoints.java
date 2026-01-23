@@ -28,6 +28,10 @@ public class helperEndpoints {
         return buildResponse(state, message, null, null, null);
     }
 
+    public static <T> Map<String, Object> buildResponse(int state, String message, T successBody) {
+        return buildResponse(state, message, successBody, null, null);
+    }
+
     public static <T> Map<String, List<T>> splitByDuplicates(List<T> inputList, Function<? super T, ?> keyExtractor) {
         Set<Object> seen = new HashSet<>();
         return inputList.stream()

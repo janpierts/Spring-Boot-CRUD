@@ -5,9 +5,9 @@ import java.util.Optional;
 import com.CRUD_API_REST.CRUD.domain.model.Crud_Entity;
 
 public interface Crud_RepositoryPort {
-    Object save_Crud_Entity(String typeBean,Crud_Entity entity);
-    Object save_Crud_Entity_JDBC_SP(String typeBean,Crud_Entity entity);
-    Object save_Crud_Entity_JPA_SP(String typeBean,Crud_Entity entity);
+    Crud_Entity save_Crud_Entity(String typeBean,Crud_Entity entity);
+    Crud_Entity save_Crud_Entity_JDBC_SP(String typeBean,Crud_Entity entity);
+    Crud_Entity save_Crud_Entity_JPA_SP(String typeBean,Crud_Entity entity);
     Optional<List<Crud_Entity>> save_multi_Crud_Entity(String typeBean,List<Crud_Entity> entityList);
     Optional<List<Crud_Entity>> save_multi_Crud_Entity_JDBC_SP(String typeBean,List<Crud_Entity> entityList);
     Optional<List<Crud_Entity>> save_multi_Crud_Entity_JPA_SP(String typeBean,List<Crud_Entity> entityList);

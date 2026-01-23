@@ -16,7 +16,7 @@ public class inMemoryRepository implements Crud_RepositoryPort{
     private Long nextId = 1L;
 
     @Override
-    public Object save_Crud_Entity(String typeBean,Crud_Entity entity) {
+    public Crud_Entity save_Crud_Entity(String typeBean,Crud_Entity entity) {
         if (entity.getId() == null) {
             try{
                 if(entity.getName() == null || entity.getName().isEmpty()) {

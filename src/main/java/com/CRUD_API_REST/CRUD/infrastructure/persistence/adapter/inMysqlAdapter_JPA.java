@@ -27,7 +27,7 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
     }
 
     @Override
-    public Object save_Crud_Entity(String typeBean, Crud_Entity entity) {
+    public Crud_Entity save_Crud_Entity(String typeBean, Crud_Entity entity) {
         try{
             if(entity.getName() == null || entity.getName().isEmpty()) {
                 throw new RuntimeException("El nombre no puede estar vacío.");
@@ -45,7 +45,7 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
     }
     
     @Override
-    public Object save_Crud_Entity_JPA_SP(String typeBean, Crud_Entity entity) {
+    public Crud_Entity save_Crud_Entity_JPA_SP(String typeBean, Crud_Entity entity) {
         try{
             if(entity.getName() == null || entity.getName().isEmpty()) {
                 throw new RuntimeException("El nombre no puede estar vacío.");

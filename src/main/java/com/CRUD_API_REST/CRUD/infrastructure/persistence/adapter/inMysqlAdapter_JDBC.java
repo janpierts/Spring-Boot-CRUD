@@ -28,7 +28,7 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
     }
 
     @Override
-    public Object save_Crud_Entity_JDBC_SP (String typeBean,Crud_Entity entity) {
+    public Crud_Entity save_Crud_Entity_JDBC_SP (String typeBean,Crud_Entity entity) {
         String sql = "{ call jbAPI_crud_insert(?,?,?,?) }";        
         try {
             if(entity.getName() == null || entity.getName().isEmpty()) {

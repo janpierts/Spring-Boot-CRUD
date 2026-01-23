@@ -10,13 +10,26 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class helperEndpoints {
-    public static <T> Map<String, Object> buildResponse(int state, String message, T successBody, T errorBody) {
+    public static <T> Map<String, Object> buildResponse(int state, String message, T successBody, T errorBody, T updateBody) {
         Map<String, Object> response = new HashMap<>();
         response.put("state", state);
         response.put("message", message);
         response.put("successBody", successBody);
         response.put("errorBody", errorBody);
+        response.put("updateBody", updateBody);
         return response;
+    }
+
+    public static <T> Map<String, Object> buildResponse(int state, String message, T successBody, T errorBody) {
+        return buildResponse(state, message, successBody, errorBody, null);
+    }
+
+    public static <T> Map<String, Object> buildResponse(int state, String message) {
+        return buildResponse(state, message, null, null, null);
+    }
+
+    public static <T> Map<String, Object> buildResponse(int state, String message, T successBody) {
+        return buildResponse(state, message, successBody, null, null);
     }
 
     public static <T> Map<String, List<T>> splitByDuplicates(List<T> inputList, Function<? super T, ?> keyExtractor) {

@@ -10,6 +10,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class helperEndpoints {
+    //region Build Response Methods
     public static <T> Map<String, Object> buildResponse(int state, String message, T successBody, T errorBody, T updateBody) {
         Map<String, Object> response = new HashMap<>();
         response.put("state", state);
@@ -28,10 +29,12 @@ public class helperEndpoints {
         return buildResponse(state, message, null, null, null);
     }
 
-    public static <T> Map<String, Object> buildResponse(int state, String message, T successBody) {
-        return buildResponse(state, message, successBody, null, null);
+    public static <T> Map<String, Object> buildResponse(int state, String message, T Body) {
+        return buildResponse(state, message, state == 1 ? Body : null, state == -1 ? Body : null, null);
     }
+    //endregion
 
+    //region List Utility Methods
     public static <T> Map<String, List<T>> splitByDuplicates(List<T> inputList, Function<? super T, ?> keyExtractor) {
         Set<Object> seen = new HashSet<>();
         return inputList.stream()
@@ -49,4 +52,5 @@ public class helperEndpoints {
                 .filter(element -> !setB.contains(keyExtractor.apply(element)))
                 .toList();
     }
+    //endregion
 }

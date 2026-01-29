@@ -1,9 +1,11 @@
-package com.CRUD_API_REST.CRUD.infrastructure.persistence.adapter;
+package com.CRUD_API_REST.ADMIN.CRUD.infrastructure.persistence.adapter;
 
-import com.CRUD_API_REST.CRUD.domain.model.Crud_Entity;
-import com.CRUD_API_REST.CRUD.domain.ports.out.Crud_RepositoryPort;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Component;
+
+import com.CRUD_API_REST.ADMIN.CRUD.domain.model.Crud_Entity;
+import com.CRUD_API_REST.ADMIN.CRUD.domain.ports.out.Crud_RepositoryPort;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;

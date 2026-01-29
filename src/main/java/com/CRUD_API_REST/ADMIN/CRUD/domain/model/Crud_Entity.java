@@ -1,4 +1,4 @@
-package com.CRUD_API_REST.CRUD.domain.model;
+package com.CRUD_API_REST.ADMIN.CRUD.domain.model;
 
 import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonFormat;

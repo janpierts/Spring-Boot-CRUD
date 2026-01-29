@@ -1,4 +1,4 @@
-package com.CRUD_API_REST.CRUD.infrastructure.persistence.adapter;
+package com.CRUD_API_REST.ADMIN.CRUD.infrastructure.persistence.adapter;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -6,10 +6,11 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
-import com.CRUD_API_REST.CRUD.domain.model.Crud_Entity;
-import com.CRUD_API_REST.CRUD.domain.ports.out.Crud_RepositoryPort;
-import com.CRUD_API_REST.CRUD.infrastructure.persistence.entity.CrudEntityJpa;
-import com.CRUD_API_REST.CRUD.infrastructure.persistence.springdata.crudSpringDataRepository;
+
+import com.CRUD_API_REST.ADMIN.CRUD.domain.model.Crud_Entity;
+import com.CRUD_API_REST.ADMIN.CRUD.domain.ports.out.Crud_RepositoryPort;
+import com.CRUD_API_REST.ADMIN.CRUD.infrastructure.persistence.entity.CrudEntityJpa;
+import com.CRUD_API_REST.ADMIN.CRUD.infrastructure.persistence.springdata.crudSpringDataRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;

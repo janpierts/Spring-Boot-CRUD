@@ -1,10 +1,13 @@
-package com.CRUD_API_REST.CRUD.infrastructure.persistence.adapter;
+package com.CRUD_API_REST.ADMIN.CRUD.infrastructure.persistence.adapter;
 
 import java.sql.ResultSet;
 import java.sql.Types;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Set;
+
+import com.CRUD_API_REST.ADMIN.CRUD.domain.model.Crud_Entity;
+import com.CRUD_API_REST.ADMIN.CRUD.domain.ports.out.Crud_RepositoryPort;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
@@ -17,8 +20,6 @@ import org.springframework.jdbc.core.CallableStatementCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
-import com.CRUD_API_REST.CRUD.domain.model.Crud_Entity;
-import com.CRUD_API_REST.CRUD.domain.ports.out.Crud_RepositoryPort;
 
 @Component("inMysqlAdapter_JDBC")
 public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {

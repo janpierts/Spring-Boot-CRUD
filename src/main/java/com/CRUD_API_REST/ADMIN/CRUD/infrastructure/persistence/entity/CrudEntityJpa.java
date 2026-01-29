@@ -1,11 +1,11 @@
-package com.CRUD_API_REST.CRUD.infrastructure.persistence.entity;
+package com.CRUD_API_REST.ADMIN.CRUD.infrastructure.persistence.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import com.CRUD_API_REST.CRUD.domain.model.Crud_Entity;
+import com.CRUD_API_REST.ADMIN.CRUD.domain.model.Crud_Entity;
 
 
 @Entity
@@ -109,7 +109,7 @@ public class CrudEntityJpa {
     public CrudEntityJpa() {
 
     }
-    public CrudEntityJpa(com.CRUD_API_REST.CRUD.domain.model.Crud_Entity domainEntity) {
+    public CrudEntityJpa(com.CRUD_API_REST.ADMIN.CRUD.domain.model.Crud_Entity domainEntity) {
         this.id = domainEntity.getId(); 
         this.name = domainEntity.getName();
         this.email = domainEntity.getEmail();

@@ -1,19 +1,21 @@
-package com.CRUD_API_REST.CRUD.domain.ports.out;
+package com.CRUD_API_REST.ADMIN.CRUD.domain.ports.in;
 
 import java.util.List;
 import java.util.Optional;
-import com.CRUD_API_REST.CRUD.domain.model.Crud_Entity;
+import org.springframework.web.multipart.MultipartFile;
 
-public interface Crud_RepositoryPort {
-    Crud_Entity save_Crud_Entity(String typeBean,Crud_Entity entity);
-    Crud_Entity save_Crud_Entity_JDBC_SP(String typeBean,Crud_Entity entity);
-    Crud_Entity save_Crud_Entity_JPA_SP(String typeBean,Crud_Entity entity);
-    Optional<List<Crud_Entity>> save_multi_Crud_Entity(String typeBean,List<Crud_Entity> entityList);
-    Optional<List<Crud_Entity>> save_multi_Crud_Entity_JDBC_SP(String typeBean,List<Crud_Entity> entityList);
-    Optional<List<Crud_Entity>> save_multi_Crud_Entity_JPA_SP(String typeBean,List<Crud_Entity> entityList);
-    Optional<List<Crud_Entity>> save_import_Crud_Entity(String typeBean,List<Crud_Entity>entityList);
-    Optional<List<Crud_Entity>> save_import_Crud_Entity_JDBC_SP(String typeBean,List<Crud_Entity>entityList);
-    Optional<List<Crud_Entity>> save_import_Crud_Entity_JPA_SP(String typeBean,List<Crud_Entity>entityList);
+import com.CRUD_API_REST.ADMIN.CRUD.domain.model.Crud_Entity;
+
+public interface Crud_ServicePort {
+    Object save_Crud_Entity(String typeBean,Crud_Entity entity);
+    Object save_Crud_Entity_JDBC_SP(String typeBean,Crud_Entity entity);
+    Object save_Crud_Entity_JPA_SP(String typeBean,Crud_Entity entity);
+    Object save_multi_Crud_Entity(String typeBean,List<Crud_Entity> entityList);
+    Object save_multi_Crud_Entity_JDBC_SP(String typeBean,List<Crud_Entity> entityList);
+    Object save_multi_Crud_Entity_JPA_SP(String typeBean,List<Crud_Entity> entityList);
+    Object save_import_Crud_Entity(String typeBean,MultipartFile file);
+    Object save_import_Crud_Entity_JDBC_SP(String typeBean,MultipartFile file);
+    Object save_import_Crud_Entity_JPA_SP(String typeBean,MultipartFile file);
     Optional<Crud_Entity> find_Crud_EntityById(String typeBean,Long id);
     Optional<Crud_Entity> find_Crud_Entity_JDBC_SP_ById(String typeBean,Long id);
     Optional<Crud_Entity> find_Crud_Entity_JPA_SP_ById(String typeBean,Long id);

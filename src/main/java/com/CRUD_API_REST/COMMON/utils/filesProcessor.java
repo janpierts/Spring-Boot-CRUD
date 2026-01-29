@@ -1,4 +1,4 @@
-package com.CRUD_API_REST.CRUD.infrastructure.utils;
+package com.CRUD_API_REST.COMMON.utils;
 
 import org.apache.poi.ss.usermodel.*;
 import org.springframework.web.multipart.MultipartFile;

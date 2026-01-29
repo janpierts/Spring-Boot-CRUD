@@ -1,4 +1,4 @@
-package com.CRUD_API_REST.CRUD.infrastructure.utils;
+package com.CRUD_API_REST.COMMON.utils;
 
 import java.util.HashMap;
 import java.util.HashSet;

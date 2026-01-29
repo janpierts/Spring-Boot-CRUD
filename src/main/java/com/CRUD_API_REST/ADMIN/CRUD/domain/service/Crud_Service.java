@@ -1,16 +1,18 @@
-package com.CRUD_API_REST.CRUD.domain.service;
+package com.CRUD_API_REST.ADMIN.CRUD.domain.service;
 
-import com.CRUD_API_REST.CRUD.domain.model.Crud_Entity;
-import com.CRUD_API_REST.CRUD.domain.ports.in.Crud_ServicePort;
-import com.CRUD_API_REST.CRUD.domain.ports.out.Crud_RepositoryPort;
-import com.CRUD_API_REST.CRUD.infrastructure.utils.helperEndpoints;
+import com.CRUD_API_REST.ADMIN.CRUD.domain.model.Crud_Entity;
+import com.CRUD_API_REST.ADMIN.CRUD.domain.ports.in.Crud_ServicePort;
+import com.CRUD_API_REST.ADMIN.CRUD.domain.ports.out.Crud_RepositoryPort;
+import com.CRUD_API_REST.COMMON.utils.filesProcessor;
+import com.CRUD_API_REST.COMMON.utils.helperEndpoints;
+
 import jakarta.persistence.EntityNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
-import com.CRUD_API_REST.CRUD.infrastructure.utils.filesProcessor;
+
 import org.apache.poi.ss.usermodel.Row;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;

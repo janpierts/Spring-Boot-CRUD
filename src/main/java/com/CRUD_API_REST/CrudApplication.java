@@ -1,4 +1,4 @@
-package com.CRUD_API_REST.CRUD;
+package com.CRUD_API_REST;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

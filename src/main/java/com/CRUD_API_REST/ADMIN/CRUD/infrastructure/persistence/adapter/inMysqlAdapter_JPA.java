@@ -6,7 +6,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
-
 import com.CRUD_API_REST.ADMIN.CRUD.domain.model.Crud_Entity;
 import com.CRUD_API_REST.ADMIN.CRUD.domain.ports.out.Crud_RepositoryPort;
 import com.CRUD_API_REST.ADMIN.CRUD.infrastructure.persistence.entity.CrudEntityJpa;
@@ -27,6 +26,7 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
         this.entityManager = entityManager;
     }
 
+    //region create entity
     @Override
     public Crud_Entity save_Crud_Entity(String typeBean, Crud_Entity entity) {
         try{
@@ -74,7 +74,9 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
             throw new RuntimeException(e.getMessage());
         }
     }
+    //endregion
     
+    //region create multiple entities
     @Override
     @Transactional
     public Optional<List<Crud_Entity>> save_multi_Crud_Entity(String typeBean, List<Crud_Entity> entityList) {
@@ -155,25 +157,21 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
             throw new RuntimeException("Error al buscar las entidades CRUD por nombres: " + e.getMessage(), e);
         }
     }
+    //endregion
 
+    //region save import entities
     @Override
     public Optional<List<Crud_Entity>> save_import_Crud_Entity(String typeBean,List<Crud_Entity>entityList) {
-        try{
-            return save_multi_Crud_Entity(typeBean, entityList);
-        }catch(Exception e){
-            throw new RuntimeException(e.getMessage());
-        }
+        return save_multi_Crud_Entity(typeBean, entityList);
     }
 
     @Override
     public Optional<List<Crud_Entity>> save_import_Crud_Entity_JPA_SP(String typeBean, List<Crud_Entity>entityList) {
-        try{
-            return save_multi_Crud_Entity_JPA_SP(typeBean, entityList);
-        }catch(Exception e){
-            throw new RuntimeException(e.getMessage());
-        }
+        return save_multi_Crud_Entity_JPA_SP(typeBean, entityList);
     }
+    //endregion
 
+    //region find entity by id and name(s)
     @Override
     public Optional<Crud_Entity> find_Crud_EntityById(String typeBean, Long id) {
         Optional<CrudEntityJpa> jpaEntityOpt = jpaRepository.findById(id);
@@ -242,7 +240,9 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
             throw new RuntimeException("Error al buscar las entidades CRUD por nombres: " + e.getMessage(), e);
         }
     }
+    //endregion
 
+    //region find all entities
     @Override
     public List<Crud_Entity> findAll_Crud_entity(String typeBean) {
         List<CrudEntityJpa> jpaEntityJpas = jpaRepository.findAll();
@@ -260,7 +260,9 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
                 .map(CrudEntityJpa::toDomainEntity)
                 .toList();
         }
-
+    //endregion
+    
+    //region update entity
     @Override
     public Crud_Entity update_Crud_Entity(String typeBean, Crud_Entity entity) {
         Long id = entity.getId();
@@ -287,7 +289,9 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
                new RuntimeException("Error al verificar la actualización del ID: " + entity.getId())
            );
     }
+    //endregion
 
+    //region physical delete
     @Override
     public void delete_Crud_Entity_phisical_ById(String typeBean, Long id) {
         jpaRepository.deleteById(id);
@@ -299,7 +303,9 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
         query.setParameter("p_id", id);
         query.execute();
     }
+    //endregion
 
+    //region logical delete
     @Override
     public Crud_Entity delete_Crud_Entity_logical_ById(String typeBean, Crud_Entity entity) {
        Long id = entity.getId();
@@ -326,7 +332,9 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
                new RuntimeException("Error al verificar la actualización del ID: " + entity.getId())
            );
     }
+    //endregion
 
+    //region unimplemented methods
     @Override
     public Crud_Entity save_Crud_Entity_JDBC_SP(String typeBean, Crud_Entity entity) {
         throw new UnsupportedOperationException("Unimplemented method 'save_Crud_Entity_JDBC_SP'");
@@ -367,4 +375,5 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
     public Optional<List<Crud_Entity>> save_multi_Crud_Entity_JDBC_SP(String typeBean, List<Crud_Entity> entityList) {
         throw new UnsupportedOperationException("Unimplemented method 'save_multi_Crud_Entity_JDBC_SP'");
     }
+    //endregion
 }

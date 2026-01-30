@@ -16,9 +16,9 @@ public class helperEndpoints {
         Map<String, Object> response = new HashMap<>();
         response.put("state", state);
         response.put("message", message);
-        response.put("successBody", successBody);
-        response.put("errorBody", errorBody);
-        response.put("updateBody", updateBody);
+        if(successBody != null) response.put("successBody", successBody);
+        if(errorBody != null) response.put("errorBody", errorBody);
+        if(updateBody != null) response.put("updateBody", updateBody);
         return response;
     }
 
@@ -100,7 +100,7 @@ public class helperEndpoints {
     private static final Pattern ALPHANUMERIC_STRING_PATTERN = Pattern.compile("^[A-Za-z0-9]+$");
     private static final Pattern SPECIAL_CHARACTERS_PATTERN = Pattern.compile("^[!@#$%^&*(),.?\":{}|<>]+$");
     private static final Pattern LONG_PATTERN = Pattern.compile("^-?\\d+$");
-
+    //region Validation Methods restrictive
     public static boolean isValidEmail(String email) {
         return EMAIL_PATTERN.matcher(email).matches();
     }
@@ -233,12 +233,7 @@ public class helperEndpoints {
     public static boolean isLongString(String input) {
         return LONG_PATTERN.matcher(input).matches();
     }
-    public static String sanitizeForSearch(String input) {
-        if (input == null) return "";
-        String clean = trimLeadingTrailingSpaces(input);
-        clean = removeMultipleSpaces(clean);
-        return HTML_TAG_PATTERN.matcher(clean).replaceAll("");
-    }
+    /* isValidForSearch: aqui solo validamos los String segun necesitemos si buscamos validar de manera restrictiva */
     public static boolean isValidForSearch(String input, SearchType type) {
         if (input == null || input.isBlank()) return false;
 
@@ -249,11 +244,7 @@ public class helperEndpoints {
             case SAFE_TEXT -> !containsHTMLTags(input) && !containsHTMLComments(input);
         };
     }
-
-    public enum SearchType {
-        ONLY_ALPHABETIC, ALPHANUMERIC, NUMERIC_LONG, SAFE_TEXT
-    }
-
+    /* isValidLongRange: aqui validamos que un String sea un ONLY_ALPHABETICnúmero largo válido */
     private static boolean isValidLongRange(String input) {
         try {
             Long.parseLong(input);
@@ -261,6 +252,18 @@ public class helperEndpoints {
         } catch (NumberFormatException e) {
             return false;
         }
+    }
+    //endregion
+    /* sanitizeForSearch: aqui limpiamos los String ingresados para evitar vulnerabilidades esto siempre y cuando la validacion no sea restrictiva */
+    public static String sanitizeForSearch(String input) {
+        if (input == null) return "";
+        String clean = trimLeadingTrailingSpaces(input);
+        clean = removeMultipleSpaces(clean);
+        return HTML_TAG_PATTERN.matcher(clean).replaceAll("");
+    }
+    /* enum SearchType: generamos las constantes referentes a los tipos de valores a validar para una busqueda */
+    public enum SearchType {
+        ONLY_ALPHABETIC, ALPHANUMERIC, NUMERIC_LONG, SAFE_TEXT
     }
     //endregion
 }

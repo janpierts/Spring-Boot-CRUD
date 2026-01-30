@@ -172,23 +172,23 @@ public class CrudController {
     //region update entity by id
     /*@Param Long id: identificador único de la entidad a actualizar && Crud_Entity crudEntity: entidad con los nuevos valores */
     @PutMapping("{repositoryType}/update/{id}")
-    public ResponseEntity<?> updateEntity(@PathVariable String repositoryType,@PathVariable Long id, @RequestBody Crud_Entity crudEntity) {
+    public ResponseEntity<Object> updateEntity(@PathVariable String repositoryType,@PathVariable Long id, @RequestBody Crud_Entity crudEntity) {
         crudEntity.setId(id);
-        Crud_Entity updatedEntity = crudService.update_Crud_Entity(repositoryType,crudEntity);
+        Object updatedEntity = crudService.update_Crud_Entity(repositoryType,crudEntity);
         return ResponseEntity.ok(updatedEntity);
     }
     
     @PutMapping("{repositoryType}/update_JDBC_SP/{id}")
-    public ResponseEntity<?> updateEntity_JDBC_SP(@PathVariable String repositoryType,@PathVariable Long id, @RequestBody Crud_Entity crudEntity) {
+    public ResponseEntity<Object> updateEntity_JDBC_SP(@PathVariable String repositoryType,@PathVariable Long id, @RequestBody Crud_Entity crudEntity) {
         crudEntity.setId(id);
-        Crud_Entity updatedEntity = crudService.update_Crud_Entity_JDBC_SP(repositoryType,crudEntity);
+        Object updatedEntity = crudService.update_Crud_Entity_JDBC_SP(repositoryType,crudEntity);
         return ResponseEntity.ok(updatedEntity);
     }
 
     @PutMapping("{repositoryType}/update_JPA_SP/{id}")
-    public ResponseEntity<?> updateEntity_JPA_SP(@PathVariable String repositoryType,@PathVariable Long id, @RequestBody Crud_Entity crudEntity) {
+    public ResponseEntity<Object> updateEntity_JPA_SP(@PathVariable String repositoryType,@PathVariable Long id, @RequestBody Crud_Entity crudEntity) {
         crudEntity.setId(id);
-        Crud_Entity updatedEntity = crudService.update_Crud_Entity_JPA_SP(repositoryType,crudEntity);
+        Object updatedEntity = crudService.update_Crud_Entity_JPA_SP(repositoryType,crudEntity);
         return ResponseEntity.ok(updatedEntity);
     }
     //endregion

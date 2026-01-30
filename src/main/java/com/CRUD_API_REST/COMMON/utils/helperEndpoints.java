@@ -16,9 +16,9 @@ public class helperEndpoints {
         Map<String, Object> response = new HashMap<>();
         response.put("state", state);
         response.put("message", message);
-        response.put("successBody", successBody);
-        response.put("errorBody", errorBody);
-        response.put("updateBody", updateBody);
+        if(successBody != null) response.put("successBody", successBody);
+        if(errorBody != null) response.put("errorBody", errorBody);
+        if(updateBody != null) response.put("updateBody", updateBody);
         return response;
     }
 

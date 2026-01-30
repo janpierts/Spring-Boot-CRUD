@@ -476,9 +476,39 @@ public class Crud_Service implements Crud_ServicePort {
 
     //region UpdateEntity
     @Override
-    public Crud_Entity update_Crud_Entity(String typeBean, Crud_Entity entity) {
-        Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
-        return repositoryPort.update_Crud_Entity(typeBean, entity);
+    public Object update_Crud_Entity(String typeBean, Crud_Entity entity) {
+        try{
+            String mssg = "";
+            if(entity.getId() == null || entity.getId() <= 0){
+                mssg += "El ID no puede ser nulo o menor o igual a cero, ID proporcionado: " + entity.getId();
+            }
+            if (!entity.getName().isEmpty() && entity.getName() != null) {
+                if (!helperEndpoints.isAlphabeticString(entity.getName())) {
+                    if(mssg.length()>0) mssg += " | ";
+                    mssg += "El nombre no puede contener números o caracteres especiales";
+                }
+            } else mssg += "El nombre no puede ser nulo o vacío";
+            if(!entity.getEmail().isEmpty() && entity.getEmail() != null){
+                if(!helperEndpoints.isValidEmail(entity.getEmail())){
+                    if(mssg.length()>0) mssg += " | ";
+                    
+                    mssg += "El correo electrónico no tiene un formato válido";
+                }
+            }else{
+                if(mssg.length()>0) mssg += " | ";
+                mssg += "El correo electrónico no puede ser nulo o vacío";
+            }
+            if(mssg.length()>0){
+                throw new IllegalArgumentException(mssg);
+            }
+            Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
+            Crud_Entity result = repositoryPort.update_Crud_Entity(typeBean, entity);
+            return helperEndpoints.buildResponse(1, "Actualización exitosa", null,null,result);
+        }catch(IllegalArgumentException e){
+            return helperEndpoints.buildResponse(-1, e.getMessage(), entity);
+        }catch(Exception e){
+            return helperEndpoints.buildResponse(-1, e.getMessage(), entity);
+        }
     }
 
     @Override

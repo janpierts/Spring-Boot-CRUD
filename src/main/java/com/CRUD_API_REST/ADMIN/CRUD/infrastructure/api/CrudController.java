@@ -19,7 +19,10 @@ public class CrudController {
     public CrudController(Crud_Service crudService) {
         this.crudService = crudService;
     }
+    /*@Param repositoryType: bean para direccionar logica entre inMemoryRepository, inMysqlAdapter, inMysqlAdapter_JPA  */
 
+    //region create simple entity
+    /*@Param Crud_Entity: entidad para agregar  */
     @PostMapping("{repositoryType}/create")
     public ResponseEntity<Object> createEntity(@PathVariable String repositoryType,@RequestBody Crud_Entity crudEntity) {
         Object createdEntity = crudService.save_Crud_Entity(repositoryType,crudEntity);
@@ -37,7 +40,10 @@ public class CrudController {
         Object createdEntity = crudService.save_Crud_Entity_JPA_SP(repositoryType,crudEntity);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdEntity);
     }
-
+    //endregion
+    
+    //region create multiple entities
+    /*@Param List<Crud_Entity> crudEntities: lista de entidades para agregar  */
     @PostMapping("{repositoryType}/create_multiple")
     public ResponseEntity<Object> createMultipleEntities(@PathVariable String repositoryType,@RequestBody List<Crud_Entity> crudEntities) {
         Object createdEntities = crudService.save_multi_Crud_Entity(repositoryType,crudEntities);
@@ -55,7 +61,10 @@ public class CrudController {
         Object createdEntities = crudService.save_multi_Crud_Entity_JPA_SP(repositoryType,crudEntities);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdEntities);
     }
+    //endregion
 
+    //region import entities from file
+    /*@Param MultipartFile: archivo con datos de entidades a importar */
     @PostMapping(value ="{repositoryType}/import_save",consumes = "multipart/form-data")
     public ResponseEntity<Object> importSaveEntities(@PathVariable String repositoryType,@RequestParam("file") MultipartFile file) throws IOException {
         Object createdEntities = crudService.save_import_Crud_Entity(repositoryType,file);
@@ -73,7 +82,10 @@ public class CrudController {
         Object createdEntities = crudService.save_import_Crud_Entity_JPA_SP(repositoryType,file);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdEntities);
     }
-         
+    //endregion
+    
+    //region get entities by id
+    /*@Param Long id: identificador único de la entidad a buscar */
     @GetMapping("{repositoryType}/find/{id}")
     public ResponseEntity<?> getEntityById(@PathVariable String repositoryType,@PathVariable Long id) {
         return crudService.find_Crud_EntityById(repositoryType,id)
@@ -94,7 +106,10 @@ public class CrudController {
                 .map(ResponseEntity::ok)
                 .orElseGet(ResponseEntity.notFound()::build);
     }
+    //endregion
 
+    //region get entities by name
+    /*@Param String name: nombre de la entidad a buscar */
     @GetMapping("{repositoryType}/find/name/{name}")
     public ResponseEntity<?> getEntityByName(@PathVariable String repositoryType,@PathVariable String name) {
         return crudService.find_Crud_EntityByName(repositoryType,name)
@@ -113,6 +128,10 @@ public class CrudController {
                 .map(ResponseEntity::ok)
                 .orElseGet(ResponseEntity.notFound()::build);
     }
+    //endregion
+
+    //region find entities by names
+    /*@Param List<Crud_Entity> names: lista de nombres de entidades a buscar */
     @PostMapping("{repositoryType}/find/names")
     public ResponseEntity<?> getEntityByNames(@PathVariable String repositoryType,@RequestBody List<Crud_Entity> names) {
         return crudService.find_Crud_EntityByNames(repositoryType,names)
@@ -131,7 +150,9 @@ public class CrudController {
                 .map(ResponseEntity::ok)
                 .orElseGet(ResponseEntity.notFound()::build);
     }
+    //endregion
 
+    //region get all entities
     @GetMapping("{repositoryType}/find/all")
     public ResponseEntity<List<Crud_Entity>> getAllEntities(@PathVariable String repositoryType) {
         return ResponseEntity.ok(crudService.findAll_Crud_entity(repositoryType));
@@ -146,28 +167,34 @@ public class CrudController {
     public ResponseEntity<List<Crud_Entity>> getAllEntities_JPA_SP(@PathVariable String repositoryType) {
         return ResponseEntity.ok(crudService.findAll_Crud_entity_JPA_SP(repositoryType));
     }
+    //endregion
 
+    //region update entity by id
+    /*@Param Long id: identificador único de la entidad a actualizar && Crud_Entity crudEntity: entidad con los nuevos valores */
     @PutMapping("{repositoryType}/update/{id}")
-    public ResponseEntity<?> updateEntity(@PathVariable String repositoryType,@PathVariable Long id, @RequestBody Crud_Entity crudEntity) {
+    public ResponseEntity<Object> updateEntity(@PathVariable String repositoryType,@PathVariable Long id, @RequestBody Crud_Entity crudEntity) {
         crudEntity.setId(id);
-        Crud_Entity updatedEntity = crudService.update_Crud_Entity(repositoryType,crudEntity);
+        Object updatedEntity = crudService.update_Crud_Entity(repositoryType,crudEntity);
         return ResponseEntity.ok(updatedEntity);
     }
     
     @PutMapping("{repositoryType}/update_JDBC_SP/{id}")
-    public ResponseEntity<?> updateEntity_JDBC_SP(@PathVariable String repositoryType,@PathVariable Long id, @RequestBody Crud_Entity crudEntity) {
+    public ResponseEntity<Object> updateEntity_JDBC_SP(@PathVariable String repositoryType,@PathVariable Long id, @RequestBody Crud_Entity crudEntity) {
         crudEntity.setId(id);
-        Crud_Entity updatedEntity = crudService.update_Crud_Entity_JDBC_SP(repositoryType,crudEntity);
+        Object updatedEntity = crudService.update_Crud_Entity_JDBC_SP(repositoryType,crudEntity);
         return ResponseEntity.ok(updatedEntity);
     }
 
     @PutMapping("{repositoryType}/update_JPA_SP/{id}")
-    public ResponseEntity<?> updateEntity_JPA_SP(@PathVariable String repositoryType,@PathVariable Long id, @RequestBody Crud_Entity crudEntity) {
+    public ResponseEntity<Object> updateEntity_JPA_SP(@PathVariable String repositoryType,@PathVariable Long id, @RequestBody Crud_Entity crudEntity) {
         crudEntity.setId(id);
-        Crud_Entity updatedEntity = crudService.update_Crud_Entity_JPA_SP(repositoryType,crudEntity);
+        Object updatedEntity = crudService.update_Crud_Entity_JPA_SP(repositoryType,crudEntity);
         return ResponseEntity.ok(updatedEntity);
     }
+    //endregion
 
+    //region delete phisical entity by id
+    /*@Param Long id: identificador único de la entidad a eliminar */
     @DeleteMapping("{repositoryType}/delete_phisical/{id}")
     public ResponseEntity<Void> deleteEntity_phisical_ById(@PathVariable String repositoryType,@PathVariable Long id) {
         crudService.delete_Crud_Entity_phisical_ById(repositoryType,id);
@@ -185,7 +212,10 @@ public class CrudController {
         crudService.delete_Crud_Entity_phisical_JPA_SP_ById(repositoryType,id);
         return ResponseEntity.noContent().build();
     }
+    //endregion
 
+    //region delete logical entity by id
+    /*@Param Long id: identificador único de la entidad a eliminar lógicamente */
     @PutMapping("{repositoryType}/delete_logical/{id}")
     public ResponseEntity<?> deleteEntity_logical_ById(@PathVariable String repositoryType,@PathVariable Long id) {
         Optional<Crud_Entity> existingEntityOpt = crudService.find_Crud_EntityById(repositoryType, id);
@@ -224,4 +254,5 @@ public class CrudController {
         Crud_Entity updatedEntity = crudService.delete_Crud_Entity_logical_JPA_SP_ById(repositoryType,crudEntity);
         return ResponseEntity.ok(updatedEntity);
     }
+    //endregion
 }

@@ -28,13 +28,13 @@ public interface Crud_ServicePort {
     List<Crud_Entity> findAll_Crud_entity(String typeBean);
     List<Crud_Entity> findAll_Crud_entity_JDBC_SP(String typeBean);
     List<Crud_Entity> findAll_Crud_entity_JPA_SP(String typeBean);
-    Crud_Entity update_Crud_Entity(String typeBean,Crud_Entity entity);
-    Crud_Entity update_Crud_Entity_JDBC_SP(String typeBean,Crud_Entity entity);
-    Crud_Entity update_Crud_Entity_JPA_SP(String typeBean,Crud_Entity entity);
+    Object update_Crud_Entity(String typeBean,Crud_Entity entity);
+    Object update_Crud_Entity_JDBC_SP(String typeBean,Crud_Entity entity);
+    Object update_Crud_Entity_JPA_SP(String typeBean,Crud_Entity entity);
     void delete_Crud_Entity_phisical_ById(String typeBean,Long id);
     void delete_Crud_Entity_phisical_JDBC_SP_ById(String typeBean,Long id);
     void delete_Crud_Entity_phisical_JPA_SP_ById(String typeBean,Long id);
-    Crud_Entity delete_Crud_Entity_logical_ById(String typeBean, Crud_Entity entity);
-    Crud_Entity delete_Crud_Entity_logical_JDBC_SP_ById(String typeBean, Crud_Entity entity);
-    Crud_Entity delete_Crud_Entity_logical_JPA_SP_ById(String typeBean, Crud_Entity entity);
+    Object delete_Crud_Entity_logical_ById(String typeBean, Crud_Entity entity);
+    Object delete_Crud_Entity_logical_JDBC_SP_ById(String typeBean, Crud_Entity entity);
+    Object delete_Crud_Entity_logical_JPA_SP_ById(String typeBean, Crud_Entity entity);
 }

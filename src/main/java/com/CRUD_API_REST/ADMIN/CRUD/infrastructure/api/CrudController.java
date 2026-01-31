@@ -4,13 +4,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import com.CRUD_API_REST.ADMIN.CRUD.domain.model.Crud_Entity;
 import com.CRUD_API_REST.ADMIN.CRUD.domain.service.Crud_Service;
-
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/crud-entities")
@@ -217,42 +214,54 @@ public class CrudController {
     //region delete logical entity by id
     /*@Param Long id: identificador único de la entidad a eliminar lógicamente */
     @PutMapping("{repositoryType}/delete_logical/{id}")
-    public ResponseEntity<?> deleteEntity_logical_ById(@PathVariable String repositoryType,@PathVariable Long id) {
-        Optional<Crud_Entity> existingEntityOpt = crudService.find_Crud_EntityById(repositoryType, id);
+    public ResponseEntity<Object> deleteEntity_logical_ById(@PathVariable String repositoryType,@PathVariable Long id) {
+        Crud_Entity entityToDelete = new Crud_Entity();
+        entityToDelete.setId(id);
+        Object updatedEntity = crudService.delete_Crud_Entity_logical_ById(repositoryType,entityToDelete);
+        return ResponseEntity.ok(updatedEntity);
+        /* Optional<Crud_Entity> existingEntityOpt = crudService.find_Crud_EntityById(repositoryType, id);
         if (existingEntityOpt.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
     
         Crud_Entity crudEntity = existingEntityOpt.get();
         crudEntity.setState(false); 
-        Crud_Entity updatedEntity = crudService.delete_Crud_Entity_logical_ById(repositoryType,crudEntity);
-        return ResponseEntity.ok(updatedEntity);
+        Object updatedEntity = crudService.delete_Crud_Entity_logical_ById(repositoryType,crudEntity);
+        return ResponseEntity.ok(updatedEntity); */
     }
 
     @PutMapping("{repositoryType}/delete_logical_JDBC_SP/{id}")
-    public ResponseEntity<?> deleteEntity_logical_JDBC_ById(@PathVariable String repositoryType,@PathVariable Long id) {
-        Optional<Crud_Entity> existingEntityOpt = crudService.find_Crud_Entity_JDBC_SP_ById(repositoryType, id);
+    public ResponseEntity<Object> deleteEntity_logical_JDBC_ById(@PathVariable String repositoryType,@PathVariable Long id) {
+        Crud_Entity entityToDelete = new Crud_Entity();
+        entityToDelete.setId(id);
+        Object updatedEntity = crudService.delete_Crud_Entity_logical_JDBC_SP_ById(repositoryType,entityToDelete);
+        return ResponseEntity.ok(updatedEntity);
+        /* Optional<Crud_Entity> existingEntityOpt = crudService.find_Crud_Entity_JDBC_SP_ById(repositoryType, id);
         if (existingEntityOpt.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
     
         Crud_Entity crudEntity = existingEntityOpt.get();
         crudEntity.setState(false); 
-        Crud_Entity updatedEntity = crudService.delete_Crud_Entity_logical_JDBC_SP_ById(repositoryType,crudEntity);
-        return ResponseEntity.ok(updatedEntity);
+        Object updatedEntity = crudService.delete_Crud_Entity_logical_JDBC_SP_ById(repositoryType,crudEntity);
+        return ResponseEntity.ok(updatedEntity); */
     }
 
     @PutMapping("{repositoryType}/delete_logical_JPA_SP/{id}")
-    public ResponseEntity<?> deleteEntity_logical_JPA_SP_ById(@PathVariable String repositoryType,@PathVariable Long id) {
-        Optional<Crud_Entity> existingEntityOpt = crudService.find_Crud_Entity_JPA_SP_ById(repositoryType, id);
+    public ResponseEntity<Object> deleteEntity_logical_JPA_SP_ById(@PathVariable String repositoryType,@PathVariable Long id) {
+        Crud_Entity entityToDelete = new Crud_Entity();
+        entityToDelete.setId(id);
+        Object updatedEntity = crudService.delete_Crud_Entity_logical_JPA_SP_ById(repositoryType,entityToDelete);
+        return ResponseEntity.ok(updatedEntity);
+        /* Optional<Crud_Entity> existingEntityOpt = crudService.find_Crud_Entity_JPA_SP_ById(repositoryType, id);
         if (existingEntityOpt.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
     
         Crud_Entity crudEntity = existingEntityOpt.get();
         crudEntity.setState(false); 
-        Crud_Entity updatedEntity = crudService.delete_Crud_Entity_logical_JPA_SP_ById(repositoryType,crudEntity);
-        return ResponseEntity.ok(updatedEntity);
+        Object updatedEntity = crudService.delete_Crud_Entity_logical_JPA_SP_ById(repositoryType,crudEntity);
+        return ResponseEntity.ok(updatedEntity); */
     }
     //endregion
 }

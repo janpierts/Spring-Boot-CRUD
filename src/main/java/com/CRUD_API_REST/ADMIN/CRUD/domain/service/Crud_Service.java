@@ -606,19 +606,30 @@ public class Crud_Service implements Crud_ServicePort {
 
     //region DeleteLogicalEntityById
     @Override
-    public Crud_Entity delete_Crud_Entity_logical_ById(String typeBean, Crud_Entity entity) {
-        Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
-        return repositoryPort.delete_Crud_Entity_logical_ById(typeBean, entity);
+    public Object delete_Crud_Entity_logical_ById(String typeBean, Crud_Entity entity) {
+        try{
+            if(entity.getId() == null || entity.getId() <= 0){
+                throw new IllegalArgumentException("El ID no puede ser nulo o menor o igual a cero, ID proporcionado: " + entity.getId());
+            }
+            Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
+            entity = repositoryPort.delete_Crud_Entity_logical_ById(typeBean, entity);
+            
+            return helperEndpoints.buildResponse(1, "Eliminación lógica exitosa", null, null, entity);
+        }catch(IllegalArgumentException e){
+            return helperEndpoints.buildResponse(-1, e.getMessage(), entity);
+        }catch(Exception e){
+            return helperEndpoints.buildResponse(-1, e.getMessage(), entity);
+        }
     }
 
     @Override
-    public Crud_Entity delete_Crud_Entity_logical_JDBC_SP_ById(String typeBean, Crud_Entity entity) {
+    public Object delete_Crud_Entity_logical_JDBC_SP_ById(String typeBean, Crud_Entity entity) {
         Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
         return repositoryPort.delete_Crud_Entity_logical_JDBC_SP_ById(typeBean, entity);
     }
 
     @Override
-    public Crud_Entity delete_Crud_Entity_logical_JPA_SP_ById(String typeBean, Crud_Entity entity) {
+    public Object delete_Crud_Entity_logical_JPA_SP_ById(String typeBean, Crud_Entity entity) {
         Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
         return repositoryPort.delete_Crud_Entity_logical_JPA_SP_ById(typeBean, entity);
     }

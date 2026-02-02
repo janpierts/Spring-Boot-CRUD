@@ -4,13 +4,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import com.CRUD_API_REST.ADMIN.CRUD.domain.model.Crud_Entity;
 import com.CRUD_API_REST.ADMIN.CRUD.domain.service.Crud_Service;
+import com.CRUD_API_REST.COMMON.utils.helperEndpoints;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/crud-entities")
@@ -25,20 +25,77 @@ public class CrudController {
     /*@Param Crud_Entity: entidad para agregar  */
     @PostMapping("{repositoryType}/create")
     public ResponseEntity<Object> createEntity(@PathVariable String repositoryType,@RequestBody Crud_Entity crudEntity) {
+        String mssg = "";
+        int state = 0;
+        if(crudEntity.getName() == null || crudEntity.getEmail() == null || crudEntity.getName().isEmpty() || crudEntity.getEmail().isEmpty() || crudEntity.getName().isBlank() || crudEntity.getEmail().isBlank()){
+            mssg = "Name and Email are required fields.";
+        }
+        if(helperEndpoints.isAlphabeticWithSpaces(crudEntity.getName()) == false || helperEndpoints.isValidEmail(crudEntity.getEmail()) == false){
+            if(!mssg.isEmpty()) mssg = " | ";
+            mssg += " Name(only Alphabethict) or Email format is invalid.";
+        }
+        if(!mssg.isEmpty()){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(helperEndpoints.buildResponse(-1, mssg, null, crudEntity));
+        }
         Object createdEntity = crudService.save_Crud_Entity(repositoryType,crudEntity);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdEntity);
+        try{
+            Field createdEntityField = createdEntity.getClass().getDeclaredField("state");
+            createdEntityField.setAccessible(true);
+            state = (int) createdEntityField.get(createdEntity);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        return ResponseEntity.status(state == 1 ? HttpStatus.CREATED : HttpStatus.BAD_REQUEST).body(createdEntity);
     }
 
     @PostMapping("{repositoryType}/create_JDBC_SP")
     public ResponseEntity<Object> createEntity_JDBC_SP(@PathVariable String repositoryType,@RequestBody Crud_Entity crudEntity) {
+        String mssg = "";
+        int state = 0;
+        if(crudEntity.getName() == null || crudEntity.getEmail() == null || crudEntity.getName().isEmpty() || crudEntity.getEmail().isEmpty() || crudEntity.getName().isBlank() || crudEntity.getEmail().isBlank()){
+            mssg = "Name and Email are required fields.";
+        }
+        if(helperEndpoints.isAlphabeticWithSpaces(crudEntity.getName()) == false || helperEndpoints.isValidEmail(crudEntity.getEmail()) == false){
+            if(!mssg.isEmpty()) mssg = " | ";
+            mssg += " Name(only Alphabethict) or Email format is invalid.";
+        }
+        if(!mssg.isEmpty()){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(helperEndpoints.buildResponse(-1, mssg, null, crudEntity));
+        }
         Object createdEntity = crudService.save_Crud_Entity_JDBC_SP(repositoryType,crudEntity);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdEntity);
+        try{
+            Field createdEntityField = createdEntity.getClass().getDeclaredField("state");
+            createdEntityField.setAccessible(true);
+            state = (int) createdEntityField.get(createdEntity);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        return ResponseEntity.status(state == 1 ? HttpStatus.CREATED : HttpStatus.BAD_REQUEST).body(createdEntity);
     }
 
     @PostMapping("{repositoryType}/create_JPA_SP")
     public ResponseEntity<Object> createEntity_JPA_SP(@PathVariable String repositoryType,@RequestBody Crud_Entity crudEntity) {
+        String mssg = "";
+        int state = 0;
+        if(crudEntity.getName() == null || crudEntity.getEmail() == null || crudEntity.getName().isEmpty() || crudEntity.getEmail().isEmpty() || crudEntity.getName().isBlank() || crudEntity.getEmail().isBlank()){
+            mssg = "Name and Email are required fields.";
+        }
+        if(helperEndpoints.isAlphabeticWithSpaces(crudEntity.getName()) == false || helperEndpoints.isValidEmail(crudEntity.getEmail()) == false){
+            if(!mssg.isEmpty()) mssg = " | ";
+            mssg += " Name(only Alphabethict) or Email format is invalid.";
+        }
+        if(!mssg.isEmpty()){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(helperEndpoints.buildResponse(-1, mssg, null, crudEntity));
+        }
         Object createdEntity = crudService.save_Crud_Entity_JPA_SP(repositoryType,crudEntity);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdEntity);
+        try{
+            Field createdEntityField = createdEntity.getClass().getDeclaredField("state");
+            createdEntityField.setAccessible(true);
+            state = (int) createdEntityField.get(createdEntity);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        return ResponseEntity.status(state == 1 ? HttpStatus.CREATED : HttpStatus.BAD_REQUEST).body(createdEntity);
     }
     //endregion
     
@@ -217,42 +274,54 @@ public class CrudController {
     //region delete logical entity by id
     /*@Param Long id: identificador único de la entidad a eliminar lógicamente */
     @PutMapping("{repositoryType}/delete_logical/{id}")
-    public ResponseEntity<?> deleteEntity_logical_ById(@PathVariable String repositoryType,@PathVariable Long id) {
-        Optional<Crud_Entity> existingEntityOpt = crudService.find_Crud_EntityById(repositoryType, id);
+    public ResponseEntity<Object> deleteEntity_logical_ById(@PathVariable String repositoryType,@PathVariable Long id) {
+        Crud_Entity entityToDelete = new Crud_Entity();
+        entityToDelete.setId(id);
+        Object updatedEntity = crudService.delete_Crud_Entity_logical_ById(repositoryType,entityToDelete);
+        return ResponseEntity.ok(updatedEntity);
+        /* Optional<Crud_Entity> existingEntityOpt = crudService.find_Crud_EntityById(repositoryType, id);
         if (existingEntityOpt.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
     
         Crud_Entity crudEntity = existingEntityOpt.get();
         crudEntity.setState(false); 
-        Crud_Entity updatedEntity = crudService.delete_Crud_Entity_logical_ById(repositoryType,crudEntity);
-        return ResponseEntity.ok(updatedEntity);
+        Object updatedEntity = crudService.delete_Crud_Entity_logical_ById(repositoryType,crudEntity);
+        return ResponseEntity.ok(updatedEntity); */
     }
 
     @PutMapping("{repositoryType}/delete_logical_JDBC_SP/{id}")
-    public ResponseEntity<?> deleteEntity_logical_JDBC_ById(@PathVariable String repositoryType,@PathVariable Long id) {
-        Optional<Crud_Entity> existingEntityOpt = crudService.find_Crud_Entity_JDBC_SP_ById(repositoryType, id);
+    public ResponseEntity<Object> deleteEntity_logical_JDBC_ById(@PathVariable String repositoryType,@PathVariable Long id) {
+        Crud_Entity entityToDelete = new Crud_Entity();
+        entityToDelete.setId(id);
+        Object updatedEntity = crudService.delete_Crud_Entity_logical_JDBC_SP_ById(repositoryType,entityToDelete);
+        return ResponseEntity.ok(updatedEntity);
+        /* Optional<Crud_Entity> existingEntityOpt = crudService.find_Crud_Entity_JDBC_SP_ById(repositoryType, id);
         if (existingEntityOpt.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
     
         Crud_Entity crudEntity = existingEntityOpt.get();
         crudEntity.setState(false); 
-        Crud_Entity updatedEntity = crudService.delete_Crud_Entity_logical_JDBC_SP_ById(repositoryType,crudEntity);
-        return ResponseEntity.ok(updatedEntity);
+        Object updatedEntity = crudService.delete_Crud_Entity_logical_JDBC_SP_ById(repositoryType,crudEntity);
+        return ResponseEntity.ok(updatedEntity); */
     }
 
     @PutMapping("{repositoryType}/delete_logical_JPA_SP/{id}")
-    public ResponseEntity<?> deleteEntity_logical_JPA_SP_ById(@PathVariable String repositoryType,@PathVariable Long id) {
-        Optional<Crud_Entity> existingEntityOpt = crudService.find_Crud_Entity_JPA_SP_ById(repositoryType, id);
+    public ResponseEntity<Object> deleteEntity_logical_JPA_SP_ById(@PathVariable String repositoryType,@PathVariable Long id) {
+        Crud_Entity entityToDelete = new Crud_Entity();
+        entityToDelete.setId(id);
+        Object updatedEntity = crudService.delete_Crud_Entity_logical_JPA_SP_ById(repositoryType,entityToDelete);
+        return ResponseEntity.ok(updatedEntity);
+        /* Optional<Crud_Entity> existingEntityOpt = crudService.find_Crud_Entity_JPA_SP_ById(repositoryType, id);
         if (existingEntityOpt.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
     
         Crud_Entity crudEntity = existingEntityOpt.get();
         crudEntity.setState(false); 
-        Crud_Entity updatedEntity = crudService.delete_Crud_Entity_logical_JPA_SP_ById(repositoryType,crudEntity);
-        return ResponseEntity.ok(updatedEntity);
+        Object updatedEntity = crudService.delete_Crud_Entity_logical_JPA_SP_ById(repositoryType,crudEntity);
+        return ResponseEntity.ok(updatedEntity); */
     }
     //endregion
 }

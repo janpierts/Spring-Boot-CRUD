@@ -89,7 +89,6 @@ public class helperEndpoints {
     private static final Pattern NON_PRINTABLE_ASCII_PATTERN = Pattern.compile("^[\\x00-\\x1F\\x7F]+$");
     private static final Pattern VOWELS_PATTERN = Pattern.compile("^[AEIOUaeiou]+$");
     private static final Pattern CONSONANTS_PATTERN = Pattern.compile("^[BCDFGHJKLMNPQRSTVWXYZbcdfghjklmnpqrstvwxyz]+$");   
-    private static final Pattern PALINDROME_PATTERN = Pattern.compile("^(?:(.)(?:(?:(?<=\\1).*(?=\\1))?\\1))$");
     private static final Pattern ANAGRAM_PATTERN = Pattern.compile("^(?=(?:.*(.)(?=.*\\1)){2,}).+$");
     private static final Pattern URL_WITH_QUERY_PATTERN = Pattern.compile("^(https?|ftp)://[^\\s/$.?#].[^\\s]*\\?.+$");
     private static final Pattern HTML_COMMENT_PATTERN = Pattern.compile("<!--(.*?)-->", Pattern.DOTALL);
@@ -100,6 +99,7 @@ public class helperEndpoints {
     private static final Pattern ALPHANUMERIC_STRING_PATTERN = Pattern.compile("^[A-Za-z0-9]+$");
     private static final Pattern SPECIAL_CHARACTERS_PATTERN = Pattern.compile("^[!@#$%^&*(),.?\":{}|<>]+$");
     private static final Pattern LONG_PATTERN = Pattern.compile("^-?\\d+$");
+    private static final Pattern ALPHABETIC_WITH_SPACES = Pattern.compile("^[A-Za-z ]+$");
     //region Validation Methods restrictive
     public static boolean isValidEmail(String email) {
         return EMAIL_PATTERN.matcher(email).matches();
@@ -200,9 +200,6 @@ public class helperEndpoints {
     public static boolean containsOnlyConsonants(String input) {
         return CONSONANTS_PATTERN.matcher(input).matches();
     }
-    public static boolean isPalindrome(String input) {
-        return PALINDROME_PATTERN.matcher(input).matches();
-    }
     public static boolean isAnagram(String input) {
         return ANAGRAM_PATTERN.matcher(input).matches();
     }
@@ -232,6 +229,9 @@ public class helperEndpoints {
     }
     public static boolean isLongString(String input) {
         return LONG_PATTERN.matcher(input).matches();
+    }
+    public static boolean isAlphabeticWithSpaces(String input) {
+        return ALPHABETIC_WITH_SPACES.matcher(input).matches();
     }
     /* isValidForSearch: aqui solo validamos los String segun necesitemos si buscamos validar de manera restrictiva */
     public static boolean isValidForSearch(String input, SearchType type) {

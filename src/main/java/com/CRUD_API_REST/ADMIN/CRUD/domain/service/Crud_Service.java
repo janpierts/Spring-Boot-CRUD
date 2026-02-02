@@ -38,9 +38,6 @@ public class Crud_Service implements Crud_ServicePort {
     @Override
     public Object save_Crud_Entity(String typeBean, Crud_Entity entity) {
         try{
-            if(entity.getName() == null || entity.getName().trim().isEmpty()){
-                throw new IllegalArgumentException("El nombre no puede ser nulo o vacío");
-            }
             Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
             Object result = repositoryPort.save_Crud_Entity(typeBean, entity);
 
@@ -55,9 +52,6 @@ public class Crud_Service implements Crud_ServicePort {
     @Override
     public Object save_Crud_Entity_JDBC_SP(String typeBean, Crud_Entity entity) {
         try{
-            if(entity.getName() == null || entity.getName().trim().isEmpty()){
-                throw new IllegalArgumentException("El nombre no puede ser nulo o vacío");
-            }
             Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
             Object result = repositoryPort.save_Crud_Entity_JDBC_SP(typeBean, entity);
 
@@ -72,9 +66,6 @@ public class Crud_Service implements Crud_ServicePort {
     @Override
     public Object save_Crud_Entity_JPA_SP(String typeBean, Crud_Entity entity) {
         try{
-            if(entity.getName() == null || entity.getName().trim().isEmpty()){
-                throw new RuntimeException("El nombre no puede ser nulo o vacío");
-            }
             Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
             Object result = repositoryPort.save_Crud_Entity_JPA_SP(typeBean, entity);
 
@@ -225,7 +216,7 @@ public class Crud_Service implements Crud_ServicePort {
                 }
                 Crud_Entity entity = new Crud_Entity();
                 entity.setName(name.trim());
-                entity.setEmail(email.trim());
+                entity.setEmail(email == null ? null : email.trim());
                 return entity;
             };
             List<Crud_Entity> entitiesFromFileList = filesProcessor.excelToEntities(file, rowMapper);
@@ -281,7 +272,7 @@ public class Crud_Service implements Crud_ServicePort {
                 }
                 Crud_Entity entity = new Crud_Entity();
                 entity.setName(name.trim());
-                entity.setEmail(email.trim());
+                entity.setEmail(email == null ? null : email.trim());
                 return entity;
             };
             List<Crud_Entity> entitiesFromFileList = filesProcessor.excelToEntities(file, rowMapper);
@@ -337,7 +328,7 @@ public class Crud_Service implements Crud_ServicePort {
                 }
                 Crud_Entity entity = new Crud_Entity();
                 entity.setName(name.trim());
-                entity.setEmail(email.trim());
+                entity.setEmail(email == null ? null : email.trim());
                 return entity;
             };
             List<Crud_Entity> entitiesFromFileList = filesProcessor.excelToEntities(file, rowMapper);
@@ -417,18 +408,21 @@ public class Crud_Service implements Crud_ServicePort {
     //region FindEntityByName
     @Override
     public Optional<Crud_Entity> find_Crud_EntityByName(String typeBean, String name) {
+        name = helperEndpoints.sanitizeForSearch(name.trim());
         Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
         return repositoryPort.find_Crud_EntityByName(typeBean, name);
     }
 
     @Override
     public Optional<Crud_Entity> find_Crud_Entity_JDBC_SP_ByName(String typeBean, String name) {
+        name = helperEndpoints.sanitizeForSearch(name.trim());
         Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
         return repositoryPort.find_Crud_Entity_JDBC_SP_ByName(typeBean, name);
     }
 
     @Override
     public Optional<Crud_Entity> find_Crud_Entity_JPA_SP_ByName(String typeBean, String name) {
+        name = helperEndpoints.sanitizeForSearch(name.trim());
         Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
         return repositoryPort.find_Crud_Entity_JPA_SP_ByName(typeBean, name);
     }
@@ -484,7 +478,7 @@ public class Crud_Service implements Crud_ServicePort {
                 mssg += "El ID no puede ser nulo o menor o igual a cero, ID proporcionado: " + entity.getId();
             }
             if (!entity.getName().isEmpty() && entity.getName() != null) {
-                if (!helperEndpoints.isAlphabeticString(entity.getName())) {
+                if (!helperEndpoints.isAlphabeticWithSpaces(entity.getName())) {
                     if(mssg.length()>0) mssg += " | ";
                     mssg += "El nombre no puede contener números o caracteres especiales";
                 }
@@ -520,7 +514,7 @@ public class Crud_Service implements Crud_ServicePort {
                 mssg += "El ID no puede ser nulo o menor o igual a cero, ID proporcionado: " + entity.getId();
             }
             if (!entity.getName().isEmpty() && entity.getName() != null) {
-                if (!helperEndpoints.isAlphabeticString(entity.getName())) {
+                if (!helperEndpoints.isAlphabeticWithSpaces(entity.getName())) {
                     if(mssg.length()>0) mssg += " | ";
                     mssg += "El nombre no puede contener números o caracteres especiales";
                 }
@@ -556,7 +550,7 @@ public class Crud_Service implements Crud_ServicePort {
                 mssg += "El ID no puede ser nulo o menor o igual a cero, ID proporcionado: " + entity.getId();
             }
             if (!entity.getName().isEmpty() && entity.getName() != null) {
-                if (!helperEndpoints.isAlphabeticString(entity.getName())) {
+                if (!helperEndpoints.isAlphabeticWithSpaces(entity.getName())) {
                     if(mssg.length()>0) mssg += " | ";
                     mssg += "El nombre no puede contener números o caracteres especiales";
                 }
@@ -624,14 +618,36 @@ public class Crud_Service implements Crud_ServicePort {
 
     @Override
     public Object delete_Crud_Entity_logical_JDBC_SP_ById(String typeBean, Crud_Entity entity) {
-        Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
-        return repositoryPort.delete_Crud_Entity_logical_JDBC_SP_ById(typeBean, entity);
+        try{
+            if(entity.getId() == null || entity.getId() <= 0){
+                throw new IllegalArgumentException("El ID no puede ser nulo o menor o igual a cero, ID proporcionado: " + entity.getId());
+            }
+            Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
+            entity = repositoryPort.delete_Crud_Entity_logical_JDBC_SP_ById(typeBean, entity);
+            
+            return helperEndpoints.buildResponse(1, "Eliminación lógica exitosa", null, null, entity);
+        }catch(IllegalArgumentException e){
+            return helperEndpoints.buildResponse(-1, e.getMessage(), entity);
+        }catch(Exception e){
+            return helperEndpoints.buildResponse(-1, e.getMessage(), entity);
+        }
     }
 
     @Override
     public Object delete_Crud_Entity_logical_JPA_SP_ById(String typeBean, Crud_Entity entity) {
-        Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
-        return repositoryPort.delete_Crud_Entity_logical_JPA_SP_ById(typeBean, entity);
+        try{
+            if(entity.getId() == null || entity.getId() <= 0){
+                throw new IllegalArgumentException("El ID no puede ser nulo o menor o igual a cero, ID proporcionado: " + entity.getId());
+            }
+            Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
+            entity = repositoryPort.delete_Crud_Entity_logical_JPA_SP_ById(typeBean, entity);
+            
+            return helperEndpoints.buildResponse(1, "Eliminación lógica exitosa", null, null, entity);
+        }catch(IllegalArgumentException e){
+            return helperEndpoints.buildResponse(-1, e.getMessage(), entity);
+        }catch(Exception e){
+            return helperEndpoints.buildResponse(-1, e.getMessage(), entity);
+        }
     }
     //endregion
 }

@@ -27,18 +27,16 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
     public inMysqlAdapter_JDBC(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
-
+    
+    //region save simple, multi and import methods
     @Override
     public Crud_Entity save_Crud_Entity_JDBC_SP (String typeBean,Crud_Entity entity) {
         String sql = "{ call jbAPI_crud_insert(?,?,?,?) }";        
-        try {
-            if(entity.getName() == null || entity.getName().isEmpty()) {
-                throw new RuntimeException("El nombre no puede estar vacío.");
-            }
-            Optional<Crud_Entity> existingEntityOpt = find_Crud_Entity_JDBC_SP_ByName(typeBean,entity.getName());
-            if (existingEntityOpt.isPresent()) {
-                throw new RuntimeException("Error al guardar: el nombre ya existe.");
-            }
+        Optional<Crud_Entity> existingEntityOpt = find_Crud_Entity_JDBC_SP_ByName(typeBean,entity.getName());
+        if (existingEntityOpt.isPresent()) {
+            throw new RuntimeException("Error al guardar: el nombre ya existe.");
+        }
+        try{
             jdbcTemplate.execute(sql, (CallableStatementCallback<Long>) cs -> {
                 cs.setString(1, entity.getName());
                 cs.setString(2, entity.getEmail());
@@ -50,8 +48,8 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
                 entity.setState(true);
                 return entity.getId();
             });
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e.getMessage());
+        }catch(Exception e){
+            throw new RuntimeException("Error al insertar la entidad CRUD: " + e.getMessage());
         }
         return entity;
     }
@@ -109,7 +107,9 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
             throw new RuntimeException(e.getMessage());
         }
     }
+    //endregion
 
+    //region find methods
     @Override
     public List<Crud_Entity> findAll_Crud_entity_JDBC_SP(String typeBean) {
         String sql = "{call jbAPI_crud_list()}";
@@ -185,11 +185,17 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
             throw new RuntimeException("Error al insertar las entidades CRUD: " + e.getMessage(), e);
         }
     }
+    //endregion
 
+    //region update and delete methods
     @Override
     public Crud_Entity update_Crud_Entity_JDBC_SP(String typeBean,Crud_Entity Entity) {
         String sql = "{call jbAPI_crud_update(?,?,?)}";
         try{
+            Optional<Crud_Entity> existingEntityOpt = find_Crud_Entity_JDBC_SP_ById(typeBean, Entity.getId());
+            if (existingEntityOpt.isEmpty()) {
+                throw new RuntimeException("Error al actualizar: el ID: "+Entity.getId()+" no existe.");
+            }
             jdbcTemplate.update(sql,  Entity.getId(), Entity.getName(), Entity.getEmail());
             Optional<Crud_Entity> updatedEntityOpt = find_Crud_Entity_JDBC_SP_ById(typeBean, Entity.getId());
             if (updatedEntityOpt.isPresent()) {
@@ -205,6 +211,10 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
     public void delete_Crud_Entity_phisical_JDBC_SP_ById(String typeBean,Long id) {
         String sql = "{call jbAPI_crud_delete_phisical(?)}";
         try{
+            Optional<Crud_Entity> existingEntityOpt = find_Crud_Entity_JDBC_SP_ById(typeBean, id);
+            if (existingEntityOpt.isEmpty()) {
+                throw new RuntimeException("Error al eliminar físicamente: el ID: "+id+" no existe.");
+            }
             jdbcTemplate.update(sql, id);
         }catch(DataAccessException e){
             throw new RuntimeException(e.getMessage());
@@ -215,6 +225,10 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
     public Crud_Entity delete_Crud_Entity_logical_JDBC_SP_ById(String typeBean,Crud_Entity Entity) {
         String sql = "{call jbAPI_crud_delete_logical(?)}";
         try{
+            Optional<Crud_Entity> existingEntityOpt = find_Crud_Entity_JDBC_SP_ById(typeBean, Entity.getId());
+            if (existingEntityOpt.isEmpty()) {
+                throw new RuntimeException("Error al eliminar lógicamente: el ID: "+Entity.getId()+" no existe.");
+            }
             jdbcTemplate.update(sql, Entity.getId());
             Optional<Crud_Entity> updatedEntityOpt = find_Crud_Entity_JDBC_SP_ById(typeBean, Entity.getId());
             if (updatedEntityOpt.isPresent()) {
@@ -225,6 +239,7 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
             throw new RuntimeException(e.getMessage());
         }
     }
+    //endregion
 
     //region unimplemented methods
     @Override

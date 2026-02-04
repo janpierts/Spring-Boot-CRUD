@@ -99,25 +99,28 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
     //region find methods
     @Override
     public List<Crud_Entity> findAll_Crud_entity_JDBC_SP(String typeBean) {
-        String sql = "{call jbAPI_crud_list()}";
-        RowMapper<Crud_Entity> rowMapper = (rs, rowNum) -> {
-            Crud_Entity entity = new Crud_Entity();
-            entity.setId(rs.getLong("id"));
-            entity.setName(rs.getString("name"));
-            entity.setEmail(rs.getString("email"));
-            entity.setCreated(rs.getObject("created",LocalDateTime.class));
-            entity.setUpdated(rs.getObject("updated",LocalDateTime.class));
-            entity.setState(rs.getBoolean("state"));
-            return entity;
-        };
-        return jdbcTemplate.query(sql, rowMapper);
+        try{
+            String sql = "{call jbAPI_crud_list()}";
+            RowMapper<Crud_Entity> rowMapper = (rs, rowNum) -> {
+                Crud_Entity entity = new Crud_Entity();
+                entity.setId(rs.getLong("id"));
+                entity.setName(rs.getString("name"));
+                entity.setEmail(rs.getString("email"));
+                entity.setCreated(rs.getObject("created",LocalDateTime.class));
+                entity.setUpdated(rs.getObject("updated",LocalDateTime.class));
+                entity.setState(rs.getBoolean("state"));
+                return entity;
+            };
+            return jdbcTemplate.query(sql, rowMapper);
+        }catch(Exception e){
+            throw new RuntimeException("Error: "+e.getMessage());
+        }
     }
 
     @Override
     public Optional<Crud_Entity> find_Crud_Entity_JDBC_SP_ById(String typeBean,Long id) {
         try{
             String sql = "{call jbAPI_crud_listId(?)}";
-    
             RowMapper<Crud_Entity> rowMapper = (rs, rowNum) -> {
                 Crud_Entity entity = new Crud_Entity();
                 entity.setId(rs.getLong("id"));
@@ -138,26 +141,30 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
 
     @Override
     public Optional<Crud_Entity> find_Crud_Entity_JDBC_SP_ByName(String typeBean, String name) {
-        String sql = "{call jbAPI_crud_list_byName(?)}";
-        RowMapper<Crud_Entity> rowMapper = (rs, rowNum) -> {
-            Crud_Entity entity = new Crud_Entity();
-            entity.setId(rs.getLong("id"));
-            entity.setName(rs.getString("name"));
-            entity.setEmail(rs.getString("email"));
-            entity.setCreated(rs.getObject("created",LocalDateTime.class));
-            entity.setUpdated(rs.getObject("updated",LocalDateTime.class));
-            entity.setState(rs.getBoolean("state"));
-            return entity;
-        };
-        List<Crud_Entity> results = jdbcTemplate.query(sql, rowMapper, name);
-        return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
+        try{
+            String sql = "{call jbAPI_crud_list_byName(?)}";
+            RowMapper<Crud_Entity> rowMapper = (rs, rowNum) -> {
+                Crud_Entity entity = new Crud_Entity();
+                entity.setId(rs.getLong("id"));
+                entity.setName(rs.getString("name"));
+                entity.setEmail(rs.getString("email"));
+                entity.setCreated(rs.getObject("created",LocalDateTime.class));
+                entity.setUpdated(rs.getObject("updated",LocalDateTime.class));
+                entity.setState(rs.getBoolean("state"));
+                return entity;
+            };
+            List<Crud_Entity> results = jdbcTemplate.query(sql, rowMapper, name);
+            return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
+        }catch(Exception e){
+            throw new RuntimeException("Error: "+e.getMessage());
+        }
     }
 
     @Override
     public Optional<List<Crud_Entity>> find_Crud_Entity_JDBC_SP_ByNames(String typeBean, List<Crud_Entity> entityList) {
-        String sql = "{ call jbAPI_crud_list_byNames(?) }";
-        ObjectMapper objectMapper = new ObjectMapper();
         try{
+            String sql = "{ call jbAPI_crud_list_byNames(?) }";
+            ObjectMapper objectMapper = new ObjectMapper();
             String jsonEntities = objectMapper.writeValueAsString(entityList);
             List<Crud_Entity> result = jdbcTemplate.execute(sql, (CallableStatementCallback<List<Crud_Entity>>) cs -> {
                 cs.setString(1, jsonEntities);

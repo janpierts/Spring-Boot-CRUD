@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/crud-entities")
@@ -680,18 +681,21 @@ public class CrudController {
     /*@Param String name: nombre de la entidad a buscar */
     @GetMapping("{repositoryType}/find/name/{name}")
     public ResponseEntity<?> getEntityByName(@PathVariable String repositoryType,@PathVariable String name) {
+        name = helperEndpoints.sanitizeForSearch(name.trim());
         return crudService.find_Crud_EntityByName(repositoryType,name)
                 .map(ResponseEntity::ok)
                 .orElseGet(ResponseEntity.notFound()::build);
     }
     @GetMapping("{repositoryType}/find/name_JDBC_SP/{name}")
     public ResponseEntity<?> getEntity_JDBC_SP_ByName(@PathVariable String repositoryType,@PathVariable String name) {
+        name = helperEndpoints.sanitizeForSearch(name.trim());
         return crudService.find_Crud_Entity_JDBC_SP_ByName(repositoryType,name)
                 .map(ResponseEntity::ok)
                 .orElseGet(ResponseEntity.notFound()::build);
     }
     @GetMapping("{repositoryType}/find/name_JPA_SP/{name}")
     public ResponseEntity<?> getEntity_JPA_SP_ByName(@PathVariable String repositoryType,@PathVariable String name) {
+        name = helperEndpoints.sanitizeForSearch(name.trim());
         return crudService.find_Crud_Entity_JPA_SP_ByName(repositoryType,name)
                 .map(ResponseEntity::ok)
                 .orElseGet(ResponseEntity.notFound()::build);
@@ -702,18 +706,42 @@ public class CrudController {
     /*@Param List<Crud_Entity> names: lista de nombres de entidades a buscar */
     @PostMapping("{repositoryType}/find/names")
     public ResponseEntity<?> getEntityByNames(@PathVariable String repositoryType,@RequestBody List<Crud_Entity> names) {
+        names = names.stream()
+            .filter(entity -> entity.getName() != null)
+            .map(entity -> {
+                String nameValString = helperEndpoints.sanitizeForSearch(entity.getName().trim());
+                entity.setName(nameValString);
+                return entity;
+            })
+            .collect(Collectors.toList());
         return crudService.find_Crud_EntityByNames(repositoryType,names)
                 .map(ResponseEntity::ok)
                 .orElseGet(ResponseEntity.notFound()::build);
     }
     @PostMapping("{repositoryType}/find/names_JDBC_SP")
-    public ResponseEntity<?> getEntity_JDBC_SP_ByName(@PathVariable String repositoryType,@RequestBody List<Crud_Entity> names) {
+    public ResponseEntity<?> getEntity_JDBC_SP_ByNames(@PathVariable String repositoryType,@RequestBody List<Crud_Entity> names) {
+        names = names.stream()
+            .filter(entity -> entity.getName() != null)
+            .map(entity -> {
+                String nameValString = helperEndpoints.sanitizeForSearch(entity.getName().trim());
+                entity.setName(nameValString);
+                return entity;
+            })
+            .collect(Collectors.toList());
         return crudService.find_Crud_Entity_JDBC_SP_ByNames(repositoryType,names)
                 .map(ResponseEntity::ok)
                 .orElseGet(ResponseEntity.notFound()::build);
     }
     @PostMapping("{repositoryType}/find/names_JPA_SP")
     public ResponseEntity<?> getEntity_JPA_SP_ByNames(@PathVariable String repositoryType,@RequestBody List<Crud_Entity> names) {
+        names = names.stream()
+            .filter(entity -> entity.getName() != null)
+            .map(entity -> {
+                String nameValString = helperEndpoints.sanitizeForSearch(entity.getName().trim());
+                entity.setName(nameValString);
+                return entity;
+            })
+            .collect(Collectors.toList());
         return crudService.find_Crud_Entity_JPA_SP_ByNames(repositoryType,names)
                 .map(ResponseEntity::ok)
                 .orElseGet(ResponseEntity.notFound()::build);

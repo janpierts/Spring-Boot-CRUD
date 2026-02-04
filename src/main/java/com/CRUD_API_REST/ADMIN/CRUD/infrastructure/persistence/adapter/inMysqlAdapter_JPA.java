@@ -180,33 +180,45 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
 
     @Override
     public Optional<Crud_Entity> find_Crud_EntityByName(String typeBean, String name) {
-       Optional<CrudEntityJpa> jpaEntityOpt = jpaRepository.findByName(name);
-        return jpaEntityOpt.map(CrudEntityJpa::toDomainEntity);
+        try{
+            Optional<CrudEntityJpa> jpaEntityOpt = jpaRepository.findByName(name);
+            return jpaEntityOpt.map(CrudEntityJpa::toDomainEntity);
+        }catch(Exception e) {
+            throw new RuntimeException("Error: "+e.getMessage());
+        }
     }
 
     @Override
     public Optional<Crud_Entity> find_Crud_Entity_JPA_SP_ByName(String typeBean, String name) {
-        StoredProcedureQuery query = entityManager.createNamedStoredProcedureQuery("jbAPI_crud_find_by_name_query");
-        query.setParameter("p_name", name);
-        @SuppressWarnings("unchecked")
-        List<CrudEntityJpa> results = query.getResultList();
-        return results.stream()
-            .findFirst()
-            .map(CrudEntityJpa::toDomainEntity);
+        try{
+            StoredProcedureQuery query = entityManager.createNamedStoredProcedureQuery("jbAPI_crud_find_by_name_query");
+            query.setParameter("p_name", name);
+            @SuppressWarnings("unchecked")
+            List<CrudEntityJpa> results = query.getResultList();
+            return results.stream()
+                .findFirst()
+                .map(CrudEntityJpa::toDomainEntity);
+        }catch(Exception e){
+            throw new RuntimeException("Error: "+e.getMessage());
+        }
     }
 
     @Override
     public Optional<List<Crud_Entity>> find_Crud_EntityByNames(String typeBean, List<Crud_Entity> names) {
-        Set<String> namesToValidate = names.stream()
-            .map(Crud_Entity::getName)
-            .collect(Collectors.toSet());
-
-        List<CrudEntityJpa> existingEntities = jpaRepository.findByNameIn(namesToValidate);
-        List<Crud_Entity> domainEntities = existingEntities.stream()
-        .map(CrudEntityJpa::toDomainEntity)
-        .toList();
-
-        return domainEntities.isEmpty() ? Optional.empty() : Optional.of(domainEntities);
+        try{
+            Set<String> namesToValidate = names.stream()
+                .map(Crud_Entity::getName)
+                .collect(Collectors.toSet());
+    
+            List<CrudEntityJpa> existingEntities = jpaRepository.findByNameIn(namesToValidate);
+            List<Crud_Entity> domainEntities = existingEntities.stream()
+            .map(CrudEntityJpa::toDomainEntity)
+            .toList();
+    
+            return domainEntities.isEmpty() ? Optional.empty() : Optional.of(domainEntities);
+        }catch(Exception e){
+            throw new RuntimeException("Error: "+e.getMessage());
+        }
     }
 
     @Override
@@ -225,7 +237,7 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
         }catch (JsonProcessingException e) {
             throw new RuntimeException("Error al serializar lista a JSON", e);
         }catch (Exception e) {
-            throw new RuntimeException("Error al buscar las entidades CRUD por nombres: " + e.getMessage(), e);
+            throw new RuntimeException("Error: " + e.getMessage());
         }
     }
     //endregion
@@ -233,21 +245,29 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
     //region find all entities
     @Override
     public List<Crud_Entity> findAll_Crud_entity(String typeBean) {
-        List<CrudEntityJpa> jpaEntityJpas = jpaRepository.findAll();
-        return jpaEntityJpas.stream()
-                .map(CrudEntityJpa::toDomainEntity)
-                .toList();
+        try{
+            List<CrudEntityJpa> jpaEntityJpas = jpaRepository.findAll();
+            return jpaEntityJpas.stream()
+                    .map(CrudEntityJpa::toDomainEntity)
+                    .toList();
+        }catch(Exception e){
+            throw new RuntimeException("Error: "+e.getMessage());
+        }
     }
 
     @Override
     public List<Crud_Entity> findAll_Crud_entity_JPA_SP(String typeBean) {
-        StoredProcedureQuery query = entityManager.createNamedStoredProcedureQuery("jbAPI_crud_list_query");
-        @SuppressWarnings("unchecked")
-        List<CrudEntityJpa> jpaEntityJpas = query.getResultList();
-        return jpaEntityJpas.stream()
-                .map(CrudEntityJpa::toDomainEntity)
-                .toList();
+        try{
+            StoredProcedureQuery query = entityManager.createNamedStoredProcedureQuery("jbAPI_crud_list_query");
+            @SuppressWarnings("unchecked")
+            List<CrudEntityJpa> jpaEntityJpas = query.getResultList();
+            return jpaEntityJpas.stream()
+                    .map(CrudEntityJpa::toDomainEntity)
+                    .toList();
+        }catch(Exception e){
+            throw new RuntimeException("Error: "+e.getMessage());
         }
+    }
     //endregion
     
     //region update entity

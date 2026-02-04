@@ -166,21 +166,18 @@ public class Crud_Service implements Crud_ServicePort {
     //region FindEntityByName
     @Override
     public Optional<Crud_Entity> find_Crud_EntityByName(String typeBean, String name) {
-        name = helperEndpoints.sanitizeForSearch(name.trim());
         Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
         return repositoryPort.find_Crud_EntityByName(typeBean, name);
     }
 
     @Override
     public Optional<Crud_Entity> find_Crud_Entity_JDBC_SP_ByName(String typeBean, String name) {
-        name = helperEndpoints.sanitizeForSearch(name.trim());
         Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
         return repositoryPort.find_Crud_Entity_JDBC_SP_ByName(typeBean, name);
     }
 
     @Override
     public Optional<Crud_Entity> find_Crud_Entity_JPA_SP_ByName(String typeBean, String name) {
-        name = helperEndpoints.sanitizeForSearch(name.trim());
         Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
         return repositoryPort.find_Crud_Entity_JPA_SP_ByName(typeBean, name);
     }

@@ -79,9 +79,11 @@ public class inMemoryRepository implements Crud_RepositoryPort{
     //region find entity by id and name
     @Override
     public Optional<Crud_Entity> find_Crud_EntityById(String typeBean,Long id) {
-        return entities.stream()
+        Optional<Crud_Entity> result = entities.stream()
                 .filter(e -> e.getId() != null && e.getId().equals(id))
                 .findFirst();
+        if(!result.isPresent()) throw new RuntimeException("El identificador ingresado no existe");
+        return result;
     }
     //endregion
     

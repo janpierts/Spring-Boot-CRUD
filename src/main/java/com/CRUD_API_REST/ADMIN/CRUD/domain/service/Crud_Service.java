@@ -4,7 +4,6 @@ import com.CRUD_API_REST.ADMIN.CRUD.domain.model.Crud_Entity;
 import com.CRUD_API_REST.ADMIN.CRUD.domain.ports.in.Crud_ServicePort;
 import com.CRUD_API_REST.ADMIN.CRUD.domain.ports.out.Crud_RepositoryPort;
 import com.CRUD_API_REST.COMMON.utils.helperEndpoints;
-import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -147,41 +146,20 @@ public class Crud_Service implements Crud_ServicePort {
     /*@Param id: entidad a buscar */
     @Override
     public Optional<Crud_Entity> find_Crud_EntityById(String typeBean, Long id) {
-        if(id == null || id <= 0){
-            throw new IllegalArgumentException("El ID no puede ser nulo o menor o igual a cero, ID proporcionado: " + id);
-        }
         Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
-        Optional<Crud_Entity> result = repositoryPort.find_Crud_EntityById(typeBean, id);
-        if(result.isEmpty()){
-            throw new EntityNotFoundException("No se encontró ninguna entidad con el ID proporcionado: " + id);
-        }
-        return result;
+        return repositoryPort.find_Crud_EntityById(typeBean, id);
     }
 
     @Override
     public Optional<Crud_Entity> find_Crud_Entity_JDBC_SP_ById(String typeBean, Long id) {
-        if(id == null || id <= 0){
-            throw new IllegalArgumentException("El ID no puede ser nulo o menor o igual a cero, ID proporcionado: " + id);
-        }
         Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
-        Optional<Crud_Entity> result = repositoryPort.find_Crud_Entity_JDBC_SP_ById(typeBean, id);
-        if(result.isEmpty()){
-            throw new EntityNotFoundException("No se encontró ninguna entidad con el ID proporcionado: " + id);
-        }
-        return result;
+        return repositoryPort.find_Crud_Entity_JDBC_SP_ById(typeBean, id);
     }
 
     @Override
     public Optional<Crud_Entity> find_Crud_Entity_JPA_SP_ById(String typeBean, Long id) {
-        if(id == null || id <= 0){
-            throw new IllegalArgumentException("El ID no puede ser nulo o menor o igual a cero, ID proporcionado: " + id);
-        }
         Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
-        Optional<Crud_Entity> result = repositoryPort.find_Crud_Entity_JPA_SP_ById(typeBean, id);
-        if(result.isEmpty()){
-            throw new EntityNotFoundException("No se encontró ninguna entidad con el ID proporcionado: " + id);
-        }
-        return result;
+        return repositoryPort.find_Crud_Entity_JPA_SP_ById(typeBean, id);
     }
     //endregion
 

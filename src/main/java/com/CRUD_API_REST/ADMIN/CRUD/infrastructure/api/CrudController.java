@@ -653,6 +653,7 @@ public class CrudController {
     /*@Param Long id: identificador único de la entidad a buscar */
     @GetMapping("{repositoryType}/find/{id}")
     public ResponseEntity<?> getEntityById(@PathVariable String repositoryType,@PathVariable Long id) {
+        if(id == null || id <=0) throw new IllegalArgumentException("El ID no puede ser nulo o menor o igual a cero, ID proporcionado: " + id);
         return crudService.find_Crud_EntityById(repositoryType,id)
                 .map(ResponseEntity::ok)
                 .orElseGet(ResponseEntity.notFound()::build);
@@ -660,6 +661,7 @@ public class CrudController {
 
     @GetMapping("{repositoryType}/find_JDBC_SP/{id}")
     public ResponseEntity<?> getEntity_JDBC_SP_ById(@PathVariable String repositoryType,@PathVariable Long id) {
+        if(id == null || id <=0) throw new IllegalArgumentException("El ID no puede ser nulo o menor o igual a cero, ID proporcionado: " + id);
         return crudService.find_Crud_Entity_JDBC_SP_ById(repositoryType,id)
                 .map(ResponseEntity::ok)
                 .orElseGet(ResponseEntity.notFound()::build);
@@ -667,6 +669,7 @@ public class CrudController {
 
     @GetMapping("{repositoryType}/find_JPA_SP/{id}")
     public ResponseEntity<?> getEntity_JPA_SP_ById(@PathVariable String repositoryType,@PathVariable Long id) {
+        if(id == null || id <=0) throw new IllegalArgumentException("El ID no puede ser nulo o menor o igual a cero, ID proporcionado: " + id);
         return crudService.find_Crud_Entity_JPA_SP_ById(repositoryType,id)
                 .map(ResponseEntity::ok)
                 .orElseGet(ResponseEntity.notFound()::build);

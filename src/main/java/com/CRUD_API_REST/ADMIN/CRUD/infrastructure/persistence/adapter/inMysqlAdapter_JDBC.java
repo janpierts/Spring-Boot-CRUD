@@ -115,20 +115,25 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
 
     @Override
     public Optional<Crud_Entity> find_Crud_Entity_JDBC_SP_ById(String typeBean,Long id) {
-        String sql = "{call jbAPI_crud_listId(?)}";
-
-        RowMapper<Crud_Entity> rowMapper = (rs, rowNum) -> {
-            Crud_Entity entity = new Crud_Entity();
-            entity.setId(rs.getLong("id"));
-            entity.setName(rs.getString("name"));
-            entity.setEmail(rs.getString("email"));
-            entity.setCreated(rs.getObject("created",LocalDateTime.class));
-            entity.setUpdated(rs.getObject("updated",LocalDateTime.class));
-            entity.setState(rs.getBoolean("state"));
-            return entity;
-        };
-        List<Crud_Entity> results = jdbcTemplate.query(sql, rowMapper, id);
-        return results.isEmpty()? Optional.empty() : Optional.of(results.get(0));
+        try{
+            String sql = "{call jbAPI_crud_listId(?)}";
+    
+            RowMapper<Crud_Entity> rowMapper = (rs, rowNum) -> {
+                Crud_Entity entity = new Crud_Entity();
+                entity.setId(rs.getLong("id"));
+                entity.setName(rs.getString("name"));
+                entity.setEmail(rs.getString("email"));
+                entity.setCreated(rs.getObject("created",LocalDateTime.class));
+                entity.setUpdated(rs.getObject("updated",LocalDateTime.class));
+                entity.setState(rs.getBoolean("state"));
+                return entity;
+            };
+            List<Crud_Entity> results = jdbcTemplate.query(sql, rowMapper, id);
+            if(results.isEmpty()) throw new RuntimeException("El identificador ingresado no existe");
+            return results.isEmpty()? Optional.empty() : Optional.of(results.get(0));
+        }catch(Exception e){
+            throw new RuntimeException("Error: "+e.getMessage());
+        }
     }
 
     @Override

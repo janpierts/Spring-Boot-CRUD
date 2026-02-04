@@ -152,20 +152,30 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
     //region find entity by id and name(s)
     @Override
     public Optional<Crud_Entity> find_Crud_EntityById(String typeBean, Long id) {
-        Optional<CrudEntityJpa> jpaEntityOpt = jpaRepository.findById(id);
-        return jpaEntityOpt.map(CrudEntityJpa::toDomainEntity);
+        try{
+            Optional<CrudEntityJpa> jpaEntityOpt = jpaRepository.findById(id);
+            if(!jpaEntityOpt.isPresent()) throw new RuntimeException("El identificador ingresado no existe");
+            return jpaEntityOpt.map(CrudEntityJpa::toDomainEntity);
+        }catch(Exception e) {
+            throw new RuntimeException("Error: "+e.getMessage());
+        }
+        
     }
 
     @Override
     public Optional<Crud_Entity> find_Crud_Entity_JPA_SP_ById(String typeBean, Long id) {
-        StoredProcedureQuery query = entityManager.createNamedStoredProcedureQuery("jbAPI_crud_find_by_id_query");
-        query.setParameter("p_id", id);
-        @SuppressWarnings("unchecked")
-        List<CrudEntityJpa> results = query.getResultList();
-
-        return results.stream()
-            .findFirst()
-            .map(CrudEntityJpa::toDomainEntity);
+        try{
+            StoredProcedureQuery query = entityManager.createNamedStoredProcedureQuery("jbAPI_crud_find_by_id_query");
+            query.setParameter("p_id", id);
+            @SuppressWarnings("unchecked")
+            List<CrudEntityJpa> results = query.getResultList();
+            if(results.isEmpty()) throw new RuntimeException("El identificador ingresado no existe");
+            return results.stream()
+                .findFirst()
+                .map(CrudEntityJpa::toDomainEntity);
+        }catch(Exception e){
+            throw new RuntimeException("Error: "+e.getMessage());
+        }
     }
 
     @Override

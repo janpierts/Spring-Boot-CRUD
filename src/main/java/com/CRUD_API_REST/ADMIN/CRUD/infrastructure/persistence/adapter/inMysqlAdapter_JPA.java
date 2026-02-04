@@ -1,6 +1,7 @@
 package com.CRUD_API_REST.ADMIN.CRUD.infrastructure.persistence.adapter;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -74,30 +75,24 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
     @Override
     @Transactional
     public Optional<List<Crud_Entity>> save_multi_Crud_Entity(String typeBean, List<Crud_Entity> entityList) {
-        List<Crud_Entity> entitiesToSave = entityList.stream()
-            .filter(e -> e.getName() != null && !e.getName().isEmpty())
+        List<String> namesToValidate = entityList.stream()
+            .map(Crud_Entity::getName)
             .collect(Collectors.toList());
-        try {
-            if (entitiesToSave.isEmpty()) {
-                throw new RuntimeException("La lista de entidades a guardar está vacía o no tiene nombres válidos.");
-            }
-            List<String> namesToValidate = entitiesToSave.stream()
-                .map(Crud_Entity::getName)
-                .collect(Collectors.toList());
-            List<CrudEntityJpa> existingEntities = jpaRepository.findByNameIn(namesToValidate);
-            Set<String> existingNamesInDB = existingEntities.stream()
-                .map(CrudEntityJpa::getName)
-                .collect(Collectors.toSet());
-            List<CrudEntityJpa> filteredEntities = entitiesToSave.stream()
-                .filter(e -> !existingNamesInDB.contains(e.getName()))
-                .map(e -> new CrudEntityJpa(e))
-                .collect(Collectors.toList());
+        List<CrudEntityJpa> existingEntities = jpaRepository.findByNameIn(namesToValidate);
+        if(existingEntities.size() >= entityList.size()) {
+            throw new RuntimeException("Ninguna entidad para guardar después de filtrar los nombres existentes en base de datos.");
+        }
+        Set<String> existingNamesInDB = existingEntities.stream()
+            .map(CrudEntityJpa::getName)
+            .collect(Collectors.toSet());
+        List<CrudEntityJpa> filteredEntities = entityList.stream()
+            .filter(e -> !existingNamesInDB.contains(e.getName()))
+            .map(e -> new CrudEntityJpa(e))
+            .collect(Collectors.toList());
 
-            if(filteredEntities.isEmpty()) {
-                throw new RuntimeException("Ninguna entidad para guardar después de filtrar los nombres existentes en base de datos.");
-            }
+        try{
             List<CrudEntityJpa> savedJpaEntities = jpaRepository.saveAll(filteredEntities);
-
+            
             return savedJpaEntities.stream()
                 .map(CrudEntityJpa::toDomainEntity)
                 .toList().isEmpty() ? Optional.empty() : Optional.of(
@@ -105,38 +100,27 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
                         .map(CrudEntityJpa::toDomainEntity)
                         .toList()
                 );
-        } catch(Exception e){
-            throw new RuntimeException(e.getMessage());
+        }catch(Exception e){
+            throw new RuntimeException("Error al insertar las entidades CRUD: " + e.getMessage());
         }
     }
 
     @Override
     public Optional<List<Crud_Entity>> save_multi_Crud_Entity_JPA_SP(String typeBean, List<Crud_Entity> entityList) {
-        Set<String> namesToValidate = entityList.stream()
-            .map(Crud_Entity::getName)
-            .collect(Collectors.toSet());
-        List<Crud_Entity> uniqueEntityList = entityList.stream()
-            .filter(e -> namesToValidate.contains(e.getName()))
-            .collect(Collectors.toMap(
-                Crud_Entity::getName,
-                e -> e,
-                (existing, replacement) -> existing
-            ))
-            .values()
-            .stream()
-            .collect(Collectors.toList());
-        Optional<List<Crud_Entity>> alreadyNames = find_Crud_Entity_JPA_SP_ByNames(typeBean, uniqueEntityList);
-        List<Crud_Entity> filteredEntities = null;
-        if (alreadyNames.isPresent()) {
-            List<String> namesExistentes = alreadyNames.get().stream()
+        Optional<List<Crud_Entity>> alreadyNames = find_Crud_Entity_JPA_SP_ByNames(typeBean, entityList);
+        if(alreadyNames.map(List::size).orElse(0) >= entityList.size()) {
+            throw new RuntimeException("Error al insertar las entidades ya se encuentran la base de datos: ");
+        } 
+        Set<String> namesExistentes = alreadyNames
+            .map(entities -> entities.stream()
                 .map(Crud_Entity::getName)
-                .toList();
-            filteredEntities = uniqueEntityList.stream()
-                .filter(e -> !namesExistentes.contains(e.getName()))
-                .toList();
-        }else{
-            filteredEntities = uniqueEntityList;
-        }
+                .collect(Collectors.toSet()))
+            .orElse(Collections.emptySet());
+
+        List<Crud_Entity> filteredEntities = entityList.stream()
+            .filter(e -> !namesExistentes.contains(e.getName()))
+            .toList();
+
         try {
             StoredProcedureQuery query = entityManager.createNamedStoredProcedureQuery("jbAPI_crud_insert_multi_query");
             ObjectMapper objectMapper = new ObjectMapper();
@@ -148,7 +132,7 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
         }catch (JsonProcessingException e) {
             throw new RuntimeException("Error al serializar lista a JSON", e);
         }catch (Exception e) {
-            throw new RuntimeException("Error al buscar las entidades CRUD por nombres: " + e.getMessage(), e);
+            throw new RuntimeException("Error al buscar las entidades CRUD por nombres: " + e.getMessage());
         }
     }
     //endregion

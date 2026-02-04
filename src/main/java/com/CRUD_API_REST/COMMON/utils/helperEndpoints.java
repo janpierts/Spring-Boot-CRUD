@@ -44,6 +44,22 @@ public class helperEndpoints {
                 ));
     }
 
+public static <T> Map<String, List<T>> splitDuplicatesByMultipleKeys(
+    List<T> inputList, 
+    List<? extends Function<? super T, ?>> extractors) { 
+    
+    Set<List<?>> seen = new HashSet<>();
+    
+    return inputList.stream()
+            .collect(Collectors.groupingBy(element -> {
+                List<?> compositeKey = extractors.stream()
+                        .map(ext -> ext.apply(element))
+                        .collect(Collectors.toList());
+                
+                return seen.add(compositeKey) ? "successBody" : "errorBody";
+            }));
+}
+
     public static <T, R> List<T> getDifference(List<T> listA, List<T> listB, Function<? super T, ? extends R> keyExtractor) {
         Set<R> setB = listB.stream()
             .map(keyExtractor)

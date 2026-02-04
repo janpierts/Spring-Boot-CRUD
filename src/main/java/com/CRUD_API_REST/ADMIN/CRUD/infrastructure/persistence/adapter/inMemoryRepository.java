@@ -44,37 +44,27 @@ public class inMemoryRepository implements Crud_RepositoryPort{
     //region save multiple entities
     @Override
     public Optional<List<Crud_Entity>> save_multi_Crud_Entity(String typeBean, List<Crud_Entity> entityList) {
-        List<Crud_Entity> entitiesToSave = entityList.stream()
-                .filter(e -> e.getName() != null && !e.getName().isEmpty())
-                .collect(Collectors.toList());
-        try {
-            if (entitiesToSave.isEmpty()) {
-                throw new RuntimeException("La lista de entidades a guardar está vacía o no tiene nombres válidos.");
-            }
-            List<String> existingNames = find_Crud_EntityByNames(typeBean, entitiesToSave)
-                .map(list -> list.stream()
-                        .map(Crud_Entity::getName)
-                        .collect(Collectors.toList()))
-                .orElse(new ArrayList<>());
-                
-            List<Crud_Entity> filteredEntities = entitiesToSave.stream()
-                .filter(entity -> !existingNames.contains(entity.getName()))
-                .collect(Collectors.toList());
-            
-            if(filteredEntities.isEmpty()) {
-                throw new RuntimeException("Ninguna entidad para guardar después de filtrar los nombres existentes en base de datos.");
-            }
-            for (Crud_Entity entity : filteredEntities) {
-                LocalDateTime now = LocalDateTime.now();
-                entity.setId(nextId++);
-                entity.setCreated(now);
-                entity.setState(true);
-                entities.add(entity);
-            }
-            return Optional.of(filteredEntities);
-        } catch(Exception e){
-            throw new RuntimeException(e.getMessage());
+        List<String> existingNames = find_Crud_EntityByNames(typeBean, entityList)
+            .map(list -> list.stream()
+                .map(Crud_Entity::getName)
+                .collect(Collectors.toList()))
+            .orElse(new ArrayList<>());
+        
+        if(existingNames.size() >= entityList.size()) {
+            throw new RuntimeException("Ninguna entidad para guardar después de filtrar los nombres existentes en base de datos.");
         }
+        List<Crud_Entity> filteredEntities = entityList.stream()
+            .filter(entity -> !existingNames.contains(entity.getName()))
+            .collect(Collectors.toList());
+            
+        for (Crud_Entity entity : filteredEntities) {
+            LocalDateTime now = LocalDateTime.now();
+            entity.setId(nextId++);
+            entity.setCreated(now);
+            entity.setState(true);
+            entities.add(entity);
+        }
+        return Optional.of(filteredEntities);
     }
     //endregion
 
@@ -82,11 +72,7 @@ public class inMemoryRepository implements Crud_RepositoryPort{
     @Override
     @Transactional
     public Optional<List<Crud_Entity>> save_import_Crud_Entity(String typeBean,List<Crud_Entity> entityList) {
-        try{
-            return save_multi_Crud_Entity(typeBean, entityList);
-        }catch(Exception e){
-            throw new RuntimeException(e.getMessage());
-        }
+        return save_multi_Crud_Entity(typeBean, entityList);
     }
     //endregion
 

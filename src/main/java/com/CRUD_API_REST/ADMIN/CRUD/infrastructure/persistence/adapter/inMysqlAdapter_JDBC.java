@@ -4,8 +4,6 @@ import java.sql.ResultSet;
 import java.sql.Types;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Set;
-
 import com.CRUD_API_REST.ADMIN.CRUD.domain.model.Crud_Entity;
 import com.CRUD_API_REST.ADMIN.CRUD.domain.ports.out.Crud_RepositoryPort;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -58,30 +56,17 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
     public Optional<List<Crud_Entity>> save_multi_Crud_Entity_JDBC_SP(String typeBean, List<Crud_Entity> entityList) {
         String sql = "{ call jbAPI_crud_insert_multi(?) }";
         ObjectMapper objectMapper = new ObjectMapper();
-        Set<String> namesSet = entityList.stream()
-                .map(Crud_Entity::getName)
-                .collect(Collectors.toSet());
-        List<Crud_Entity> uniqueEntities = entityList.stream()
-                .filter(e -> namesSet.contains(e.getName()))
-                .collect(Collectors.toMap(
-                    Crud_Entity::getName,
-                    e -> e, 
-                    (existing, replacement) -> existing
-                ))
-                .values()
-                .stream()
-                .collect(Collectors.toList());
-        List<String> existingNames = find_Crud_Entity_JDBC_SP_ByNames(typeBean, uniqueEntities)
+        List<String> existingNames = find_Crud_Entity_JDBC_SP_ByNames(typeBean, entityList)
                 .map(list -> list.stream()
                         .map(Crud_Entity::getName)
                         .collect(Collectors.toList()))
                 .orElse(new ArrayList<>());
-        List<Crud_Entity> filteredEntities = uniqueEntities.stream()
+        if(!existingNames.isEmpty() && existingNames.size() >= entityList.size()) {
+            throw new RuntimeException("Error al insertar las entidades ya se encuentran la base de datos: ");
+        }
+        List<Crud_Entity> filteredEntities = entityList.stream()
                 .filter(entity -> !existingNames.contains(entity.getName()))
                 .collect(Collectors.toList());
-        if(filteredEntities.isEmpty()) {
-            return Optional.of(filteredEntities);
-        }
         try{
             String jsonEntities = objectMapper.writeValueAsString(filteredEntities);
             jdbcTemplate.execute(sql, (CallableStatementCallback<Void>) cs -> {
@@ -93,8 +78,10 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
             List<Crud_Entity> savedEntities = this.find_Crud_Entity_JDBC_SP_ByNames(typeBean, filteredEntities)
                     .orElse(new ArrayList<>());
             return Optional.of(savedEntities);
+        }catch(JsonProcessingException e) {
+            throw new RuntimeException("Error al serializar lista a JSON", e);
         } catch (Exception e) {
-            throw new RuntimeException("Error al insertar las entidades CRUD: " + e.getMessage(), e);
+            throw new RuntimeException("Error al insertar las entidades CRUD: " + e.getMessage());
         }
     }
 

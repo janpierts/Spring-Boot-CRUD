@@ -99,60 +99,72 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
     //region find methods
     @Override
     public List<Crud_Entity> findAll_Crud_entity_JDBC_SP(String typeBean) {
-        String sql = "{call jbAPI_crud_list()}";
-        RowMapper<Crud_Entity> rowMapper = (rs, rowNum) -> {
-            Crud_Entity entity = new Crud_Entity();
-            entity.setId(rs.getLong("id"));
-            entity.setName(rs.getString("name"));
-            entity.setEmail(rs.getString("email"));
-            entity.setCreated(rs.getObject("created",LocalDateTime.class));
-            entity.setUpdated(rs.getObject("updated",LocalDateTime.class));
-            entity.setState(rs.getBoolean("state"));
-            return entity;
-        };
-        return jdbcTemplate.query(sql, rowMapper);
+        try{
+            String sql = "{call jbAPI_crud_list()}";
+            RowMapper<Crud_Entity> rowMapper = (rs, rowNum) -> {
+                Crud_Entity entity = new Crud_Entity();
+                entity.setId(rs.getLong("id"));
+                entity.setName(rs.getString("name"));
+                entity.setEmail(rs.getString("email"));
+                entity.setCreated(rs.getObject("created",LocalDateTime.class));
+                entity.setUpdated(rs.getObject("updated",LocalDateTime.class));
+                entity.setState(rs.getBoolean("state"));
+                return entity;
+            };
+            return jdbcTemplate.query(sql, rowMapper);
+        }catch(Exception e){
+            throw new RuntimeException("Error: "+e.getMessage());
+        }
     }
 
     @Override
     public Optional<Crud_Entity> find_Crud_Entity_JDBC_SP_ById(String typeBean,Long id) {
-        String sql = "{call jbAPI_crud_listId(?)}";
-
-        RowMapper<Crud_Entity> rowMapper = (rs, rowNum) -> {
-            Crud_Entity entity = new Crud_Entity();
-            entity.setId(rs.getLong("id"));
-            entity.setName(rs.getString("name"));
-            entity.setEmail(rs.getString("email"));
-            entity.setCreated(rs.getObject("created",LocalDateTime.class));
-            entity.setUpdated(rs.getObject("updated",LocalDateTime.class));
-            entity.setState(rs.getBoolean("state"));
-            return entity;
-        };
-        List<Crud_Entity> results = jdbcTemplate.query(sql, rowMapper, id);
-        return results.isEmpty()? Optional.empty() : Optional.of(results.get(0));
+        try{
+            String sql = "{call jbAPI_crud_listId(?)}";
+            RowMapper<Crud_Entity> rowMapper = (rs, rowNum) -> {
+                Crud_Entity entity = new Crud_Entity();
+                entity.setId(rs.getLong("id"));
+                entity.setName(rs.getString("name"));
+                entity.setEmail(rs.getString("email"));
+                entity.setCreated(rs.getObject("created",LocalDateTime.class));
+                entity.setUpdated(rs.getObject("updated",LocalDateTime.class));
+                entity.setState(rs.getBoolean("state"));
+                return entity;
+            };
+            List<Crud_Entity> results = jdbcTemplate.query(sql, rowMapper, id);
+            if(results.isEmpty()) throw new RuntimeException("El identificador ingresado no existe");
+            return results.isEmpty()? Optional.empty() : Optional.of(results.get(0));
+        }catch(Exception e){
+            throw new RuntimeException("Error: "+e.getMessage());
+        }
     }
 
     @Override
     public Optional<Crud_Entity> find_Crud_Entity_JDBC_SP_ByName(String typeBean, String name) {
-        String sql = "{call jbAPI_crud_list_byName(?)}";
-        RowMapper<Crud_Entity> rowMapper = (rs, rowNum) -> {
-            Crud_Entity entity = new Crud_Entity();
-            entity.setId(rs.getLong("id"));
-            entity.setName(rs.getString("name"));
-            entity.setEmail(rs.getString("email"));
-            entity.setCreated(rs.getObject("created",LocalDateTime.class));
-            entity.setUpdated(rs.getObject("updated",LocalDateTime.class));
-            entity.setState(rs.getBoolean("state"));
-            return entity;
-        };
-        List<Crud_Entity> results = jdbcTemplate.query(sql, rowMapper, name);
-        return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
+        try{
+            String sql = "{call jbAPI_crud_list_byName(?)}";
+            RowMapper<Crud_Entity> rowMapper = (rs, rowNum) -> {
+                Crud_Entity entity = new Crud_Entity();
+                entity.setId(rs.getLong("id"));
+                entity.setName(rs.getString("name"));
+                entity.setEmail(rs.getString("email"));
+                entity.setCreated(rs.getObject("created",LocalDateTime.class));
+                entity.setUpdated(rs.getObject("updated",LocalDateTime.class));
+                entity.setState(rs.getBoolean("state"));
+                return entity;
+            };
+            List<Crud_Entity> results = jdbcTemplate.query(sql, rowMapper, name);
+            return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
+        }catch(Exception e){
+            throw new RuntimeException("Error: "+e.getMessage());
+        }
     }
 
     @Override
     public Optional<List<Crud_Entity>> find_Crud_Entity_JDBC_SP_ByNames(String typeBean, List<Crud_Entity> entityList) {
-        String sql = "{ call jbAPI_crud_list_byNames(?) }";
-        ObjectMapper objectMapper = new ObjectMapper();
         try{
+            String sql = "{ call jbAPI_crud_list_byNames(?) }";
+            ObjectMapper objectMapper = new ObjectMapper();
             String jsonEntities = objectMapper.writeValueAsString(entityList);
             List<Crud_Entity> result = jdbcTemplate.execute(sql, (CallableStatementCallback<List<Crud_Entity>>) cs -> {
                 cs.setString(1, jsonEntities);
@@ -179,16 +191,13 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
     public Crud_Entity update_Crud_Entity_JDBC_SP(String typeBean,Crud_Entity Entity) {
         String sql = "{call jbAPI_crud_update(?,?,?)}";
         try{
-            Optional<Crud_Entity> existingEntityOpt = find_Crud_Entity_JDBC_SP_ById(typeBean, Entity.getId());
+            Optional<Crud_Entity> existingEntityOpt = find_Crud_Entity_JDBC_SP_ById(typeBean, Entity.getId()).filter(a -> Boolean.TRUE.equals(a.getState()));
             if (existingEntityOpt.isEmpty()) {
-                throw new RuntimeException("Error al actualizar: el ID: "+Entity.getId()+" no existe.");
+                throw new RuntimeException("El identificador mencionado no existe o se encuntra eliminado/anulado, Id: "+Entity.getId());
             }
             jdbcTemplate.update(sql,  Entity.getId(), Entity.getName(), Entity.getEmail());
             Optional<Crud_Entity> updatedEntityOpt = find_Crud_Entity_JDBC_SP_ById(typeBean, Entity.getId());
-            if (updatedEntityOpt.isPresent()) {
-                Entity = updatedEntityOpt.get();
-            }
-            return Entity;
+            return updatedEntityOpt.get();
         }catch(DataAccessException e){
             throw new RuntimeException(e.getMessage());
         }
@@ -212,9 +221,9 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
     public Crud_Entity delete_Crud_Entity_logical_JDBC_SP_ById(String typeBean,Crud_Entity Entity) {
         String sql = "{call jbAPI_crud_delete_logical(?)}";
         try{
-            Optional<Crud_Entity> existingEntityOpt = find_Crud_Entity_JDBC_SP_ById(typeBean, Entity.getId());
+            Optional<Crud_Entity> existingEntityOpt = find_Crud_Entity_JDBC_SP_ById(typeBean, Entity.getId()).filter(a -> Boolean.TRUE.equals(a.getState()));
             if (existingEntityOpt.isEmpty()) {
-                throw new RuntimeException("Error al eliminar lógicamente: el ID: "+Entity.getId()+" no existe.");
+                throw new RuntimeException("El identificador mencionado no existe o se encuntra eliminado/anulado, Id: "+Entity.getId());
             }
             jdbcTemplate.update(sql, Entity.getId());
             Optional<Crud_Entity> updatedEntityOpt = find_Crud_Entity_JDBC_SP_ById(typeBean, Entity.getId());

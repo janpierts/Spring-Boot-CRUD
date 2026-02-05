@@ -79,9 +79,11 @@ public class inMemoryRepository implements Crud_RepositoryPort{
     //region find entity by id and name
     @Override
     public Optional<Crud_Entity> find_Crud_EntityById(String typeBean,Long id) {
-        return entities.stream()
+        Optional<Crud_Entity> result = entities.stream()
                 .filter(e -> e.getId() != null && e.getId().equals(id))
                 .findFirst();
+        if(!result.isPresent()) throw new RuntimeException("El identificador ingresado no existe");
+        return result;
     }
     //endregion
     
@@ -116,7 +118,7 @@ public class inMemoryRepository implements Crud_RepositoryPort{
     //region update entity
     @Override
     public Crud_Entity update_Crud_Entity(String typeBean,Crud_Entity entity) {
-        Optional<Crud_Entity> existingEntityOpt = find_Crud_EntityById(typeBean,entity.getId());
+        Optional<Crud_Entity> existingEntityOpt = find_Crud_EntityById(typeBean,entity.getId()).filter(a -> Boolean.TRUE.equals(a.getState()));
         if (existingEntityOpt.isEmpty()) {
             throw new RuntimeException("Entidad CRUD no encontrada con ID: " + entity.getId());
         }
@@ -140,9 +142,9 @@ public class inMemoryRepository implements Crud_RepositoryPort{
     //region delete entity logical
     @Override
     public Crud_Entity delete_Crud_Entity_logical_ById(String typeBean,Crud_Entity entity) {
-        Optional<Crud_Entity> existingEntityOpt = find_Crud_EntityById(typeBean,entity.getId());
+        Optional<Crud_Entity> existingEntityOpt = find_Crud_EntityById(typeBean,entity.getId()).filter(a -> Boolean.TRUE.equals(a.getState()));
         if (existingEntityOpt.isEmpty()) {
-            throw new RuntimeException("Entidad CRUD no encontrada con ID: " + entity.getId());
+            throw new RuntimeException("El identificador mencionado no existe o se encuntra eliminado/anulado, Id: "+entity.getId());
         }
         Crud_Entity existingEntity = existingEntityOpt.get();
         delete_Crud_Entity_phisical_ById(typeBean,entity.getId());

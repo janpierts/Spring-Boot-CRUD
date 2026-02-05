@@ -191,16 +191,13 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
     public Crud_Entity update_Crud_Entity_JDBC_SP(String typeBean,Crud_Entity Entity) {
         String sql = "{call jbAPI_crud_update(?,?,?)}";
         try{
-            Optional<Crud_Entity> existingEntityOpt = find_Crud_Entity_JDBC_SP_ById(typeBean, Entity.getId());
+            Optional<Crud_Entity> existingEntityOpt = find_Crud_Entity_JDBC_SP_ById(typeBean, Entity.getId()).filter(a -> Boolean.TRUE.equals(a.getState()));
             if (existingEntityOpt.isEmpty()) {
-                throw new RuntimeException("Error al actualizar: el ID: "+Entity.getId()+" no existe.");
+                throw new RuntimeException("El identificador mencionado no existe o se encuntra eliminado/anulado, Id: "+Entity.getId());
             }
             jdbcTemplate.update(sql,  Entity.getId(), Entity.getName(), Entity.getEmail());
             Optional<Crud_Entity> updatedEntityOpt = find_Crud_Entity_JDBC_SP_ById(typeBean, Entity.getId());
-            if (updatedEntityOpt.isPresent()) {
-                Entity = updatedEntityOpt.get();
-            }
-            return Entity;
+            return updatedEntityOpt.get();
         }catch(DataAccessException e){
             throw new RuntimeException(e.getMessage());
         }
@@ -224,9 +221,9 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
     public Crud_Entity delete_Crud_Entity_logical_JDBC_SP_ById(String typeBean,Crud_Entity Entity) {
         String sql = "{call jbAPI_crud_delete_logical(?)}";
         try{
-            Optional<Crud_Entity> existingEntityOpt = find_Crud_Entity_JDBC_SP_ById(typeBean, Entity.getId());
+            Optional<Crud_Entity> existingEntityOpt = find_Crud_Entity_JDBC_SP_ById(typeBean, Entity.getId()).filter(a -> Boolean.TRUE.equals(a.getState()));
             if (existingEntityOpt.isEmpty()) {
-                throw new RuntimeException("Error al eliminar lógicamente: el ID: "+Entity.getId()+" no existe.");
+                throw new RuntimeException("El identificador mencionado no existe o se encuntra eliminado/anulado, Id: "+Entity.getId());
             }
             jdbcTemplate.update(sql, Entity.getId());
             Optional<Crud_Entity> updatedEntityOpt = find_Crud_Entity_JDBC_SP_ById(typeBean, Entity.getId());

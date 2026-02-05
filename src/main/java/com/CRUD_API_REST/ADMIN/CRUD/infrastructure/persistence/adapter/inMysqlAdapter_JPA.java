@@ -273,72 +273,101 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
     //region update entity
     @Override
     public Crud_Entity update_Crud_Entity(String typeBean, Crud_Entity entity) {
-        Long id = entity.getId();
-        if (id == null || !jpaRepository.existsById(id)) {
-            throw new IllegalArgumentException("Entity with ID " + id + " does not exist.");
+        try{
+            Long id = entity.getId();
+            CrudEntityJpa jpaEntity_update = jpaRepository.findById(id).filter(a -> Boolean.TRUE.equals(a.getState())).orElseThrow(() -> new RuntimeException("El identificador mencionado no existe o se encuntra eliminado/anulado, Id: "+id));
+            jpaEntity_update.setName(entity.getName());
+            jpaEntity_update.setEmail(entity.getEmail());
+            CrudEntityJpa updatedJpaEntity = jpaRepository.save(jpaEntity_update);
+            return updatedJpaEntity.toDomainEntity();
+        }catch(Exception e) {
+            throw new RuntimeException("Error: "+e.getMessage());
         }
-        CrudEntityJpa jpaEntity_update = jpaRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Entity with ID " + id + " does not exist."));
-        jpaEntity_update.setName(entity.getName());
-        jpaEntity_update.setEmail(entity.getEmail());
-        CrudEntityJpa updatedJpaEntity = jpaRepository.save(jpaEntity_update);
-        return updatedJpaEntity.toDomainEntity();
+        
     }
 
     @Override
     public Crud_Entity update_Crud_Entity_JPA_SP(String typeBean, Crud_Entity entity) {
-        StoredProcedureQuery query = entityManager.createNamedStoredProcedureQuery("jbAPI_crud_update_query");
-        query.setParameter("p_id", entity.getId());
-        query.setParameter("p_name", entity.getName());
-        query.setParameter("p_email", entity.getEmail());
-        query.execute();
+        try{
+            Optional<Crud_Entity> exisEntity = find_Crud_Entity_JPA_SP_ById(typeBean, entity.getId()).filter(a -> Boolean.TRUE.equals(a.getState()));
+            if(!exisEntity.isPresent()){
+                throw new RuntimeException("El identificador mencionado no existe o se encuntra eliminado/anulado, Id: "+entity.getId());
+            }
+            StoredProcedureQuery query = entityManager.createNamedStoredProcedureQuery("jbAPI_crud_update_query");
+            query.setParameter("p_id", entity.getId());
+            query.setParameter("p_name", entity.getName());
+            query.setParameter("p_email", entity.getEmail());
+            query.execute();
+    
+            return find_Crud_Entity_JPA_SP_ById(typeBean, entity.getId())
+               .orElseThrow(() -> 
+                   new RuntimeException("Error al verificar la actualización del ID: " + entity.getId())
+               );
 
-        return find_Crud_Entity_JPA_SP_ById(typeBean, entity.getId())
-           .orElseThrow(() -> 
-               new RuntimeException("Error al verificar la actualización del ID: " + entity.getId())
-           );
+        }catch(Exception e){
+            throw new RuntimeException("Error: "+e.getMessage());
+        }
     }
     //endregion
 
     //region physical delete
     @Override
     public void delete_Crud_Entity_phisical_ById(String typeBean, Long id) {
-        jpaRepository.deleteById(id);
+        try{
+            jpaRepository.deleteById(id);
+        }catch(Exception e){
+            throw new RuntimeException("Error: "+e.getMessage());
+        }
     }
 
     @Override
     public void delete_Crud_Entity_phisical_JPA_SP_ById(String typeBean, Long id) {
-        StoredProcedureQuery query = entityManager.createNamedStoredProcedureQuery("jbAPI_crud_delete_physical_query");
-        query.setParameter("p_id", id);
-        query.execute();
+        try{
+            StoredProcedureQuery query = entityManager.createNamedStoredProcedureQuery("jbAPI_crud_delete_physical_query");
+            query.setParameter("p_id", id);
+            query.execute();
+        }catch(Exception e){
+            throw new RuntimeException("Error: "+e.getMessage());
+        }
     }
     //endregion
 
     //region logical delete
     @Override
     public Crud_Entity delete_Crud_Entity_logical_ById(String typeBean, Crud_Entity entity) {
-       Long id = entity.getId();
-        if (id == null || !jpaRepository.existsById(id)) {
-            throw new IllegalArgumentException("Entity with ID " + id + " does not exist.");
-        }
-        
-        CrudEntityJpa jpaEntity_update = jpaRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Entity with ID " + id + " does not exist."));
+        try{
+            Long id = entity.getId();
+            if (!jpaRepository.existsById(id)) {
+                throw new RuntimeException("El identificador mencionado no existe o se encuntra eliminado/anulado, Id: "+entity.getId());
+            }
+            CrudEntityJpa jpaEntity_update = jpaRepository.findById(id).filter(a -> Boolean.TRUE.equals(a.getState())).orElseThrow(() -> new RuntimeException("El identificador mencionado no existe o se encuntra eliminado/anulado, Id: "+entity.getId()));
+            jpaEntity_update.setState(false);
+            CrudEntityJpa updatedJpaEntity = jpaRepository.save(jpaEntity_update);
+            return updatedJpaEntity.toDomainEntity();
 
-        jpaEntity_update.setState(entity.getState());
-        
-        CrudEntityJpa updatedJpaEntity = jpaRepository.save(jpaEntity_update);
-        return updatedJpaEntity.toDomainEntity();
+        }catch(Exception e){
+            throw new RuntimeException("Error: "+e.getMessage());
+        }
     }
 
     @Override
     public Crud_Entity delete_Crud_Entity_logical_JPA_SP_ById(String typeBean, Crud_Entity entity) {
-        StoredProcedureQuery query = entityManager.createNamedStoredProcedureQuery("jbAPI_crud_delete_logical_query");
-        query.setParameter("p_id", entity.getId());
-        query.execute();
-
-        return find_Crud_Entity_JPA_SP_ById(typeBean, entity.getId())
-           .orElseThrow(() -> 
-               new RuntimeException("Error al verificar la actualización del ID: " + entity.getId())
-           );
+        try{
+            Optional<Crud_Entity> exisEntity = find_Crud_Entity_JPA_SP_ById(typeBean, entity.getId()).filter(a -> Boolean.TRUE.equals(a.getState()));
+            if(!exisEntity.isPresent()){
+                throw new RuntimeException("El identificador mencionado no existe o se encuntra eliminado/anulado, Id: "+entity.getId());
+            }
+            StoredProcedureQuery query = entityManager.createNamedStoredProcedureQuery("jbAPI_crud_delete_logical_query");
+            query.setParameter("p_id", entity.getId());
+            query.execute();
+    
+            return find_Crud_Entity_JPA_SP_ById(typeBean, entity.getId())
+               .orElseThrow(() -> 
+                   new RuntimeException("Error al verificar la actualización del ID: " + entity.getId())
+               );
+        }catch(Exception e){
+            throw new RuntimeException("Error: "+e.getMessage());
+        }
     }
     //endregion
 

@@ -10,7 +10,6 @@ import com.CRUD_API_REST.ADMIN.CRUD.domain.service.Crud_Service;
 import com.CRUD_API_REST.COMMON.utils.filesProcessor;
 import com.CRUD_API_REST.COMMON.utils.helperEndpoints;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -42,17 +41,12 @@ public class CrudController {
         if(!mssg.isEmpty()){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(helperEndpoints.buildResponse(-1, mssg, null, crudEntity));
         }
-        Object createdEntity = crudService.save_Crud_Entity(repositoryType,crudEntity);
-        try{
-            Field createdEntityField = createdEntity.getClass().getDeclaredField("state");
-            createdEntityField.setAccessible(true);
-            state = (int) createdEntityField.get(createdEntity);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            e.printStackTrace();
-        }
+        @SuppressWarnings("unchecked")
+        Map<String, Object> createdEntity = (Map<String,Object>) crudService.save_Crud_Entity(repositoryType,crudEntity);
+        state = (int) createdEntity.getOrDefault("state",0);
         return ResponseEntity.status(state == 1 ? HttpStatus.CREATED : HttpStatus.BAD_REQUEST).body(createdEntity);
     }
-
+    
     @PostMapping("{repositoryType}/create_JDBC_SP")
     public ResponseEntity<Object> createEntity_JDBC_SP(@PathVariable String repositoryType,@RequestBody Crud_Entity crudEntity) {
         String mssg = "";
@@ -67,14 +61,9 @@ public class CrudController {
         if(!mssg.isEmpty()){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(helperEndpoints.buildResponse(-1, mssg, null, crudEntity));
         }
-        Object createdEntity = crudService.save_Crud_Entity_JDBC_SP(repositoryType,crudEntity);
-        try{
-            Field createdEntityField = createdEntity.getClass().getDeclaredField("state");
-            createdEntityField.setAccessible(true);
-            state = (int) createdEntityField.get(createdEntity);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            e.printStackTrace();
-        }
+        @SuppressWarnings("unchecked")
+        Map<String, Object> createdEntity = (Map<String, Object>)crudService.save_Crud_Entity_JDBC_SP(repositoryType,crudEntity);
+        state = (int) createdEntity.getOrDefault("state",0);
         return ResponseEntity.status(state == 1 ? HttpStatus.CREATED : HttpStatus.BAD_REQUEST).body(createdEntity);
     }
 
@@ -92,14 +81,9 @@ public class CrudController {
         if(!mssg.isEmpty()){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(helperEndpoints.buildResponse(-1, mssg, null, crudEntity));
         }
-        Object createdEntity = crudService.save_Crud_Entity_JPA_SP(repositoryType,crudEntity);
-        try{
-            Field createdEntityField = createdEntity.getClass().getDeclaredField("state");
-            createdEntityField.setAccessible(true);
-            state = (int) createdEntityField.get(createdEntity);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            e.printStackTrace();
-        }
+        @SuppressWarnings("unchecked")
+        Map<String, Object> createdEntity = (Map<String, Object>)crudService.save_Crud_Entity_JPA_SP(repositoryType,crudEntity);
+        state = (int) createdEntity.getOrDefault("state",0);
         return ResponseEntity.status(state == 1 ? HttpStatus.CREATED : HttpStatus.BAD_REQUEST).body(createdEntity);
     }
     //endregion
@@ -770,22 +754,91 @@ public class CrudController {
     @PutMapping("{repositoryType}/update/{id}")
     public ResponseEntity<Object> updateEntity(@PathVariable String repositoryType,@PathVariable Long id, @RequestBody Crud_Entity crudEntity) {
         crudEntity.setId(id);
-        Object updatedEntity = crudService.update_Crud_Entity(repositoryType,crudEntity);
-        return ResponseEntity.ok(updatedEntity);
+        if(id == null || id <= 0) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(helperEndpoints.buildResponse(-1, "El Id no es permitido: "+id, crudEntity));
+        }
+        String mssg = "";
+        if (!crudEntity.getName().isEmpty() && crudEntity.getName() != null) {
+            if (!helperEndpoints.isAlphabeticWithSpaces(crudEntity.getName())) {
+                mssg += "El nombre no puede contener números o caracteres especiales";
+            }
+        } else mssg += "El nombre no puede ser nulo o vacío";
+        if(!crudEntity.getEmail().isEmpty() && crudEntity.getEmail() != null){
+            if(!helperEndpoints.isValidEmail(crudEntity.getEmail())){
+                if(!mssg.isEmpty()) mssg += " | ";
+                mssg += "El correo electrónico no tiene un formato válido";
+            }
+        }else{
+            if(!mssg.isEmpty()) mssg += " | ";
+            mssg += "El correo electrónico no puede ser nulo o vacío";
+        }
+        if(!mssg.isEmpty()){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(helperEndpoints.buildResponse(-1, mssg,crudEntity));
+        } 
+        @SuppressWarnings("unchecked")
+        Map<String,Object> resultv = (Map<String,Object>)crudService.update_Crud_Entity(repositoryType,crudEntity);
+        int state = (int)resultv.getOrDefault("state", 0);
+        return ResponseEntity.status(state == 1 ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(resultv);
     }
     
     @PutMapping("{repositoryType}/update_JDBC_SP/{id}")
     public ResponseEntity<Object> updateEntity_JDBC_SP(@PathVariable String repositoryType,@PathVariable Long id, @RequestBody Crud_Entity crudEntity) {
         crudEntity.setId(id);
-        Object updatedEntity = crudService.update_Crud_Entity_JDBC_SP(repositoryType,crudEntity);
-        return ResponseEntity.ok(updatedEntity);
+        if(id == null || id <= 0) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(helperEndpoints.buildResponse(-1, "El Id no es permitido: "+id, crudEntity));
+        }
+        String mssg = "";
+        if (!crudEntity.getName().isEmpty() && crudEntity.getName() != null) {
+            if (!helperEndpoints.isAlphabeticWithSpaces(crudEntity.getName())) {
+                mssg += "El nombre no puede contener números o caracteres especiales";
+            }
+        } else mssg += "El nombre no puede ser nulo o vacío";
+        if(!crudEntity.getEmail().isEmpty() && crudEntity.getEmail() != null){
+            if(!helperEndpoints.isValidEmail(crudEntity.getEmail())){
+                if(!mssg.isEmpty()) mssg += " | ";
+                mssg += "El correo electrónico no tiene un formato válido";
+            }
+        }else{
+            if(!mssg.isEmpty()) mssg += " | ";
+            mssg += "El correo electrónico no puede ser nulo o vacío";
+        }
+        if(!mssg.isEmpty()){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(helperEndpoints.buildResponse(-1, mssg,crudEntity));
+        } 
+        @SuppressWarnings("unchecked")
+        Map<String,Object> resultv = (Map<String,Object>)crudService.update_Crud_Entity_JDBC_SP(repositoryType,crudEntity);
+        int state = (int)resultv.getOrDefault("state", 0);
+        return ResponseEntity.status(state == 1 ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(resultv);
     }
 
     @PutMapping("{repositoryType}/update_JPA_SP/{id}")
     public ResponseEntity<Object> updateEntity_JPA_SP(@PathVariable String repositoryType,@PathVariable Long id, @RequestBody Crud_Entity crudEntity) {
         crudEntity.setId(id);
-        Object updatedEntity = crudService.update_Crud_Entity_JPA_SP(repositoryType,crudEntity);
-        return ResponseEntity.ok(updatedEntity);
+        if(id == null || id <= 0) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(helperEndpoints.buildResponse(-1, "El Id no es permitido: "+id, crudEntity));
+        }
+        String mssg = "";
+        if (!crudEntity.getName().isEmpty() && crudEntity.getName() != null) {
+            if (!helperEndpoints.isAlphabeticWithSpaces(crudEntity.getName())) {
+                mssg += "El nombre no puede contener números o caracteres especiales";
+            }
+        } else mssg += "El nombre no puede ser nulo o vacío";
+        if(!crudEntity.getEmail().isEmpty() && crudEntity.getEmail() != null){
+            if(!helperEndpoints.isValidEmail(crudEntity.getEmail())){
+                if(!mssg.isEmpty()) mssg += " | ";
+                mssg += "El correo electrónico no tiene un formato válido";
+            }
+        }else{
+            if(!mssg.isEmpty()) mssg += " | ";
+            mssg += "El correo electrónico no puede ser nulo o vacío";
+        }
+        if(!mssg.isEmpty()){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(helperEndpoints.buildResponse(-1, mssg,crudEntity));
+        } 
+        @SuppressWarnings("unchecked")
+        Map<String,Object> resultv = (Map<String,Object>)crudService.update_Crud_Entity_JPA_SP(repositoryType,crudEntity);
+        int state = (int)resultv.getOrDefault("state", 0);
+        return ResponseEntity.status(state == 1 ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(resultv);
     }
     //endregion
 
@@ -793,18 +846,21 @@ public class CrudController {
     /*@Param Long id: identificador único de la entidad a eliminar */
     @DeleteMapping("{repositoryType}/delete_phisical/{id}")
     public ResponseEntity<Void> deleteEntity_phisical_ById(@PathVariable String repositoryType,@PathVariable Long id) {
+        if(id == null || id <= 0) return ResponseEntity.badRequest().build();
         crudService.delete_Crud_Entity_phisical_ById(repositoryType,id);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("{repositoryType}/delete_phisical_JDBC_SP/{id}")
     public ResponseEntity<Void> deleteEntity_phisical_JDBC_SP_ById(@PathVariable String repositoryType,@PathVariable Long id) {
+        if(id == null || id <= 0) return ResponseEntity.badRequest().build();
         crudService.delete_Crud_Entity_phisical_JDBC_SP_ById(repositoryType,id);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("{repositoryType}/delete_phisical_JPA_SP/{id}")
     public ResponseEntity<Void> deleteEntity_phisical_JPA_SP_ById(@PathVariable String repositoryType,@PathVariable Long id) {
+        if(id == null ||id <= 0) return ResponseEntity.badRequest().build();
         crudService.delete_Crud_Entity_phisical_JPA_SP_ById(repositoryType,id);
         return ResponseEntity.noContent().build();
     }
@@ -814,53 +870,41 @@ public class CrudController {
     /*@Param Long id: identificador único de la entidad a eliminar lógicamente */
     @PutMapping("{repositoryType}/delete_logical/{id}")
     public ResponseEntity<Object> deleteEntity_logical_ById(@PathVariable String repositoryType,@PathVariable Long id) {
+        if(id == null || id <= 0) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(helperEndpoints.buildResponse(-1, "Id a eliminar es incorrecto, Id: "+id));
+        }
         Crud_Entity entityToDelete = new Crud_Entity();
         entityToDelete.setId(id);
-        Object updatedEntity = crudService.delete_Crud_Entity_logical_ById(repositoryType,entityToDelete);
-        return ResponseEntity.ok(updatedEntity);
-        /* Optional<Crud_Entity> existingEntityOpt = crudService.find_Crud_EntityById(repositoryType, id);
-        if (existingEntityOpt.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-    
-        Crud_Entity crudEntity = existingEntityOpt.get();
-        crudEntity.setState(false); 
-        Object updatedEntity = crudService.delete_Crud_Entity_logical_ById(repositoryType,crudEntity);
-        return ResponseEntity.ok(updatedEntity); */
+        @SuppressWarnings("unchecked")
+        Map<String,Object> updatedEntity = (Map<String,Object>)crudService.delete_Crud_Entity_logical_ById(repositoryType,entityToDelete);
+        int state = (int)updatedEntity.getOrDefault("state", 0);
+        return ResponseEntity.status(state == 1 ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(updatedEntity);
     }
 
     @PutMapping("{repositoryType}/delete_logical_JDBC_SP/{id}")
     public ResponseEntity<Object> deleteEntity_logical_JDBC_ById(@PathVariable String repositoryType,@PathVariable Long id) {
+        if(id == null || id <= 0) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(helperEndpoints.buildResponse(-1, "Id a eliminar es incorrecto, Id: "+id));
+        }
         Crud_Entity entityToDelete = new Crud_Entity();
         entityToDelete.setId(id);
-        Object updatedEntity = crudService.delete_Crud_Entity_logical_JDBC_SP_ById(repositoryType,entityToDelete);
-        return ResponseEntity.ok(updatedEntity);
-        /* Optional<Crud_Entity> existingEntityOpt = crudService.find_Crud_Entity_JDBC_SP_ById(repositoryType, id);
-        if (existingEntityOpt.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-    
-        Crud_Entity crudEntity = existingEntityOpt.get();
-        crudEntity.setState(false); 
-        Object updatedEntity = crudService.delete_Crud_Entity_logical_JDBC_SP_ById(repositoryType,crudEntity);
-        return ResponseEntity.ok(updatedEntity); */
+        @SuppressWarnings("unchecked")
+        Map<String,Object> updatedEntity = (Map<String,Object>)crudService.delete_Crud_Entity_logical_JDBC_SP_ById(repositoryType,entityToDelete);
+        int state = (int)updatedEntity.getOrDefault("state", 0);
+        return ResponseEntity.status(state == 1 ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(updatedEntity);
     }
 
     @PutMapping("{repositoryType}/delete_logical_JPA_SP/{id}")
     public ResponseEntity<Object> deleteEntity_logical_JPA_SP_ById(@PathVariable String repositoryType,@PathVariable Long id) {
+        if(id == null || id <= 0) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(helperEndpoints.buildResponse(-1, "Id a eliminar es incorrecto, Id: "+id));
+        }
         Crud_Entity entityToDelete = new Crud_Entity();
         entityToDelete.setId(id);
-        Object updatedEntity = crudService.delete_Crud_Entity_logical_JPA_SP_ById(repositoryType,entityToDelete);
-        return ResponseEntity.ok(updatedEntity);
-        /* Optional<Crud_Entity> existingEntityOpt = crudService.find_Crud_Entity_JPA_SP_ById(repositoryType, id);
-        if (existingEntityOpt.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-    
-        Crud_Entity crudEntity = existingEntityOpt.get();
-        crudEntity.setState(false); 
-        Object updatedEntity = crudService.delete_Crud_Entity_logical_JPA_SP_ById(repositoryType,crudEntity);
-        return ResponseEntity.ok(updatedEntity); */
+        @SuppressWarnings("unchecked")
+        Map<String,Object> updatedEntity = (Map<String,Object>)crudService.delete_Crud_Entity_logical_JPA_SP_ById(repositoryType,entityToDelete);
+        int state = (int)updatedEntity.getOrDefault("state", 0);
+        return ResponseEntity.status(state == 1 ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(updatedEntity);        
     }
     //endregion
 }

@@ -1,6 +1,7 @@
 package com.CRUD_API_REST.ADMIN.CRUD.infrastructure.persistence.adapter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -79,15 +80,24 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
             .map(Crud_Entity::getName)
             .collect(Collectors.toList());
         List<CrudEntityJpa> existingEntities = jpaRepository.findByNameIn(namesToValidate);
-        if(existingEntities.size() >= entityList.size()) {
-            throw new RuntimeException("Ninguna entidad para guardar después de filtrar los nombres existentes en base de datos.");
+        List<String> namesToProcess = entityList.stream()
+                 .map(Crud_Entity::getName)
+                 .collect(Collectors.toList());
+        if(!existingEntities.isEmpty()) {
+            Set<String> existingNames = existingEntities.stream()
+                .map(CrudEntityJpa::getName)
+                .collect(Collectors.toSet());
+            namesToProcess = namesToProcess.stream()
+                 .filter(name -> !existingNames.contains(name))
+                 .collect(Collectors.toList());
+            if(namesToProcess.isEmpty()) {
+                throw new RuntimeException("Ninguna entidad para guardar después de filtrar los nombres existentes en base de datos.");
+            }
         }
-        Set<String> existingNamesInDB = existingEntities.stream()
-            .map(CrudEntityJpa::getName)
-            .collect(Collectors.toSet());
+        final List<String> finalNamesToProcess = namesToProcess;
         List<CrudEntityJpa> filteredEntities = entityList.stream()
-            .filter(e -> !existingNamesInDB.contains(e.getName()))
-            .map(e -> new CrudEntityJpa(e))
+            .filter(e -> finalNamesToProcess.contains(e.getName()))
+            .map(CrudEntityJpa::new)
             .collect(Collectors.toList());
 
         try{
@@ -108,17 +118,26 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
     @Override
     public Optional<List<Crud_Entity>> save_multi_Crud_Entity_JPA_SP(String typeBean, List<Crud_Entity> entityList) {
         Optional<List<Crud_Entity>> alreadyNames = find_Crud_Entity_JPA_SP_ByNames(typeBean, entityList);
-        if(alreadyNames.map(List::size).orElse(0) >= entityList.size()) {
-            throw new RuntimeException("Error al insertar las entidades ya se encuentran la base de datos: ");
+        List<String> namesToProcess = entityList.stream()
+                 .map(Crud_Entity::getName)
+                 .collect(Collectors.toList());
+        if(alreadyNames.map(List::size).orElse(0) > 0) {
+            Set<String> existingNames = alreadyNames
+                .map(entities -> entities.stream()
+                    .map(Crud_Entity::getName)
+                    .collect(Collectors.toSet()))
+                .orElse(Collections.emptySet());
+            namesToProcess = namesToProcess.stream()
+                 .filter(name -> !existingNames.contains(name))
+                 .collect(Collectors.toList());
+            if(namesToProcess.isEmpty()) {
+                throw new RuntimeException("Error al insertar las entidades ya se encuentran la base de datos: ");
+            }
         } 
-        Set<String> namesExistentes = alreadyNames
-            .map(entities -> entities.stream()
-                .map(Crud_Entity::getName)
-                .collect(Collectors.toSet()))
-            .orElse(Collections.emptySet());
 
+        final List<String> finalNamesToProcess = namesToProcess;
         List<Crud_Entity> filteredEntities = entityList.stream()
-            .filter(e -> !namesExistentes.contains(e.getName()))
+            .filter(e -> finalNamesToProcess.contains(e.getName()))
             .toList();
 
         try {

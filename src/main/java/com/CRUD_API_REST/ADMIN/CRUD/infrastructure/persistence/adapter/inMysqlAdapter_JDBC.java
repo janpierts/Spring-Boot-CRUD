@@ -61,8 +61,14 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
                         .map(Crud_Entity::getName)
                         .collect(Collectors.toList()))
                 .orElse(new ArrayList<>());
-        if(!existingNames.isEmpty() && existingNames.size() >= entityList.size()) {
-            throw new RuntimeException("Error al insertar las entidades ya se encuentran la base de datos: ");
+        if(!existingNames.isEmpty()) {
+            List<String> NonDuplicateNames = entityList.stream()
+                    .map(Crud_Entity::getName)
+                    .filter(name -> !existingNames.contains(name))
+                    .collect(Collectors.toList());
+            if(NonDuplicateNames.isEmpty()) {
+                throw new RuntimeException("Error al insertar las entidades ya se encuentran la base de datos: ");
+            }
         }
         List<Crud_Entity> filteredEntities = entityList.stream()
                 .filter(entity -> !existingNames.contains(entity.getName()))

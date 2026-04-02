@@ -8,11 +8,11 @@
 		<version>4.0.3</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.CRUD-API-REST</groupId>
-	<artifactId>CRUD</artifactId>
+	<groupId>com.MONOLIT</groupId>
+	<artifactId>MONOLIT</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>CRUD</name>
-	<description>Demo CRUD API REST</description>
+	<name>MONOLIT</name>
+	<description>Demo MONOLIT API REST</description>
 	<url/>
 	<licenses>
 		<license/>

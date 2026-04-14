@@ -2,7 +2,6 @@ package com.rj.MONOLIT.ADMIN.CRUD.domain.ports.in;
 
 import java.util.List;
 import java.util.Optional;
-
 import com.rj.MONOLIT.ADMIN.CRUD.domain.model.Crud_Entity;
 
 public interface Crud_ServicePort {

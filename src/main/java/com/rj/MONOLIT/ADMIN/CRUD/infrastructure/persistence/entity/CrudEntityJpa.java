@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-
 import com.rj.MONOLIT.ADMIN.CRUD.domain.model.Crud_Entity;
 
 
@@ -109,7 +108,7 @@ public class CrudEntityJpa {
     public CrudEntityJpa() {
 
     }
-    public CrudEntityJpa(com.rj.MONOLIT.ADMIN.CRUD.domain.model.Crud_Entity domainEntity) {
+    public CrudEntityJpa(Crud_Entity domainEntity) {
         this.id = domainEntity.getId(); 
         this.name = domainEntity.getName();
         this.email = domainEntity.getEmail();

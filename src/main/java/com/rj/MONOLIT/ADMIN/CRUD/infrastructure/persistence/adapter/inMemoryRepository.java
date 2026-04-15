@@ -2,10 +2,8 @@ package com.rj.MONOLIT.ADMIN.CRUD.infrastructure.persistence.adapter;
 
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Component;
-
 import com.rj.MONOLIT.ADMIN.CRUD.domain.model.Crud_Entity;
 import com.rj.MONOLIT.ADMIN.CRUD.domain.ports.out.Crud_RepositoryPort;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;

@@ -116,7 +116,11 @@ public static <T> Map<String, List<T>> splitDuplicatesByMultipleKeys(
     private static final Pattern SPECIAL_CHARACTERS_PATTERN = Pattern.compile("^[!@#$%^&*(),.?\":{}|<>]+$");
     private static final Pattern LONG_PATTERN = Pattern.compile("^-?\\d+$");
     private static final Pattern ALPHABETIC_WITH_SPACES = Pattern.compile("^[A-Za-z ]+$");
+    private static final Pattern CONTAINS_WHITESPACE_PATTERN = Pattern.compile(".*\\s+.*");
     //region Validation Methods restrictive
+    public static boolean containsAnyWhitespace(String input){
+        return CONTAINS_WHITESPACE_PATTERN.matcher(input).matches();
+    }
     public static boolean isValidEmail(String email) {
         return EMAIL_PATTERN.matcher(email).matches();
     }

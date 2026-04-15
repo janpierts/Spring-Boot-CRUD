@@ -12,30 +12,65 @@ import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import javax.sql.DataSource;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.CallableStatementCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
+import com.rj.MONOLIT.COMMON.utils.config.DBConfig;
 
 @Component("inMysqlAdapter_JDBC")
 public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
+    //region dynamic JdbcTemplate configuration
+    @Value("${spring.datasource.url}")
+    private String datasourceUrl;
+    @Value("${spring.datasource.username}")
+    private String datasourceUsername;
+    @Value("${spring.datasource.password}")
+    private String datasourcePassword;
+    @Value("${spring.datasource.driver-class-name}")
+    private String datasourceDriverClassName;
+    private final DBConfig DBConfig;
+    private volatile JdbcTemplate jdbcTemplate;
+
+    public inMysqlAdapter_JDBC(DBConfig DBConfig) {
+        this.DBConfig = DBConfig;
+    }
+    private JdbcTemplate getDynamicJdbcTemplate(){
+        if(this.jdbcTemplate == null) {
+            synchronized(this){
+                if(this.jdbcTemplate == null) {
+                    DataSource ds = DBConfig.createDataSource(datasourceUrl, datasourceUsername, datasourcePassword, datasourceDriverClassName);
+                    this.jdbcTemplate = new JdbcTemplate(ds);
+                }
+            }
+        }
+        return this.jdbcTemplate;
+    }
+    //endregion
+
+    /* ->  this method is used to get a default JdbcTemplate connection */
+    /*
     private final JdbcTemplate jdbcTemplate;
     public inMysqlAdapter_JDBC(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
+     */
     
     //region save simple, multi and import methods
     @Override
     public Crud_Entity save_Crud_Entity_JDBC_SP (String typeBean,Crud_Entity entity) {
+        JdbcTemplate currentTemplate = getDynamicJdbcTemplate();
         String sql = "{ call jbAPI_crud_insert(?,?,?,?) }";        
         Optional<Crud_Entity> existingEntityOpt = find_Crud_Entity_JDBC_SP_ByName(typeBean,entity.getName());
         if (existingEntityOpt.isPresent()) {
             throw new RuntimeException("Error al guardar: el nombre ya existe.");
         }
         try{
-            jdbcTemplate.execute(sql, (CallableStatementCallback<Long>) cs -> {
+            currentTemplate.execute(sql, (CallableStatementCallback<Long>) cs -> {
                 cs.setString(1, entity.getName());
                 cs.setString(2, entity.getEmail());
                 cs.registerOutParameter(3, Types.BIGINT);
@@ -54,6 +89,7 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
 
     @Override
     public Optional<List<Crud_Entity>> save_multi_Crud_Entity_JDBC_SP(String typeBean, List<Crud_Entity> entityList) {
+        JdbcTemplate currentTemplate = getDynamicJdbcTemplate();
         String sql = "{ call jbAPI_crud_insert_multi(?) }";
         ObjectMapper objectMapper = new ObjectMapper();
         List<String> existingNames = find_Crud_Entity_JDBC_SP_ByNames(typeBean, entityList)
@@ -75,7 +111,7 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
                 .collect(Collectors.toList());
         try{
             String jsonEntities = objectMapper.writeValueAsString(filteredEntities);
-            jdbcTemplate.execute(sql, (CallableStatementCallback<Void>) cs -> {
+            currentTemplate.execute(sql, (CallableStatementCallback<Void>) cs -> {
                 cs.setString(1, jsonEntities);
                 cs.execute();
                 return null;
@@ -105,6 +141,7 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
     //region find methods
     @Override
     public List<Crud_Entity> findAll_Crud_entity_JDBC_SP(String typeBean) {
+        JdbcTemplate currentTemplate = getDynamicJdbcTemplate();
         try{
             String sql = "{call jbAPI_crud_list()}";
             RowMapper<Crud_Entity> rowMapper = (rs, rowNum) -> {
@@ -117,7 +154,7 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
                 entity.setState(rs.getBoolean("state"));
                 return entity;
             };
-            return jdbcTemplate.query(sql, rowMapper);
+            return currentTemplate.query(sql, rowMapper);
         }catch(Exception e){
             throw new RuntimeException("Error: "+e.getMessage());
         }
@@ -125,6 +162,7 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
 
     @Override
     public Optional<Crud_Entity> find_Crud_Entity_JDBC_SP_ById(String typeBean,Long id) {
+        JdbcTemplate currentTemplate = getDynamicJdbcTemplate();
         try{
             String sql = "{call jbAPI_crud_listId(?)}";
             RowMapper<Crud_Entity> rowMapper = (rs, rowNum) -> {
@@ -137,7 +175,7 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
                 entity.setState(rs.getBoolean("state"));
                 return entity;
             };
-            List<Crud_Entity> results = jdbcTemplate.query(sql, rowMapper, id);
+            List<Crud_Entity> results = currentTemplate.query(sql, rowMapper, id);
             if(results.isEmpty()) throw new RuntimeException("El identificador ingresado no existe");
             return results.isEmpty()? Optional.empty() : Optional.of(results.get(0));
         }catch(Exception e){
@@ -147,6 +185,7 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
 
     @Override
     public Optional<Crud_Entity> find_Crud_Entity_JDBC_SP_ByName(String typeBean, String name) {
+        JdbcTemplate currentTemplate = getDynamicJdbcTemplate();
         try{
             String sql = "{call jbAPI_crud_list_byName(?)}";
             RowMapper<Crud_Entity> rowMapper = (rs, rowNum) -> {
@@ -159,7 +198,7 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
                 entity.setState(rs.getBoolean("state"));
                 return entity;
             };
-            List<Crud_Entity> results = jdbcTemplate.query(sql, rowMapper, name);
+            List<Crud_Entity> results = currentTemplate.query(sql, rowMapper, name);
             return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
         }catch(Exception e){
             throw new RuntimeException("Error: "+e.getMessage());
@@ -168,11 +207,12 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
 
     @Override
     public Optional<List<Crud_Entity>> find_Crud_Entity_JDBC_SP_ByNames(String typeBean, List<Crud_Entity> entityList) {
+        JdbcTemplate currentTemplate = getDynamicJdbcTemplate();
         try{
             String sql = "{ call jbAPI_crud_list_byNames(?) }";
             ObjectMapper objectMapper = new ObjectMapper();
             String jsonEntities = objectMapper.writeValueAsString(entityList);
-            List<Crud_Entity> result = jdbcTemplate.execute(sql, (CallableStatementCallback<List<Crud_Entity>>) cs -> {
+            List<Crud_Entity> result = currentTemplate.execute(sql, (CallableStatementCallback<List<Crud_Entity>>) cs -> {
                 cs.setString(1, jsonEntities);
                 ResultSet rs = cs.executeQuery();
                 BeanPropertyRowMapper<Crud_Entity> rowMapper = new BeanPropertyRowMapper<>(Crud_Entity.class);
@@ -195,13 +235,14 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
     //region update and delete methods
     @Override
     public Crud_Entity update_Crud_Entity_JDBC_SP(String typeBean,Crud_Entity Entity) {
+        JdbcTemplate currentTemplate = getDynamicJdbcTemplate();
         String sql = "{call jbAPI_crud_update(?,?,?)}";
         try{
             Optional<Crud_Entity> existingEntityOpt = find_Crud_Entity_JDBC_SP_ById(typeBean, Entity.getId()).filter(a -> Boolean.TRUE.equals(a.getState()));
             if (existingEntityOpt.isEmpty()) {
                 throw new RuntimeException("El identificador mencionado no existe o se encuntra eliminado/anulado, Id: "+Entity.getId());
             }
-            jdbcTemplate.update(sql,  Entity.getId(), Entity.getName(), Entity.getEmail());
+            currentTemplate.update(sql,  Entity.getId(), Entity.getName(), Entity.getEmail());
             Optional<Crud_Entity> updatedEntityOpt = find_Crud_Entity_JDBC_SP_ById(typeBean, Entity.getId());
             return updatedEntityOpt.get();
         }catch(DataAccessException e){
@@ -211,13 +252,14 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
 
     @Override
     public void delete_Crud_Entity_phisical_JDBC_SP_ById(String typeBean,Long id) {
+        JdbcTemplate currentTemplate = getDynamicJdbcTemplate();
         String sql = "{call jbAPI_crud_delete_phisical(?)}";
         try{
             Optional<Crud_Entity> existingEntityOpt = find_Crud_Entity_JDBC_SP_ById(typeBean, id);
             if (existingEntityOpt.isEmpty()) {
                 throw new RuntimeException("Error al eliminar físicamente: el ID: "+id+" no existe.");
             }
-            jdbcTemplate.update(sql, id);
+            currentTemplate.update(sql, id);
         }catch(DataAccessException e){
             throw new RuntimeException(e.getMessage());
         }
@@ -225,13 +267,14 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
 
     @Override
     public Crud_Entity delete_Crud_Entity_logical_JDBC_SP_ById(String typeBean,Crud_Entity Entity) {
+        JdbcTemplate currentTemplate = getDynamicJdbcTemplate();
         String sql = "{call jbAPI_crud_delete_logical(?)}";
         try{
             Optional<Crud_Entity> existingEntityOpt = find_Crud_Entity_JDBC_SP_ById(typeBean, Entity.getId()).filter(a -> Boolean.TRUE.equals(a.getState()));
             if (existingEntityOpt.isEmpty()) {
                 throw new RuntimeException("El identificador mencionado no existe o se encuntra eliminado/anulado, Id: "+Entity.getId());
             }
-            jdbcTemplate.update(sql, Entity.getId());
+            currentTemplate.update(sql, Entity.getId());
             Optional<Crud_Entity> updatedEntityOpt = find_Crud_Entity_JDBC_SP_ById(typeBean, Entity.getId());
             if (updatedEntityOpt.isPresent()) {
                 Entity = updatedEntityOpt.get();

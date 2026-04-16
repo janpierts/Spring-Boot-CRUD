@@ -1,4 +1,4 @@
-package com.rj.MONOLIT.COMMON.utils.config;
+package com.rj.MONOLIT.COMMON.utils.settings;
 
 import java.util.List;
 import java.util.Properties;

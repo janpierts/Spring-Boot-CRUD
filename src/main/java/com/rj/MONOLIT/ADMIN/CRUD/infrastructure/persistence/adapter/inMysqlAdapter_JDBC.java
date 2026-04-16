@@ -8,6 +8,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rj.MONOLIT.ADMIN.CRUD.domain.model.Crud_Entity;
 import com.rj.MONOLIT.ADMIN.CRUD.domain.ports.out.Crud_RepositoryPort;
+import com.rj.MONOLIT.COMMON.utils.settings.JDBCConfig;
+
 import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
@@ -20,7 +22,6 @@ import org.springframework.jdbc.core.CallableStatementCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
-import com.rj.MONOLIT.COMMON.utils.config.JDBCConfig;
 
 @Component("inMysqlAdapter_JDBC")
 public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {

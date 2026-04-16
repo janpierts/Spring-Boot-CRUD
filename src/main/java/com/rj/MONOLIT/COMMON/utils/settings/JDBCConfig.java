@@ -1,4 +1,4 @@
-package com.rj.MONOLIT.COMMON.utils.config;
+package com.rj.MONOLIT.COMMON.utils.settings;
 
 import javax.sql.DataSource;
 import org.springframework.beans.factory.annotation.Value;

@@ -20,7 +20,7 @@ import org.springframework.jdbc.core.CallableStatementCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
-import com.rj.MONOLIT.COMMON.utils.config.DBConfig;
+import com.rj.MONOLIT.COMMON.utils.config.JDBCConfig;
 
 @Component("inMysqlAdapter_JDBC")
 public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
@@ -33,10 +33,10 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
     private String datasourcePassword;
     @Value("${spring.datasource.driver-class-name}")
     private String datasourceDriverClassName;
-    private final DBConfig DBConfig;
+    private final JDBCConfig DBConfig;
     private volatile JdbcTemplate jdbcTemplate;
 
-    public inMysqlAdapter_JDBC(DBConfig DBConfig) {
+    public inMysqlAdapter_JDBC(JDBCConfig DBConfig) {
         this.DBConfig = DBConfig;
     }
     private JdbcTemplate getDynamicJdbcTemplate(){

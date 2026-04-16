@@ -10,7 +10,7 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
 @Configuration
-public class DBConfig {
+public class JDBCConfig {
     @Value("${spring.datasource.url}")
     private String defaultUrl;
     @Value("${spring.datasource.username}")

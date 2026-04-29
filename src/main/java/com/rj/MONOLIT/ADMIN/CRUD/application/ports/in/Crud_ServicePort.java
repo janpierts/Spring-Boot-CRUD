@@ -1,4 +1,4 @@
-package com.rj.MONOLIT.ADMIN.CRUD.domain.ports.in;
+package com.rj.MONOLIT.ADMIN.CRUD.application.ports.in;
 
 import java.util.List;
 import java.util.Optional;

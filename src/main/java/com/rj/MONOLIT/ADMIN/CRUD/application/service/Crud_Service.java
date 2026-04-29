@@ -1,12 +1,13 @@
-package com.rj.MONOLIT.ADMIN.CRUD.domain.service;
+package com.rj.MONOLIT.ADMIN.CRUD.application.service;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
+
+import com.rj.MONOLIT.ADMIN.CRUD.application.ports.in.Crud_ServicePort;
+import com.rj.MONOLIT.ADMIN.CRUD.application.ports.out.Crud_RepositoryPort;
 import com.rj.MONOLIT.ADMIN.CRUD.domain.model.Crud_Entity;
-import com.rj.MONOLIT.ADMIN.CRUD.domain.ports.in.Crud_ServicePort;
-import com.rj.MONOLIT.ADMIN.CRUD.domain.ports.out.Crud_RepositoryPort;
 import com.rj.MONOLIT.COMMON.utils.helperEndpoints;
 
 @Service

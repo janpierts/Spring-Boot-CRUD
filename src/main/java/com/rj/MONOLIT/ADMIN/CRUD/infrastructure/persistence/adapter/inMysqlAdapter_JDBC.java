@@ -6,8 +6,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rj.MONOLIT.ADMIN.CRUD.application.ports.out.Crud_RepositoryPort;
 import com.rj.MONOLIT.ADMIN.CRUD.domain.model.Crud_Entity;
-import com.rj.MONOLIT.ADMIN.CRUD.domain.ports.out.Crud_RepositoryPort;
 import com.rj.MONOLIT.COMMON.utils.settings.JDBCConfig;
 
 import jakarta.transaction.Transactional;

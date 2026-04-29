@@ -10,12 +10,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rj.MONOLIT.ADMIN.CRUD.application.ports.out.Crud_RepositoryPort;
 import com.rj.MONOLIT.ADMIN.CRUD.domain.model.Crud_Entity;
-import com.rj.MONOLIT.ADMIN.CRUD.domain.ports.out.Crud_RepositoryPort;
 import com.rj.MONOLIT.ADMIN.CRUD.infrastructure.persistence.entity.CrudEntityJpa;
 import com.rj.MONOLIT.ADMIN.CRUD.infrastructure.persistence.springdata.crudSpringDataRepository;
 import com.rj.MONOLIT.COMMON.utils.settings.JPAConfig;
-
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.StoredProcedureQuery;
 import jakarta.transaction.Transactional;

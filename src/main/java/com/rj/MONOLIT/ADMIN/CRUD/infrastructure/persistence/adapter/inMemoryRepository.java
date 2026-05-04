@@ -2,10 +2,9 @@ package com.rj.MONOLIT.ADMIN.CRUD.infrastructure.persistence.adapter;
 
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Component;
-
+import com.rj.MONOLIT.ADMIN.CRUD.application.dto.InsertUpdate_Crud_Model;
 import com.rj.MONOLIT.ADMIN.CRUD.application.ports.out.Crud_RepositoryPort;
 import com.rj.MONOLIT.ADMIN.CRUD.domain.model.Crud_Entity;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,23 +20,21 @@ public class inMemoryRepository implements Crud_RepositoryPort{
 
     //region save entity
     @Override
-    public Crud_Entity save_Crud_Entity(String typeBean,Crud_Entity entity) {
-        if (entity.getId() == null) {
-            Optional<Crud_Entity> existingEntityOpt = find_Crud_EntityByName(typeBean,entity.getName());
-                if (existingEntityOpt.isEmpty()) {
-                    LocalDateTime now = LocalDateTime.now();
-                    entity.setId(nextId++);
-                    entity.setCreated(now);
-                    entity.setState(true);
-                    entities.add(entity);
-                    return entity;
-                }
-                else {
-                    throw new RuntimeException("Error al guardar: el nombre ya existe.");
-                }
-        } else {
-            return update_Crud_Entity(typeBean,entity); 
+    public Crud_Entity save_Crud_Entity(String typeBean, InsertUpdate_Crud_Model entity) {
+        
+        Optional<Crud_Entity> existingEntityOpt = find_Crud_EntityByName(typeBean,entity.name());
+        if (existingEntityOpt.isPresent()) {
+            throw new RuntimeException("Error al guardar: el nombre ya existe.");
         }
+        Crud_Entity newEntity = new Crud_Entity();
+        LocalDateTime now = LocalDateTime.now();
+        newEntity.setName(entity.name());
+        newEntity.setEmail(entity.email());
+        newEntity.setId(nextId++);
+        newEntity.setCreated(now);
+        newEntity.setState(true);
+        entities.add(newEntity);
+        return newEntity;
     }
     //endregion
 
@@ -163,11 +160,11 @@ public class inMemoryRepository implements Crud_RepositoryPort{
 
     //region unimplemented methods
     @Override
-    public Crud_Entity save_Crud_Entity_JDBC_SP(String typeBean, Crud_Entity entity) {
+    public Crud_Entity save_Crud_Entity_JDBC_SP(String typeBean, InsertUpdate_Crud_Model entity) {
         throw new UnsupportedOperationException("Unimplemented method 'save_Crud_Entity_JDBC_SP'");
     }
     @Override
-    public Crud_Entity save_Crud_Entity_JPA_SP(String typeBean, Crud_Entity entity) {
+    public Crud_Entity save_Crud_Entity_JPA_SP(String typeBean, InsertUpdate_Crud_Model entity) {
         throw new UnsupportedOperationException("Unimplemented method 'save_Crud_Entity_JPA_SP'");
     }
     @Override

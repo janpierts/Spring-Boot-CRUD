@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import com.rj.MONOLIT.ADMIN.CRUD.application.dto.InsertUpdate_Crud_Model;
 import com.rj.MONOLIT.ADMIN.CRUD.application.service.Crud_Service;
 import com.rj.MONOLIT.ADMIN.CRUD.domain.model.Crud_Entity;
 import com.rj.MONOLIT.COMMON.utils.filesProcessor;
@@ -28,63 +29,45 @@ public class CrudController {
     //region create simple entity
     /*@Param Crud_Entity: entidad para agregar  */
     @PostMapping("{repositoryType}/create")
-    public ResponseEntity<Object> createEntity(@PathVariable String repositoryType,@RequestBody Crud_Entity crudEntity) {
-        String mssg = "";
+    public ResponseEntity<Object> createEntity(@PathVariable String repositoryType,@RequestBody InsertUpdate_Crud_Model crudEntity) {
         int state = 0;
-        if(crudEntity.getName() == null || crudEntity.getEmail() == null || crudEntity.getName().isEmpty() || crudEntity.getEmail().isEmpty() || crudEntity.getName().isBlank() || crudEntity.getEmail().isBlank()){
-            mssg = "Name and Email are required fields.";
+        try{
+            crudEntity.validate();
+            @SuppressWarnings("unchecked")
+            Map<String, Object> createdEntity = (Map<String,Object>) crudService.save_Crud_Entity(repositoryType,crudEntity);
+            state = (int) createdEntity.getOrDefault("state",0);
+            return ResponseEntity.status(state == 1 ? HttpStatus.CREATED : HttpStatus.BAD_REQUEST).body(createdEntity);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(helperEndpoints.buildResponse(-1, e.getMessage(), null, crudEntity));
         }
-        if(helperEndpoints.isAlphabeticWithSpaces(crudEntity.getName()) == false || helperEndpoints.isValidEmail(crudEntity.getEmail()) == false){
-            if(!mssg.isEmpty()) mssg = " | ";
-            mssg += " Name(only Alphabethict) or Email format is invalid.";
-        }
-        if(!mssg.isEmpty()){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(helperEndpoints.buildResponse(-1, mssg, null, crudEntity));
-        }
-        @SuppressWarnings("unchecked")
-        Map<String, Object> createdEntity = (Map<String,Object>) crudService.save_Crud_Entity(repositoryType,crudEntity);
-        state = (int) createdEntity.getOrDefault("state",0);
-        return ResponseEntity.status(state == 1 ? HttpStatus.CREATED : HttpStatus.BAD_REQUEST).body(createdEntity);
     }
     
     @PostMapping("{repositoryType}/create_JDBC_SP")
-    public ResponseEntity<Object> createEntity_JDBC_SP(@PathVariable String repositoryType,@RequestBody Crud_Entity crudEntity) {
-        String mssg = "";
+    public ResponseEntity<Object> createEntity_JDBC_SP(@PathVariable String repositoryType,@RequestBody InsertUpdate_Crud_Model crudEntity) {
         int state = 0;
-        if(crudEntity.getName() == null || crudEntity.getEmail() == null || crudEntity.getName().isEmpty() || crudEntity.getEmail().isEmpty() || crudEntity.getName().isBlank() || crudEntity.getEmail().isBlank()){
-            mssg = "Name and Email are required fields.";
+        try{
+            crudEntity.validate();
+            @SuppressWarnings("unchecked")
+            Map<String, Object> createdEntity = (Map<String, Object>)crudService.save_Crud_Entity_JDBC_SP(repositoryType,crudEntity);
+            state = (int) createdEntity.getOrDefault("state",0);
+            return ResponseEntity.status(state == 1 ? HttpStatus.CREATED : HttpStatus.BAD_REQUEST).body(createdEntity);
+        }catch(IllegalArgumentException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(helperEndpoints.buildResponse(-1, e.getMessage(), null, crudEntity));
         }
-        if(helperEndpoints.isAlphabeticWithSpaces(crudEntity.getName()) == false || helperEndpoints.isValidEmail(crudEntity.getEmail()) == false){
-            if(!mssg.isEmpty()) mssg = " | ";
-            mssg += " Name(only Alphabethict) or Email format is invalid.";
-        }
-        if(!mssg.isEmpty()){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(helperEndpoints.buildResponse(-1, mssg, null, crudEntity));
-        }
-        @SuppressWarnings("unchecked")
-        Map<String, Object> createdEntity = (Map<String, Object>)crudService.save_Crud_Entity_JDBC_SP(repositoryType,crudEntity);
-        state = (int) createdEntity.getOrDefault("state",0);
-        return ResponseEntity.status(state == 1 ? HttpStatus.CREATED : HttpStatus.BAD_REQUEST).body(createdEntity);
     }
 
     @PostMapping("{repositoryType}/create_JPA_SP")
-    public ResponseEntity<Object> createEntity_JPA_SP(@PathVariable String repositoryType,@RequestBody Crud_Entity crudEntity) {
-        String mssg = "";
+    public ResponseEntity<Object> createEntity_JPA_SP(@PathVariable String repositoryType,@RequestBody InsertUpdate_Crud_Model crudEntity) {
         int state = 0;
-        if(crudEntity.getName() == null || crudEntity.getEmail() == null || crudEntity.getName().isEmpty() || crudEntity.getEmail().isEmpty() || crudEntity.getName().isBlank() || crudEntity.getEmail().isBlank()){
-            mssg = "Name and Email are required fields.";
+        try{
+            crudEntity.validate();
+            @SuppressWarnings("unchecked")
+            Map<String, Object> createdEntity = (Map<String, Object>)crudService.save_Crud_Entity_JPA_SP(repositoryType,crudEntity);
+            state = (int) createdEntity.getOrDefault("state",0);
+            return ResponseEntity.status(state == 1 ? HttpStatus.CREATED : HttpStatus.BAD_REQUEST).body(createdEntity);
+        }catch(IllegalArgumentException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(helperEndpoints.buildResponse(-1, e.getMessage(), null, crudEntity));
         }
-        if(helperEndpoints.isAlphabeticWithSpaces(crudEntity.getName()) == false || helperEndpoints.isValidEmail(crudEntity.getEmail()) == false){
-            if(!mssg.isEmpty()) mssg = " | ";
-            mssg += " Name(only Alphabethict) or Email format is invalid.";
-        }
-        if(!mssg.isEmpty()){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(helperEndpoints.buildResponse(-1, mssg, null, crudEntity));
-        }
-        @SuppressWarnings("unchecked")
-        Map<String, Object> createdEntity = (Map<String, Object>)crudService.save_Crud_Entity_JPA_SP(repositoryType,crudEntity);
-        state = (int) createdEntity.getOrDefault("state",0);
-        return ResponseEntity.status(state == 1 ? HttpStatus.CREATED : HttpStatus.BAD_REQUEST).body(createdEntity);
     }
     //endregion
     

@@ -10,7 +10,6 @@ import com.rj.MONOLIT.ADMIN.CRUD.application.dto.InsertUpdate_Crud_Model;
 import com.rj.MONOLIT.ADMIN.CRUD.application.ports.out.Crud_RepositoryPort;
 import com.rj.MONOLIT.ADMIN.CRUD.domain.model.Crud_Entity;
 import com.rj.MONOLIT.COMMON.utils.settings.JDBCConfig;
-
 import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
@@ -70,7 +69,7 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
         Optional<Crud_Entity> existingEntityOpt = find_Crud_Entity_JDBC_SP_ByName(typeBean,entity.name());
         Crud_Entity newEntity = new Crud_Entity();
         if (existingEntityOpt.isPresent()) {
-            throw new RuntimeException("Error al guardar: el nombre ya existe.");
+            throw new RuntimeException("El nombre '"+entity.name()+"' ya existe en la base de datos.");
         }
         try{
             newEntity.setName(entity.name());

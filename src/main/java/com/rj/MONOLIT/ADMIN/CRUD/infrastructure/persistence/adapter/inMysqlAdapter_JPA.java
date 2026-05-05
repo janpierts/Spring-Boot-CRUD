@@ -349,12 +349,12 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
     
     //region update entity
     @Override
-    public Crud_Entity update_Crud_Entity(String typeBean, Crud_Entity entity) {
+    public Crud_Entity update_Crud_Entity(String typeBean, InsertUpdate_Crud_Model entity) {
         try{
-            Long id = entity.getId();
+            Long id = entity.id();
             CrudEntityJpa jpaEntity_update = jpaRepository.findById(id).filter(a -> Boolean.TRUE.equals(a.getState())).orElseThrow(() -> new RuntimeException("El identificador mencionado no existe o se encuntra eliminado/anulado, Id: "+id));
-            jpaEntity_update.setName(entity.getName());
-            jpaEntity_update.setEmail(entity.getEmail());
+            jpaEntity_update.setName(entity.name());
+            jpaEntity_update.setEmail(entity.email());
             CrudEntityJpa updatedJpaEntity = jpaRepository.save(jpaEntity_update);
             return updatedJpaEntity.toDomainEntity();
         }catch(Exception e) {
@@ -364,22 +364,22 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
     }
 
     @Override
-    public Crud_Entity update_Crud_Entity_JPA_SP(String typeBean, Crud_Entity entity) {
+    public Crud_Entity update_Crud_Entity_JPA_SP(String typeBean, InsertUpdate_Crud_Model entity) {
         try{
-            Optional<Crud_Entity> exisEntity = find_Crud_Entity_JPA_SP_ById(typeBean, entity.getId()).filter(a -> Boolean.TRUE.equals(a.getState()));
+            Optional<Crud_Entity> exisEntity = find_Crud_Entity_JPA_SP_ById(typeBean, entity.id()).filter(a -> Boolean.TRUE.equals(a.getState()));
             if(!exisEntity.isPresent()){
-                throw new RuntimeException("El identificador mencionado no existe o se encuntra eliminado/anulado, Id: "+entity.getId());
+                throw new RuntimeException("El identificador mencionado no existe o se encuntra eliminado/anulado, Id: "+entity.id());
             }
             EntityManager em = getDynamicEntityManager();
             StoredProcedureQuery query = em.createNamedStoredProcedureQuery("jbAPI_crud_update_query");
-            query.setParameter("p_id", entity.getId());
-            query.setParameter("p_name", entity.getName());
-            query.setParameter("p_email", entity.getEmail());
+            query.setParameter("p_id", entity.id());
+            query.setParameter("p_name", entity.name());
+            query.setParameter("p_email", entity.email());
             query.execute();
     
-            return find_Crud_Entity_JPA_SP_ById(typeBean, entity.getId())
+            return find_Crud_Entity_JPA_SP_ById(typeBean, entity.id())
                .orElseThrow(() -> 
-                   new RuntimeException("Error al verificar la actualización del ID: " + entity.getId())
+                   new RuntimeException("Error al verificar la actualización del ID: " + entity.id())
                );
 
         }catch(Exception e){
@@ -465,7 +465,7 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
         throw new UnsupportedOperationException("Unimplemented method 'findAll_Crud_entity_JDBC_SP'");
     }
     @Override
-    public Crud_Entity update_Crud_Entity_JDBC_SP(String typeBean, Crud_Entity entity) {
+    public Crud_Entity update_Crud_Entity_JDBC_SP(String typeBean, InsertUpdate_Crud_Model entity) {
         throw new UnsupportedOperationException("Unimplemented method 'update_Crud_Entity_JDBC_SP'");
     }
     @Override

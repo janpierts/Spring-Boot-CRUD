@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
-
+import com.rj.MONOLIT.ADMIN.CRUD.application.dto.InsertUpdate_Crud_Model;
 import com.rj.MONOLIT.ADMIN.CRUD.application.ports.in.Crud_ServicePort;
 import com.rj.MONOLIT.ADMIN.CRUD.application.ports.out.Crud_RepositoryPort;
 import com.rj.MONOLIT.ADMIN.CRUD.domain.model.Crud_Entity;
@@ -29,7 +29,7 @@ public class Crud_Service implements Crud_ServicePort {
     //region SaveSimpleEntity
     /*@Param Crud_Entity: entidad a guardar */
     @Override
-    public Object save_Crud_Entity(String typeBean, Crud_Entity entity) {
+    public Object save_Crud_Entity(String typeBean, InsertUpdate_Crud_Model entity) {
         try{
             Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
             Object result = repositoryPort.save_Crud_Entity(typeBean, entity);
@@ -43,7 +43,7 @@ public class Crud_Service implements Crud_ServicePort {
     }
  
     @Override
-    public Object save_Crud_Entity_JDBC_SP(String typeBean, Crud_Entity entity) {
+    public Object save_Crud_Entity_JDBC_SP(String typeBean, InsertUpdate_Crud_Model entity) {
         try{
             Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
             Object result = repositoryPort.save_Crud_Entity_JDBC_SP(typeBean, entity);
@@ -57,7 +57,7 @@ public class Crud_Service implements Crud_ServicePort {
     }
 
     @Override
-    public Object save_Crud_Entity_JPA_SP(String typeBean, Crud_Entity entity) {
+    public Object save_Crud_Entity_JPA_SP(String typeBean, InsertUpdate_Crud_Model entity) {
         try{
             Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
             Object result = repositoryPort.save_Crud_Entity_JPA_SP(typeBean, entity);

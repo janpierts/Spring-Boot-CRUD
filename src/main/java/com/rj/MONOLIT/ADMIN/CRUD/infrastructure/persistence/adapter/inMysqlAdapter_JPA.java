@@ -377,6 +377,8 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
             query.setParameter("p_email", entity.email());
             query.execute();
     
+            em.flush();
+            em.clear();
             return find_Crud_Entity_JPA_SP_ById(typeBean, entity.id())
                .orElseThrow(() -> 
                    new RuntimeException("Error al verificar la actualización del ID: " + entity.id())

@@ -114,18 +114,22 @@ public class inMemoryRepository implements Crud_RepositoryPort{
 
     //region update entity
     @Override
-    public Crud_Entity update_Crud_Entity(String typeBean,Crud_Entity entity) {
-        Optional<Crud_Entity> existingEntityOpt = find_Crud_EntityById(typeBean,entity.getId()).filter(a -> Boolean.TRUE.equals(a.getState()));
+    public Crud_Entity update_Crud_Entity(String typeBean,InsertUpdate_Crud_Model entity) {
+        Optional<Crud_Entity> existingEntityOpt = find_Crud_EntityById(typeBean,entity.id()).filter(a -> Boolean.TRUE.equals(a.getState()));
         if (existingEntityOpt.isEmpty()) {
-            throw new RuntimeException("Entidad CRUD no encontrada con ID: " + entity.getId());
+            throw new RuntimeException("Entidad CRUD no encontrada con ID: " + entity.id());
         }
         Crud_Entity existingEntity = existingEntityOpt.get();
-        delete_Crud_Entity_phisical_ById(typeBean,entity.getId());
-        entity.setCreated(existingEntity.getCreated());
-        entity.setUpdated(LocalDateTime.now());
-        entity.setState(existingEntity.getState());
-        entities.add(entity);
-        return entity;
+        Crud_Entity updatedEntity = new Crud_Entity();
+        delete_Crud_Entity_phisical_ById(typeBean,entity.id());
+        updatedEntity.setId(existingEntity.getId());
+        updatedEntity.setName(entity.name());
+        updatedEntity.setEmail(entity.email());
+        updatedEntity.setCreated(existingEntity.getCreated());
+        updatedEntity.setUpdated(LocalDateTime.now());
+        updatedEntity.setState(existingEntity.getState());
+        entities.add(updatedEntity);
+        return updatedEntity;
     }
     //endregion
 
@@ -184,11 +188,11 @@ public class inMemoryRepository implements Crud_RepositoryPort{
         throw new UnsupportedOperationException("Unimplemented method 'findAll_Crud_entity_JPA_SP'");
     }
     @Override
-    public Crud_Entity update_Crud_Entity_JDBC_SP(String typeBean, Crud_Entity entity) {
+    public Crud_Entity update_Crud_Entity_JDBC_SP(String typeBean, InsertUpdate_Crud_Model entity) {
         throw new UnsupportedOperationException("Unimplemented method 'update_Crud_Entity_JDBC_SP'");
     }
     @Override
-    public Crud_Entity update_Crud_Entity_JPA_SP(String typeBean, Crud_Entity entity) {
+    public Crud_Entity update_Crud_Entity_JPA_SP(String typeBean, InsertUpdate_Crud_Model entity) {
         throw new UnsupportedOperationException("Unimplemented method 'update_Crud_Entity_JPA_SP'");
     }
     @Override

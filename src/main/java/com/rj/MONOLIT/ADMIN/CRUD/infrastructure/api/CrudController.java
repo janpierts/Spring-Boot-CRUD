@@ -735,93 +735,52 @@ public class CrudController {
     //region update entity by id
     /*@Param Long id: identificador único de la entidad a actualizar && Crud_Entity crudEntity: entidad con los nuevos valores */
     @PutMapping("{repositoryType}/update/{id}")
-    public ResponseEntity<Object> updateEntity(@PathVariable String repositoryType,@PathVariable Long id, @RequestBody Crud_Entity crudEntity) {
-        crudEntity.setId(id);
-        if(id == null || id <= 0) {
+    public ResponseEntity<Object> updateEntity(@PathVariable String repositoryType,@PathVariable Long id, @RequestBody InsertUpdate_Crud_Model crudEntity) {
+        if(id == null || id <= 0 || id != crudEntity.id() ) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(helperEndpoints.buildResponse(-1, "El Id no es permitido: "+id, crudEntity));
         }
-        String mssg = "";
-        if (!crudEntity.getName().isEmpty() && crudEntity.getName() != null) {
-            if (!helperEndpoints.isAlphabeticWithSpaces(crudEntity.getName())) {
-                mssg += "El nombre no puede contener números o caracteres especiales";
-            }
-        } else mssg += "El nombre no puede ser nulo o vacío";
-        if(!crudEntity.getEmail().isEmpty() && crudEntity.getEmail() != null){
-            if(!helperEndpoints.isValidEmail(crudEntity.getEmail())){
-                if(!mssg.isEmpty()) mssg += " | ";
-                mssg += "El correo electrónico no tiene un formato válido";
-            }
-        }else{
-            if(!mssg.isEmpty()) mssg += " | ";
-            mssg += "El correo electrónico no puede ser nulo o vacío";
-        }
-        if(!mssg.isEmpty()){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(helperEndpoints.buildResponse(-1, mssg,crudEntity));
-        } 
-        @SuppressWarnings("unchecked")
-        Map<String,Object> resultv = (Map<String,Object>)crudService.update_Crud_Entity(repositoryType,crudEntity);
-        int state = (int)resultv.getOrDefault("state", 0);
-        return ResponseEntity.status(state == 1 ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(resultv);
+        try{
+            crudEntity.validate();
+            @SuppressWarnings("unchecked")
+            Map<String,Object> resultv = (Map<String,Object>)crudService.update_Crud_Entity(repositoryType,crudEntity);
+            int state = (int)resultv.getOrDefault("state", 0);
+            return ResponseEntity.status(state == 1 ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(resultv);
+
+        }catch(IllegalArgumentException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(helperEndpoints.buildResponse(-1, e.getMessage(), crudEntity));
+        }        
     }
     
     @PutMapping("{repositoryType}/update_JDBC_SP/{id}")
-    public ResponseEntity<Object> updateEntity_JDBC_SP(@PathVariable String repositoryType,@PathVariable Long id, @RequestBody Crud_Entity crudEntity) {
-        crudEntity.setId(id);
-        if(id == null || id <= 0) {
+    public ResponseEntity<Object> updateEntity_JDBC_SP(@PathVariable String repositoryType,@PathVariable Long id, @RequestBody InsertUpdate_Crud_Model crudEntity) {
+        if(id == null || id <= 0 || id != crudEntity.id()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(helperEndpoints.buildResponse(-1, "El Id no es permitido: "+id, crudEntity));
         }
-        String mssg = "";
-        if (!crudEntity.getName().isEmpty() && crudEntity.getName() != null) {
-            if (!helperEndpoints.isAlphabeticWithSpaces(crudEntity.getName())) {
-                mssg += "El nombre no puede contener números o caracteres especiales";
-            }
-        } else mssg += "El nombre no puede ser nulo o vacío";
-        if(!crudEntity.getEmail().isEmpty() && crudEntity.getEmail() != null){
-            if(!helperEndpoints.isValidEmail(crudEntity.getEmail())){
-                if(!mssg.isEmpty()) mssg += " | ";
-                mssg += "El correo electrónico no tiene un formato válido";
-            }
-        }else{
-            if(!mssg.isEmpty()) mssg += " | ";
-            mssg += "El correo electrónico no puede ser nulo o vacío";
+        try{
+            crudEntity.validate();
+            @SuppressWarnings("unchecked")
+            Map<String,Object> resultv = (Map<String,Object>)crudService.update_Crud_Entity_JDBC_SP(repositoryType,crudEntity);
+            int state = (int)resultv.getOrDefault("state", 0);
+            return ResponseEntity.status(state == 1 ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(resultv);
+        }catch(IllegalArgumentException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(helperEndpoints.buildResponse(-1, e.getMessage(), crudEntity));
         }
-        if(!mssg.isEmpty()){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(helperEndpoints.buildResponse(-1, mssg,crudEntity));
-        } 
-        @SuppressWarnings("unchecked")
-        Map<String,Object> resultv = (Map<String,Object>)crudService.update_Crud_Entity_JDBC_SP(repositoryType,crudEntity);
-        int state = (int)resultv.getOrDefault("state", 0);
-        return ResponseEntity.status(state == 1 ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(resultv);
     }
 
     @PutMapping("{repositoryType}/update_JPA_SP/{id}")
-    public ResponseEntity<Object> updateEntity_JPA_SP(@PathVariable String repositoryType,@PathVariable Long id, @RequestBody Crud_Entity crudEntity) {
-        crudEntity.setId(id);
-        if(id == null || id <= 0) {
+    public ResponseEntity<Object> updateEntity_JPA_SP(@PathVariable String repositoryType,@PathVariable Long id, @RequestBody InsertUpdate_Crud_Model crudEntity) {
+        if(id == null || id <= 0 || id != crudEntity.id()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(helperEndpoints.buildResponse(-1, "El Id no es permitido: "+id, crudEntity));
         }
-        String mssg = "";
-        if (!crudEntity.getName().isEmpty() && crudEntity.getName() != null) {
-            if (!helperEndpoints.isAlphabeticWithSpaces(crudEntity.getName())) {
-                mssg += "El nombre no puede contener números o caracteres especiales";
-            }
-        } else mssg += "El nombre no puede ser nulo o vacío";
-        if(!crudEntity.getEmail().isEmpty() && crudEntity.getEmail() != null){
-            if(!helperEndpoints.isValidEmail(crudEntity.getEmail())){
-                if(!mssg.isEmpty()) mssg += " | ";
-                mssg += "El correo electrónico no tiene un formato válido";
-            }
-        }else{
-            if(!mssg.isEmpty()) mssg += " | ";
-            mssg += "El correo electrónico no puede ser nulo o vacío";
+        try{
+            crudEntity.validate();
+            @SuppressWarnings("unchecked")
+            Map<String,Object> resultv = (Map<String,Object>)crudService.update_Crud_Entity_JPA_SP(repositoryType,crudEntity);
+            int state = (int)resultv.getOrDefault("state", 0);
+            return ResponseEntity.status(state == 1 ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(resultv);
+        }catch(IllegalArgumentException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(helperEndpoints.buildResponse(-1, e.getMessage(), crudEntity));
         }
-        if(!mssg.isEmpty()){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(helperEndpoints.buildResponse(-1, mssg,crudEntity));
-        } 
-        @SuppressWarnings("unchecked")
-        Map<String,Object> resultv = (Map<String,Object>)crudService.update_Crud_Entity_JPA_SP(repositoryType,crudEntity);
-        int state = (int)resultv.getOrDefault("state", 0);
-        return ResponseEntity.status(state == 1 ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(resultv);
     }
     //endregion
 

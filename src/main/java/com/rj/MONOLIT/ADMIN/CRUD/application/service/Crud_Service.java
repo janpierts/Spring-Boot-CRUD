@@ -227,7 +227,7 @@ public class Crud_Service implements Crud_ServicePort {
     //region UpdateEntity
     /*@Param Crud_Entity: entidad por actualizar */
     @Override
-    public Object update_Crud_Entity(String typeBean, Crud_Entity entity) {
+    public Object update_Crud_Entity(String typeBean, InsertUpdate_Crud_Model entity) {
         try{
             Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
             Crud_Entity result = repositoryPort.update_Crud_Entity(typeBean, entity);
@@ -238,7 +238,7 @@ public class Crud_Service implements Crud_ServicePort {
     }
 
     @Override
-    public Object update_Crud_Entity_JDBC_SP(String typeBean, Crud_Entity entity) {
+    public Object update_Crud_Entity_JDBC_SP(String typeBean, InsertUpdate_Crud_Model entity) {
         try{
             Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
             Crud_Entity result = repositoryPort.update_Crud_Entity_JDBC_SP(typeBean, entity);
@@ -249,7 +249,7 @@ public class Crud_Service implements Crud_ServicePort {
     }
 
     @Override
-    public Object update_Crud_Entity_JPA_SP(String typeBean, Crud_Entity entity) {
+    public Object update_Crud_Entity_JPA_SP(String typeBean, InsertUpdate_Crud_Model entity) {
         try{
             Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
             Crud_Entity result = repositoryPort.update_Crud_Entity_JPA_SP(typeBean, entity);

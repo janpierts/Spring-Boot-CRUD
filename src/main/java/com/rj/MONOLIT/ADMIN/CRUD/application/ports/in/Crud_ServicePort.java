@@ -2,12 +2,13 @@ package com.rj.MONOLIT.ADMIN.CRUD.application.ports.in;
 
 import java.util.List;
 import java.util.Optional;
+import com.rj.MONOLIT.ADMIN.CRUD.application.dto.InsertUpdate_Crud_Model;
 import com.rj.MONOLIT.ADMIN.CRUD.domain.model.Crud_Entity;
 
 public interface Crud_ServicePort {
-    Object save_Crud_Entity(String typeBean,Crud_Entity entity);
-    Object save_Crud_Entity_JDBC_SP(String typeBean,Crud_Entity entity);
-    Object save_Crud_Entity_JPA_SP(String typeBean,Crud_Entity entity);
+    Object save_Crud_Entity(String typeBean,InsertUpdate_Crud_Model entity);
+    Object save_Crud_Entity_JDBC_SP(String typeBean,InsertUpdate_Crud_Model entity);
+    Object save_Crud_Entity_JPA_SP(String typeBean,InsertUpdate_Crud_Model entity);
     Object save_multi_Crud_Entity(String typeBean,List<Crud_Entity> entityList);
     Object save_multi_Crud_Entity_JDBC_SP(String typeBean,List<Crud_Entity> entityList);
     Object save_multi_Crud_Entity_JPA_SP(String typeBean,List<Crud_Entity> entityList);

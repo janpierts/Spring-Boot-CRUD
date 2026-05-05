@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rj.MONOLIT.ADMIN.CRUD.application.dto.InsertUpdate_Crud_Model;
 import com.rj.MONOLIT.ADMIN.CRUD.application.ports.out.Crud_RepositoryPort;
 import com.rj.MONOLIT.ADMIN.CRUD.domain.model.Crud_Entity;
 import com.rj.MONOLIT.ADMIN.CRUD.infrastructure.persistence.entity.CrudEntityJpa;
@@ -53,15 +54,18 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
     }
     //region create entity
     @Override
-    public Crud_Entity save_Crud_Entity(String typeBean, Crud_Entity entity) {
-        Optional<Crud_Entity> existName = find_Crud_EntityByName(typeBean, entity.getName());
+    public Crud_Entity save_Crud_Entity(String typeBean, InsertUpdate_Crud_Model entity) {
+        Optional<Crud_Entity> existName = find_Crud_EntityByName(typeBean, entity.name());
         if(existName.isPresent()){
-            throw new RuntimeException("El nombre '"+entity.getName()+"' ya existe en la base de datos.");
+            throw new RuntimeException("El nombre '"+entity.name()+"' ya existe en la base de datos.");
         }
         EntityManager em = getDynamicEntityManager();
+        Crud_Entity newEntity = new Crud_Entity();
         try{
+            newEntity.setName(entity.name());
+            newEntity.setEmail(entity.email());
             em.getTransaction().begin();
-            CrudEntityJpa jpaEntity = new CrudEntityJpa(entity); 
+            CrudEntityJpa jpaEntity = new CrudEntityJpa(newEntity); 
             /* This bellow comment is when use repository SpringData JPA and this only use unique principal datasource  */
             //CrudEntityJpa savedJpaEntity = jpaRepository.save(jpaEntity);
             em.persist(jpaEntity);
@@ -79,28 +83,31 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
     }
     
     @Override
-    public Crud_Entity save_Crud_Entity_JPA_SP(String typeBean, Crud_Entity entity) {
-        Optional<Crud_Entity> existName = find_Crud_Entity_JPA_SP_ByName(typeBean, entity.getName());
+    public Crud_Entity save_Crud_Entity_JPA_SP(String typeBean, InsertUpdate_Crud_Model entity) {
+        Optional<Crud_Entity> existName = find_Crud_Entity_JPA_SP_ByName(typeBean, entity.name());
         if(existName.isPresent()){
-            throw new RuntimeException("El nombre '"+entity.getName()+"' ya existe en la base de datos.");
+            throw new RuntimeException("El nombre '"+entity.name()+"' ya existe en la base de datos.");
         }
+        Crud_Entity newEntity = new Crud_Entity();
+        newEntity.setName(entity.name());
+        newEntity.setEmail(entity.email());
         try{
             EntityManager em = getDynamicEntityManager();
             StoredProcedureQuery query = em.createNamedStoredProcedureQuery("jbAPI_crud_insert_query");
-            query.setParameter("p_name", entity.getName());
-            query.setParameter("p_email", entity.getEmail());
+            query.setParameter("p_name", entity.name());
+            query.setParameter("p_email", entity.email());
             query.execute();
             Long generatedId = (Long) query.getOutputParameterValue("p_id");
             Timestamp createdTimestamp = (Timestamp) query.getOutputParameterValue("p_created"); 
-            entity.setId(generatedId);
+            newEntity.setId(generatedId);
         
             if (createdTimestamp != null) {
-                entity.setCreated(createdTimestamp.toLocalDateTime());
+                newEntity.setCreated(createdTimestamp.toLocalDateTime());
             } else {
-                entity.setCreated(LocalDateTime.now());
+                newEntity.setCreated(LocalDateTime.now());
             }
-            entity.setState(true);
-            return entity;   
+            newEntity.setState(true);
+            return newEntity;   
         }catch(Exception e){
             throw new RuntimeException(e.getMessage());
         }
@@ -446,7 +453,7 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
 
     //region unimplemented methods
     @Override
-    public Crud_Entity save_Crud_Entity_JDBC_SP(String typeBean, Crud_Entity entity) {
+    public Crud_Entity save_Crud_Entity_JDBC_SP(String typeBean, InsertUpdate_Crud_Model entity) {
         throw new UnsupportedOperationException("Unimplemented method 'save_Crud_Entity_JDBC_SP'");
     }
     @Override

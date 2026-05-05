@@ -6,10 +6,10 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rj.MONOLIT.ADMIN.CRUD.application.dto.InsertUpdate_Crud_Model;
 import com.rj.MONOLIT.ADMIN.CRUD.application.ports.out.Crud_RepositoryPort;
 import com.rj.MONOLIT.ADMIN.CRUD.domain.model.Crud_Entity;
 import com.rj.MONOLIT.COMMON.utils.settings.JDBCConfig;
-
 import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
@@ -63,29 +63,32 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
     
     //region save simple, multi and import methods
     @Override
-    public Crud_Entity save_Crud_Entity_JDBC_SP (String typeBean,Crud_Entity entity) {
+    public Crud_Entity save_Crud_Entity_JDBC_SP (String typeBean,InsertUpdate_Crud_Model entity) {
         JdbcTemplate currentTemplate = getDynamicJdbcTemplate();
         String sql = "{ call jbAPI_crud_insert(?,?,?,?) }";        
-        Optional<Crud_Entity> existingEntityOpt = find_Crud_Entity_JDBC_SP_ByName(typeBean,entity.getName());
+        Optional<Crud_Entity> existingEntityOpt = find_Crud_Entity_JDBC_SP_ByName(typeBean,entity.name());
+        Crud_Entity newEntity = new Crud_Entity();
         if (existingEntityOpt.isPresent()) {
-            throw new RuntimeException("Error al guardar: el nombre ya existe.");
+            throw new RuntimeException("El nombre '"+entity.name()+"' ya existe en la base de datos.");
         }
         try{
+            newEntity.setName(entity.name());
+            newEntity.setEmail(entity.email());
             currentTemplate.execute(sql, (CallableStatementCallback<Long>) cs -> {
-                cs.setString(1, entity.getName());
-                cs.setString(2, entity.getEmail());
+                cs.setString(1, newEntity.getName());
+                cs.setString(2, newEntity.getEmail());
                 cs.registerOutParameter(3, Types.BIGINT);
                 cs.registerOutParameter(4, Types.TIMESTAMP);
                 cs.execute();
-                entity.setId(cs.getLong(3));
-                entity.setCreated(cs.getTimestamp(4).toLocalDateTime());
-                entity.setState(true);
-                return entity.getId();
+                newEntity.setId(cs.getLong(3));
+                newEntity.setCreated(cs.getTimestamp(4).toLocalDateTime());
+                newEntity.setState(true);
+                return newEntity.getId();
             });
         }catch(Exception e){
             throw new RuntimeException("Error al insertar la entidad CRUD: " + e.getMessage());
         }
-        return entity;
+        return newEntity;
     }
 
     @Override
@@ -289,11 +292,11 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
 
     //region unimplemented methods
     @Override
-    public Crud_Entity save_Crud_Entity(String typeBean, Crud_Entity entity) {
+    public Crud_Entity save_Crud_Entity(String typeBean, InsertUpdate_Crud_Model entity) {
         throw new UnsupportedOperationException("Unimplemented method 'save_Crud_Entity'");
     }
     @Override
-    public Crud_Entity save_Crud_Entity_JPA_SP(String typeBean, Crud_Entity entity) {
+    public Crud_Entity save_Crud_Entity_JPA_SP(String typeBean, InsertUpdate_Crud_Model entity) {
         throw new UnsupportedOperationException("Unimplemented method 'save_Crud_Entity_JPA_SP'");
     }
     @Override

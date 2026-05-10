@@ -2,16 +2,18 @@ package com.rj.MONOLIT.ADMIN.CRUD.application.ports.out;
 
 import java.util.List;
 import java.util.Optional;
+import com.rj.MONOLIT.ADMIN.CRUD.application.dto.InsertMulti_Crud_Model;
 import com.rj.MONOLIT.ADMIN.CRUD.application.dto.InsertUpdate_Crud_Model;
 import com.rj.MONOLIT.ADMIN.CRUD.domain.model.Crud_Entity;
+import com.rj.MONOLIT.ADMIN.CRUD.domain.readmodel.Crud_multiReadModel;
 
 public interface Crud_RepositoryPort {
     Crud_Entity save_Crud_Entity(String typeBean, InsertUpdate_Crud_Model entity);
     Crud_Entity save_Crud_Entity_JDBC_SP(String typeBean, InsertUpdate_Crud_Model entity);
     Crud_Entity save_Crud_Entity_JPA_SP(String typeBean, InsertUpdate_Crud_Model entity);
-    Optional<List<Crud_Entity>> save_multi_Crud_Entity(String typeBean,List<Crud_Entity> entityList);
-    Optional<List<Crud_Entity>> save_multi_Crud_Entity_JDBC_SP(String typeBean,List<Crud_Entity> entityList);
-    Optional<List<Crud_Entity>> save_multi_Crud_Entity_JPA_SP(String typeBean,List<Crud_Entity> entityList);
+    List<Crud_multiReadModel> save_multi_Crud_Entity(String typeBean,List<InsertMulti_Crud_Model> entityList);
+    List<Crud_multiReadModel> save_multi_Crud_Entity_JDBC_SP(String typeBean,List<InsertMulti_Crud_Model> entityList);
+    List<Crud_multiReadModel> save_multi_Crud_Entity_JPA_SP(String typeBean,List<InsertMulti_Crud_Model> entityList);
     Optional<List<Crud_Entity>> save_import_Crud_Entity(String typeBean,List<Crud_Entity>entityList);
     Optional<List<Crud_Entity>> save_import_Crud_Entity_JDBC_SP(String typeBean,List<Crud_Entity>entityList);
     Optional<List<Crud_Entity>> save_import_Crud_Entity_JPA_SP(String typeBean,List<Crud_Entity>entityList);

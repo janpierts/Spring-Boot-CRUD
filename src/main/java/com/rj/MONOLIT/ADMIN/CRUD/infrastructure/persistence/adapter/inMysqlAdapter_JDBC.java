@@ -6,9 +6,11 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rj.MONOLIT.ADMIN.CRUD.application.dto.InsertMulti_Crud_Model;
 import com.rj.MONOLIT.ADMIN.CRUD.application.dto.InsertUpdate_Crud_Model;
 import com.rj.MONOLIT.ADMIN.CRUD.application.ports.out.Crud_RepositoryPort;
 import com.rj.MONOLIT.ADMIN.CRUD.domain.model.Crud_Entity;
+import com.rj.MONOLIT.ADMIN.CRUD.domain.readmodel.Crud_multiReadModel;
 import com.rj.MONOLIT.COMMON.utils.settings.JDBCConfig;
 import jakarta.transaction.Transactional;
 import java.util.List;
@@ -92,17 +94,21 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
     }
 
     @Override
-    public Optional<List<Crud_Entity>> save_multi_Crud_Entity_JDBC_SP(String typeBean, List<Crud_Entity> entityList) {
+    public List<Crud_multiReadModel> save_multi_Crud_Entity_JDBC_SP(String typeBean, List<InsertMulti_Crud_Model> entityList) {
         JdbcTemplate currentTemplate = getDynamicJdbcTemplate();
         String sql = "{ call jbAPI_crud_insert_multi(?) }";
         ObjectMapper objectMapper = new ObjectMapper();
-        List<String> existingNames = find_Crud_Entity_JDBC_SP_ByNames(typeBean, entityList)
+        List<Crud_Entity> SearchList = entityList.stream()
+            .filter(InsertMulti_Crud_Model::isValid)
+            .map(item -> new Crud_Entity(null,item.name(),item.email(),null,null,null))
+            .toList();
+        List<String> existingNames = find_Crud_Entity_JDBC_SP_ByNames(typeBean, SearchList)
                 .map(list -> list.stream()
                         .map(Crud_Entity::getName)
                         .collect(Collectors.toList()))
                 .orElse(new ArrayList<>());
         if(!existingNames.isEmpty()) {
-            List<String> NonDuplicateNames = entityList.stream()
+            List<String> NonDuplicateNames = SearchList.stream()
                     .map(Crud_Entity::getName)
                     .filter(name -> !existingNames.contains(name))
                     .collect(Collectors.toList());
@@ -340,8 +346,12 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
         throw new UnsupportedOperationException("Unimplemented method 'delete_Crud_Entity_logical_JPA_SP_ById'");
     }
     @Override
-    public Optional<List<Crud_Entity>> save_multi_Crud_Entity(String typeBean, List<Crud_Entity> entity) {
+    public List<Crud_multiReadModel> save_multi_Crud_Entity(String typeBean, List<InsertMulti_Crud_Model> entity) {
         throw new UnsupportedOperationException("Unimplemented method 'save_multi_Crud_Entity'");
+    }
+    @Override
+    public List<Crud_multiReadModel> save_multi_Crud_Entity_JPA_SP(String typeBean, List<InsertMulti_Crud_Model> entityList) {
+        throw new UnsupportedOperationException("Unimplemented method 'save_multi_Crud_Entity_JPA_SP'");
     }
     @Override
     public Optional<Crud_Entity> find_Crud_EntityByName(String typeBean, String name) {
@@ -358,10 +368,6 @@ public class inMysqlAdapter_JDBC implements Crud_RepositoryPort {
     @Override
     public Optional<Crud_Entity> find_Crud_Entity_JPA_SP_ByName(String typeBean, String name){
         throw new UnsupportedOperationException("Unimplemented method 'find_Crud_Entity_JPA_SP_ByName'");
-    }
-    @Override
-    public Optional<List<Crud_Entity>> save_multi_Crud_Entity_JPA_SP(String typeBean, List<Crud_Entity> entityList) {
-        throw new UnsupportedOperationException("Unimplemented method 'save_multi_Crud_Entity_JPA_SP'");
     }
     @Override
     public Optional<List<Crud_Entity>> find_Crud_EntityByNames(String typeBean, List<Crud_Entity> names) {

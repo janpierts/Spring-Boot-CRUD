@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import com.rj.MONOLIT.ADMIN.CRUD.application.dto.InsertMulti_Crud_Model;
 import com.rj.MONOLIT.ADMIN.CRUD.application.dto.InsertUpdate_Crud_Model;
 import com.rj.MONOLIT.ADMIN.CRUD.application.service.Crud_Service;
 import com.rj.MONOLIT.ADMIN.CRUD.domain.model.Crud_Entity;
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 @RestController
@@ -74,231 +76,164 @@ public class CrudController {
     //region create multiple entities
     /*@Param List<Crud_Entity> crudEntities: lista de entidades para agregar  */
     @PostMapping("{repositoryType}/create_multiple")
-    public ResponseEntity<Object> createMultipleEntities(@PathVariable String repositoryType,@RequestBody List<Crud_Entity> crudEntities) {
-        String mssg = "";
-        int state = 0;
-        List<Crud_Entity> responseCollect = new ArrayList<>();
-        if(crudEntities == null || crudEntities.isEmpty()){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(helperEndpoints.buildResponse(-1, "The list of entities to create cannot be null or empty."));
-        }
-        List<Crud_Entity> invalidEntities = crudEntities.stream().filter(entity ->
-                entity.getName() == null || entity.getEmail() == null ||
-                entity.getName().isEmpty() || entity.getEmail().isEmpty() ||
-                entity.getName().isBlank() || entity.getEmail().isBlank() ||
-                !helperEndpoints.isAlphabeticWithSpaces(entity.getName()) ||
-                !helperEndpoints.isValidEmail(entity.getEmail())
-        ).toList();
-        List<Crud_Entity> ErrorEntities = new ArrayList<>();
-        if(!invalidEntities.isEmpty()){
-            mssg = "Algunos datos como name y email no tienen el formato correcto.";
-            if(invalidEntities.size() == crudEntities.size()){
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(helperEndpoints.buildResponse(-1, mssg,invalidEntities));
+    public ResponseEntity<Object> createMultipleEntities(@PathVariable String repositoryType,@RequestBody List<InsertMulti_Crud_Model> crudEntities) {
+        List<InsertMulti_Crud_Model> Validation = crudEntities.stream().map(InsertMulti_Crud_Model::validate).collect(Collectors.toCollection(ArrayList::new));
+        /* --> Lista inmutable
+        List<InsertMulti_Crud_Model> firstValidation = crudEntities.stream()
+        .map(item -> {
+            InsertMulti_Crud_Model validatedItem = item.validate();
+            if (!validatedItem.isValid()) {
+                return validatedItem;
             }
-            ErrorEntities = invalidEntities.size()>0 ? new ArrayList<>(invalidEntities) : new ArrayList<>() ;
+            return validatedItem;
+        }).toList();
+         */
+
+        if(Validation.stream().filter(InsertMulti_Crud_Model::isValid).count()==0){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(helperEndpoints.buildResponse(-1, "Los datos ingresados tienen errores valide la informacion ingresada.", Validation));            
         }
-        List<Crud_Entity> diffEntitiesbv = crudEntities.stream()
-                .filter(entity -> !invalidEntities.contains(entity))
-                .toList();
-        List<Function<Crud_Entity, ?>> myKeys = List.of(
-            Crud_Entity::getName,
-            Crud_Entity::getEmail
+
+        List<Function<InsertMulti_Crud_Model, ?>> myKeys = List.of(
+            InsertMulti_Crud_Model::name,
+            InsertMulti_Crud_Model::email
         );
-        Map<String, List<Crud_Entity>> duplicatesc = helperEndpoints.splitDuplicatesByMultipleKeys(diffEntitiesbv, myKeys);
-        ErrorEntities.addAll(duplicatesc.getOrDefault("errorBody", List.of()));
-        Map<String, List<Crud_Entity>> splitListMapNames = helperEndpoints.splitByDuplicates(duplicatesc.get("successBody"), Crud_Entity::getName);
-        ErrorEntities.addAll(splitListMapNames.getOrDefault("errorBody", List.of()));
-        Map<String, List<Crud_Entity>> splitListMapEmails = helperEndpoints.splitByDuplicates(splitListMapNames.get("successBody"), Crud_Entity::getEmail);
-        ErrorEntities.addAll(splitListMapEmails.getOrDefault("errorBody", List.of()));
-        List<Crud_Entity> uniqueEntities = splitListMapEmails.getOrDefault("successBody", List.of());
-        if(uniqueEntities.isEmpty()){
-            if(mssg.isEmpty()) mssg += " | ";
-            mssg += "Todos los datos ingresados no tienen el formato correcto.";
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(helperEndpoints.buildResponse(-1, mssg,ErrorEntities));
+        int count = 0;
+        List<InsertMulti_Crud_Model> duplicates = new ArrayList<>();
+        Map<String, List<InsertMulti_Crud_Model>> splitMapValidation = helperEndpoints.splitDuplicatesByMultipleKeys(Validation.stream().filter(InsertMulti_Crud_Model::isValid).toList(), myKeys);
+        if(splitMapValidation.getOrDefault("errorBody", List.of()).size() > 0){
+            Validation.removeIf(InsertMulti_Crud_Model::isValid);
+            duplicates.addAll(splitMapValidation.get("errorBody").stream().map(item -> item.addMessage("Registro duplicado")).toList());
+            Validation.addAll(duplicates);
+            count++;
         }
+        
+        Map<String, List<InsertMulti_Crud_Model>> splitListMapNames = helperEndpoints.splitByDuplicates(splitMapValidation.get("successBody"), InsertMulti_Crud_Model::name);
+        if(splitListMapNames.getOrDefault("errorBody", List.of()).size() > 0){
+            if(count == 0)Validation.removeIf(InsertMulti_Crud_Model::isValid);
+            duplicates.addAll(splitListMapNames.get("errorBody").stream().map(item -> item.addMessage("Nombre duplicado")).toList());
+            Validation.addAll(duplicates);
+            count++;
+        }
+
+        Map<String, List<InsertMulti_Crud_Model>> splitListMapEmails = helperEndpoints.splitByDuplicates(splitListMapNames.get("successBody"), InsertMulti_Crud_Model::email);
+        if(splitListMapEmails.getOrDefault("errorBody", List.of()).size() > 0){
+            if(count == 0)Validation.removeIf(InsertMulti_Crud_Model::isValid);
+            duplicates.addAll(splitListMapEmails.get("errorBody").stream().map(item -> item.addMessage("Email duplicado")).toList());
+            Validation.addAll(duplicates);
+        }
+
+        Validation.addAll(splitListMapEmails.get("successBody"));
+        if(Validation.stream().filter(InsertMulti_Crud_Model::isValid).count()==0){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(helperEndpoints.buildResponse(-1, "Todos los datos ingresados no tienen el formato correcto y/ó existen duplicados.",Validation));
+        }
+
         @SuppressWarnings("unchecked")
-        Map<String, Object> createdEntities = (Map<String, Object>)crudService.save_multi_Crud_Entity(repositoryType,uniqueEntities);
-        state = (int) createdEntities.getOrDefault("state", 0);
-        if(state != -1){
-            Object toCollect = createdEntities.get("successBody");
-            if (toCollect instanceof List) {
-                @SuppressWarnings("unchecked")
-                List<Crud_Entity> castedList = (List<Crud_Entity>) toCollect;
-                responseCollect = new ArrayList<>(castedList);
-            }
-            if(state == 1 && uniqueEntities.size() != responseCollect.size()){
-                if(!mssg.isEmpty()) mssg += " | ";
-                mssg += "Some entities could not be created due to duplicate entries.";
-                List<Crud_Entity> lastdiff = helperEndpoints.getDifference(uniqueEntities, responseCollect, Crud_Entity::getName);
-                ErrorEntities.addAll(lastdiff);
-                state = 0;
-                return ResponseEntity.status(HttpStatus.CREATED).body(helperEndpoints.buildResponse(state, mssg,responseCollect,ErrorEntities));
-            }else if(state == 1 && uniqueEntities.size() == responseCollect.size()){
-                return ResponseEntity.status(HttpStatus.CREATED).body(helperEndpoints.buildResponse(mssg.isEmpty() ? state : 0, mssg.isEmpty() ? "All entities already save successfull" : mssg, responseCollect,ErrorEntities));
-            }
-        } else {
-            Object toCollect = createdEntities.get("errorBody");
-            if (toCollect instanceof List) {
-                @SuppressWarnings("unchecked")
-                List<Crud_Entity> castedList = (List<Crud_Entity>) toCollect;
-                responseCollect = new ArrayList<>(castedList);
-            }
-            if(!mssg.isEmpty()) mssg += " | ";
-            mssg += (String) createdEntities.getOrDefault("message", "");
-            ErrorEntities.addAll(responseCollect);    
+        Map<String, Object> createdEntities = (Map<String, Object>)crudService.save_multi_Crud_Entity(repositoryType,Validation);
+        int state = (int) createdEntities.getOrDefault("state", 0);
+        if(state == -1){
+           return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(createdEntities);
         }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(helperEndpoints.buildResponse(state, mssg,ErrorEntities));
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdEntities);
     }
 
     @PostMapping("{repositoryType}/create_multiple_JDBC_SP")
-    public ResponseEntity<Object> createMultipleEntities_JDBC_SP(@PathVariable String repositoryType,@RequestBody List<Crud_Entity> crudEntities) {
-        String mssg = "";
-        int state = 0;
-        List<Crud_Entity> responseCollect = new ArrayList<>();
-        if(crudEntities == null || crudEntities.isEmpty()){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(helperEndpoints.buildResponse(-1, "The list of entities to create cannot be null or empty."));
+    public ResponseEntity<Object> createMultipleEntities_JDBC_SP(@PathVariable String repositoryType,@RequestBody List<InsertMulti_Crud_Model> crudEntities) {
+        List<InsertMulti_Crud_Model> Validation = crudEntities.stream().map(InsertMulti_Crud_Model::validate).collect(Collectors.toCollection(ArrayList::new));
+        if(Validation.stream().filter(InsertMulti_Crud_Model::isValid).count()==0){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(helperEndpoints.buildResponse(-1, "Los datos ingresados tienen errores valide la informacion ingresada.", Validation));            
         }
-        List<Crud_Entity> invalidEntities = crudEntities.stream().filter(entity ->
-                entity.getName() == null || entity.getEmail() == null ||
-                entity.getName().isEmpty() || entity.getEmail().isEmpty() ||
-                entity.getName().isBlank() || entity.getEmail().isBlank() ||
-                !helperEndpoints.isAlphabeticWithSpaces(entity.getName()) ||
-                !helperEndpoints.isValidEmail(entity.getEmail())
-        ).toList();
-        List<Crud_Entity> ErrorEntities = new ArrayList<>();
-        if(!invalidEntities.isEmpty()){
-            mssg = "Algunos datos como name y email no tienen el formato correcto.";
-            if(invalidEntities.size() == crudEntities.size()){
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(helperEndpoints.buildResponse(-1, mssg,invalidEntities));
-            }
-            ErrorEntities = invalidEntities.size()>0 ? new ArrayList<>(invalidEntities) : new ArrayList<>() ;
-        }
-        List<Crud_Entity> diffEntitiesbv = crudEntities.stream()
-                .filter(entity -> !invalidEntities.contains(entity))
-                .toList();
-        List<Function<Crud_Entity, ?>> myKeys = List.of(
-            Crud_Entity::getName,
-            Crud_Entity::getEmail
+
+        List<Function<InsertMulti_Crud_Model, ?>> myKeys = List.of(
+            InsertMulti_Crud_Model::name,
+            InsertMulti_Crud_Model::email
         );
-        Map<String, List<Crud_Entity>> duplicatesc = helperEndpoints.splitDuplicatesByMultipleKeys(diffEntitiesbv, myKeys);
-        ErrorEntities.addAll(duplicatesc.getOrDefault("errorBody", List.of()));
-        Map<String, List<Crud_Entity>> splitListMapNames = helperEndpoints.splitByDuplicates(duplicatesc.get("successBody"), Crud_Entity::getName);
-        ErrorEntities.addAll(splitListMapNames.getOrDefault("errorBody", List.of()));
-        Map<String, List<Crud_Entity>> splitListMapEmails = helperEndpoints.splitByDuplicates(splitListMapNames.get("successBody"), Crud_Entity::getEmail);
-        ErrorEntities.addAll(splitListMapEmails.getOrDefault("errorBody", List.of()));
-        List<Crud_Entity> uniqueEntities = splitListMapEmails.getOrDefault("successBody", List.of());
-        if(uniqueEntities.isEmpty()){
-            if(mssg.isEmpty()) mssg += " | ";
-            mssg += "Todos los datos ingresados no tienen el formato correcto.";
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(helperEndpoints.buildResponse(-1, mssg,ErrorEntities));
+        int count = 0;
+        List<InsertMulti_Crud_Model> duplicates = new ArrayList<>();
+        Map<String, List<InsertMulti_Crud_Model>> splitMapValidation = helperEndpoints.splitDuplicatesByMultipleKeys(Validation.stream().filter(InsertMulti_Crud_Model::isValid).toList(), myKeys);
+        if(splitMapValidation.getOrDefault("errorBody", List.of()).size() > 0){
+            Validation.removeIf(InsertMulti_Crud_Model::isValid);
+            duplicates.addAll(splitMapValidation.get("errorBody").stream().map(item -> item.addMessage("Registro duplicado")).toList());
+            Validation.addAll(duplicates);
+            count++;
         }
+        
+        Map<String, List<InsertMulti_Crud_Model>> splitListMapNames = helperEndpoints.splitByDuplicates(splitMapValidation.get("successBody"), InsertMulti_Crud_Model::name);
+        if(splitListMapNames.getOrDefault("errorBody", List.of()).size() > 0){
+            if(count == 0)Validation.removeIf(InsertMulti_Crud_Model::isValid);
+            duplicates.addAll(splitListMapNames.get("errorBody").stream().map(item -> item.addMessage("Nombre duplicado")).toList());
+            Validation.addAll(duplicates);
+            count++;
+        }
+
+        Map<String, List<InsertMulti_Crud_Model>> splitListMapEmails = helperEndpoints.splitByDuplicates(splitListMapNames.get("successBody"), InsertMulti_Crud_Model::email);
+        if(splitListMapEmails.getOrDefault("errorBody", List.of()).size() > 0){
+            if(count == 0)Validation.removeIf(InsertMulti_Crud_Model::isValid);
+            duplicates.addAll(splitListMapEmails.get("errorBody").stream().map(item -> item.addMessage("Email duplicado")).toList());
+            Validation.addAll(duplicates);
+        }
+
+        Validation.addAll(splitListMapEmails.get("successBody"));
+        if(Validation.stream().filter(InsertMulti_Crud_Model::isValid).count()==0){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(helperEndpoints.buildResponse(-1, "Todos los datos ingresados no tienen el formato correcto y/ó existen duplicados.",Validation));
+        }
+
         @SuppressWarnings("unchecked")
-        Map<String, Object> createdEntities = (Map<String, Object>)crudService.save_multi_Crud_Entity_JDBC_SP(repositoryType,uniqueEntities);
-        state = (int) createdEntities.getOrDefault("state", 0);
-        if(state != -1){
-            Object toCollect = createdEntities.get("successBody");
-            if (toCollect instanceof List) {
-                @SuppressWarnings("unchecked")
-                List<Crud_Entity> castedList = (List<Crud_Entity>) toCollect;
-                responseCollect = new ArrayList<>(castedList);
-            }
-            if(state == 1 && uniqueEntities.size() != responseCollect.size()){
-                if(!mssg.isEmpty()) mssg += " | ";
-                mssg += "Some entities could not be created due to duplicate entries.";
-                List<Crud_Entity> lastdiff = helperEndpoints.getDifference(uniqueEntities, responseCollect, Crud_Entity::getName);
-                ErrorEntities.addAll(lastdiff);
-                state = 0;
-                return ResponseEntity.status(HttpStatus.CREATED).body(helperEndpoints.buildResponse(state, mssg,responseCollect,ErrorEntities));
-            }else if(state == 1 && uniqueEntities.size() == responseCollect.size()){
-                return ResponseEntity.status(HttpStatus.CREATED).body(helperEndpoints.buildResponse(mssg.isEmpty() ? state : 0, mssg.isEmpty() ? "All entities already save successfull" : mssg, responseCollect,ErrorEntities));
-            }
-        } else {
-            Object toCollect = createdEntities.get("errorBody");
-            if (toCollect instanceof List) {
-                @SuppressWarnings("unchecked")
-                List<Crud_Entity> castedList = (List<Crud_Entity>) toCollect;
-                responseCollect = new ArrayList<>(castedList);
-            }
-            if(!mssg.isEmpty()) mssg += " | ";
-            mssg += (String) createdEntities.getOrDefault("message", "");
-            ErrorEntities.addAll(responseCollect);    
+        Map<String, Object> createdEntities = (Map<String, Object>)crudService.save_multi_Crud_Entity_JDBC_SP(repositoryType,Validation);
+        int state = (int) createdEntities.getOrDefault("state", 0);
+        if(state == -1){
+           return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(createdEntities);
         }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(helperEndpoints.buildResponse(state, mssg,ErrorEntities));
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdEntities);
     }
 
     @PostMapping("{repositoryType}/create_multiple_JPA_SP")
-    public ResponseEntity<Object> createMultipleEntities_JPA_SP(@PathVariable String repositoryType,@RequestBody List<Crud_Entity> crudEntities) {
-        String mssg = "";
-        int state = 0;
-        List<Crud_Entity> responseCollect = new ArrayList<>();
-        if(crudEntities == null || crudEntities.isEmpty()){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(helperEndpoints.buildResponse(-1, "The list of entities to create cannot be null or empty."));
+    public ResponseEntity<Object> createMultipleEntities_JPA_SP(@PathVariable String repositoryType,@RequestBody List<InsertMulti_Crud_Model> crudEntities) {
+        List<InsertMulti_Crud_Model> Validation = crudEntities.stream().map(InsertMulti_Crud_Model::validate).collect(Collectors.toCollection(ArrayList::new));
+        if(Validation.stream().filter(InsertMulti_Crud_Model::isValid).count()==0){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(helperEndpoints.buildResponse(-1, "Los datos ingresados tienen errores valide la informacion ingresada.", Validation));            
         }
-        List<Crud_Entity> invalidEntities = crudEntities.stream().filter(entity ->
-                entity.getName() == null || entity.getEmail() == null ||
-                entity.getName().isEmpty() || entity.getEmail().isEmpty() ||
-                entity.getName().isBlank() || entity.getEmail().isBlank() ||
-                !helperEndpoints.isAlphabeticWithSpaces(entity.getName()) ||
-                !helperEndpoints.isValidEmail(entity.getEmail())
-        ).toList();
-        List<Crud_Entity> ErrorEntities = new ArrayList<>();
-        if(!invalidEntities.isEmpty()){
-            mssg = "Algunos datos como name y email no tienen el formato correcto.";
-            if(invalidEntities.size() == crudEntities.size()){
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(helperEndpoints.buildResponse(-1, mssg,invalidEntities));
-            }
-            ErrorEntities = invalidEntities.size()>0 ? new ArrayList<>(invalidEntities) : new ArrayList<>() ;
-        }
-        List<Crud_Entity> diffEntitiesbv = crudEntities.stream()
-                .filter(entity -> !invalidEntities.contains(entity))
-                .toList();
-        List<Function<Crud_Entity, ?>> myKeys = List.of(
-            Crud_Entity::getName,
-            Crud_Entity::getEmail
+
+        List<Function<InsertMulti_Crud_Model, ?>> myKeys = List.of(
+            InsertMulti_Crud_Model::name,
+            InsertMulti_Crud_Model::email
         );
-        Map<String, List<Crud_Entity>> duplicatesc = helperEndpoints.splitDuplicatesByMultipleKeys(diffEntitiesbv, myKeys);
-        ErrorEntities.addAll(duplicatesc.getOrDefault("errorBody", List.of()));
-        Map<String, List<Crud_Entity>> splitListMapNames = helperEndpoints.splitByDuplicates(duplicatesc.get("successBody"), Crud_Entity::getName);
-        ErrorEntities.addAll(splitListMapNames.getOrDefault("errorBody", List.of()));
-        Map<String, List<Crud_Entity>> splitListMapEmails = helperEndpoints.splitByDuplicates(splitListMapNames.get("successBody"), Crud_Entity::getEmail);
-        ErrorEntities.addAll(splitListMapEmails.getOrDefault("errorBody", List.of()));
-        List<Crud_Entity> uniqueEntities = splitListMapEmails.getOrDefault("successBody", List.of());
-        if(uniqueEntities.isEmpty()){
-            if(mssg.isEmpty()) mssg += " | ";
-            mssg += "Todos los datos ingresados no tienen el formato correcto.";
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(helperEndpoints.buildResponse(-1, mssg,ErrorEntities));
+        int count = 0;
+        List<InsertMulti_Crud_Model> duplicates = new ArrayList<>();
+        Map<String, List<InsertMulti_Crud_Model>> splitMapValidation = helperEndpoints.splitDuplicatesByMultipleKeys(Validation.stream().filter(InsertMulti_Crud_Model::isValid).toList(), myKeys);
+        if(splitMapValidation.getOrDefault("errorBody", List.of()).size() > 0){
+            Validation.removeIf(InsertMulti_Crud_Model::isValid);
+            duplicates.addAll(splitMapValidation.get("errorBody").stream().map(item -> item.addMessage("Registro duplicado")).toList());
+            Validation.addAll(duplicates);
+            count++;
         }
+        
+        Map<String, List<InsertMulti_Crud_Model>> splitListMapNames = helperEndpoints.splitByDuplicates(splitMapValidation.get("successBody"), InsertMulti_Crud_Model::name);
+        if(splitListMapNames.getOrDefault("errorBody", List.of()).size() > 0){
+            if(count == 0)Validation.removeIf(InsertMulti_Crud_Model::isValid);
+            duplicates.addAll(splitListMapNames.get("errorBody").stream().map(item -> item.addMessage("Nombre duplicado")).toList());
+            Validation.addAll(duplicates);
+            count++;
+        }
+
+        Map<String, List<InsertMulti_Crud_Model>> splitListMapEmails = helperEndpoints.splitByDuplicates(splitListMapNames.get("successBody"), InsertMulti_Crud_Model::email);
+        if(splitListMapEmails.getOrDefault("errorBody", List.of()).size() > 0){
+            if(count == 0)Validation.removeIf(InsertMulti_Crud_Model::isValid);
+            duplicates.addAll(splitListMapEmails.get("errorBody").stream().map(item -> item.addMessage("Email duplicado")).toList());
+            Validation.addAll(duplicates);
+        }
+
+        Validation.addAll(splitListMapEmails.get("successBody"));
+        if(Validation.stream().filter(InsertMulti_Crud_Model::isValid).count()==0){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(helperEndpoints.buildResponse(-1, "Todos los datos ingresados no tienen el formato correcto y/ó existen duplicados.",Validation));
+        }
+
         @SuppressWarnings("unchecked")
-        Map<String, Object> createdEntities = (Map<String, Object>)crudService.save_multi_Crud_Entity_JPA_SP(repositoryType,uniqueEntities);
-        state = (int) createdEntities.getOrDefault("state", 0);
-        if(state != -1){
-            Object toCollect = createdEntities.get("successBody");
-            if (toCollect instanceof List) {
-                @SuppressWarnings("unchecked")
-                List<Crud_Entity> castedList = (List<Crud_Entity>) toCollect;
-                responseCollect = new ArrayList<>(castedList);
-            }
-            if(state == 1 && uniqueEntities.size() != responseCollect.size()){
-                if(!mssg.isEmpty()) mssg += " | ";
-                mssg += "Some entities could not be created due to duplicate entries.";
-                List<Crud_Entity> lastdiff = helperEndpoints.getDifference(uniqueEntities, responseCollect, Crud_Entity::getName);
-                ErrorEntities.addAll(lastdiff);
-                state = 0;
-                return ResponseEntity.status(HttpStatus.CREATED).body(helperEndpoints.buildResponse(state, mssg,responseCollect,ErrorEntities));
-            }else if(state == 1 && uniqueEntities.size() == responseCollect.size()){
-                return ResponseEntity.status(HttpStatus.CREATED).body(helperEndpoints.buildResponse(mssg.isEmpty() ? state : 0, mssg.isEmpty() ? "All entities already save successfull" : mssg, responseCollect,ErrorEntities));
-            }
-        } else {
-            Object toCollect = createdEntities.get("errorBody");
-            if (toCollect instanceof List) {
-                @SuppressWarnings("unchecked")
-                List<Crud_Entity> castedList = (List<Crud_Entity>) toCollect;
-                responseCollect = new ArrayList<>(castedList);
-            }
-            if(!mssg.isEmpty()) mssg += " | ";
-            mssg += (String) createdEntities.getOrDefault("message", "");
-            ErrorEntities.addAll(responseCollect);    
+        Map<String, Object> createdEntities = (Map<String, Object>)crudService.save_multi_Crud_Entity_JPA_SP(repositoryType,Validation);
+        int state = (int) createdEntities.getOrDefault("state", 0);
+        if(state == -1){
+           return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(createdEntities);
         }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(helperEndpoints.buildResponse(state, mssg,ErrorEntities));
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdEntities);
     }
     //endregion
 

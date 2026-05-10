@@ -10,9 +10,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rj.MONOLIT.ADMIN.CRUD.application.dto.InsertMulti_Crud_Model;
 import com.rj.MONOLIT.ADMIN.CRUD.application.dto.InsertUpdate_Crud_Model;
+import com.rj.MONOLIT.ADMIN.CRUD.application.ports.in.Crud_ServicePort;
 import com.rj.MONOLIT.ADMIN.CRUD.application.ports.out.Crud_RepositoryPort;
 import com.rj.MONOLIT.ADMIN.CRUD.domain.model.Crud_Entity;
+import com.rj.MONOLIT.ADMIN.CRUD.domain.readmodel.Crud_multiReadModel;
 import com.rj.MONOLIT.ADMIN.CRUD.infrastructure.persistence.entity.CrudEntityJpa;
 import com.rj.MONOLIT.ADMIN.CRUD.infrastructure.persistence.springdata.crudSpringDataRepository;
 import com.rj.MONOLIT.COMMON.utils.settings.JPAConfig;
@@ -117,7 +120,7 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
     //region create multiple entities
     @Override
     @Transactional
-    public Optional<List<Crud_Entity>> save_multi_Crud_Entity(String typeBean, List<Crud_Entity> entityList) {
+    public List<Crud_multiReadModel> save_multi_Crud_Entity(String typeBean, List<InsertMulti_Crud_Model> entityList) {
         List<String> namesToValidate = entityList.stream()
             .map(Crud_Entity::getName)
             .collect(Collectors.toList());
@@ -158,7 +161,7 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
     }
 
     @Override
-    public Optional<List<Crud_Entity>> save_multi_Crud_Entity_JPA_SP(String typeBean, List<Crud_Entity> entityList) {
+    public List<Crud_multiReadModel> save_multi_Crud_Entity_JPA_SP(String typeBean, List<InsertMulti_Crud_Model> entityList) {
         Optional<List<Crud_Entity>> alreadyNames = find_Crud_Entity_JPA_SP_ByNames(typeBean, entityList);
         List<String> namesToProcess = entityList.stream()
                  .map(Crud_Entity::getName)
@@ -491,7 +494,7 @@ public class inMysqlAdapter_JPA implements Crud_RepositoryPort {
         throw new UnsupportedOperationException("Unimplemented method 'find_Crud_Entity_JDBC_SP_ByNames'");
     }
     @Override
-    public Optional<List<Crud_Entity>> save_multi_Crud_Entity_JDBC_SP(String typeBean, List<Crud_Entity> entityList) {
+    public List<Crud_multiReadModel> save_multi_Crud_Entity_JDBC_SP(String typeBean, List<InsertMulti_Crud_Model> entityList) {
         throw new UnsupportedOperationException("Unimplemented method 'save_multi_Crud_Entity_JDBC_SP'");
     }
     //endregion

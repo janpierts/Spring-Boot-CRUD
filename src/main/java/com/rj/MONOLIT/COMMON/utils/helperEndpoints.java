@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -37,20 +38,22 @@ public class helperEndpoints {
 
     //region List Utility Methods
     public static <T> Map<String, List<T>> splitByDuplicates(List<T> inputList, Function<? super T, ?> keyExtractor) {
-        Set<Object> seen = new HashSet<>();
+        //Set<Object> seen = new HashSet<>();
+        Set<Object> seen = ConcurrentHashMap.newKeySet();
         return inputList.stream()
                 .collect(Collectors.groupingBy(
                     element -> seen.add(keyExtractor.apply(element)) ? "successBody" : "errorBody"
                 ));
     }
 
-public static <T> Map<String, List<T>> splitDuplicatesByMultipleKeys(
-    List<T> inputList, 
-    List<? extends Function<? super T, ?>> extractors) { 
+    public static <T> Map<String, List<T>> splitDuplicatesByMultipleKeys(
+        List<T> inputList, 
+        List<? extends Function<? super T, ?>> extractors) { 
     
-    Set<List<?>> seen = new HashSet<>();
-    
-    return inputList.stream()
+        //Set<List<?>> seen = new HashSet<>();
+        Set<List<?>> seen = ConcurrentHashMap.newKeySet();
+
+        return inputList.stream()
             .collect(Collectors.groupingBy(element -> {
                 List<?> compositeKey = extractors.stream()
                         .map(ext -> ext.apply(element))
@@ -58,7 +61,7 @@ public static <T> Map<String, List<T>> splitDuplicatesByMultipleKeys(
                 
                 return seen.add(compositeKey) ? "successBody" : "errorBody";
             }));
-}
+    }
 
     public static <T, R> List<T> getDifference(List<T> listA, List<T> listB, Function<? super T, ? extends R> keyExtractor) {
         Set<R> setB = listB.stream()

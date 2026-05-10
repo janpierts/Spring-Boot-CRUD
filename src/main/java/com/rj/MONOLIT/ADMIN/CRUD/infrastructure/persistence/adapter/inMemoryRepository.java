@@ -53,14 +53,21 @@ public class inMemoryRepository implements Crud_RepositoryPort{
                 .collect(Collectors.toList()))
             .orElse(new ArrayList<>());
         
+        List<Crud_multiReadModel> readmodel = new ArrayList<>();
         if(existingNames.size() >= entityList.size()) {
-            throw new RuntimeException("Ninguna entidad para guardar después de filtrar los nombres existentes en base de datos.");
+            readmodel.addAll(entityList.stream()
+                .filter(InsertMulti_Crud_Model::isValid)
+                .map(item -> new Crud_multiReadModel(null, item.name(), item.email(), null, null, null, false, item.message())).toList());
+            readmodel.addAll(entityList.stream()
+                .filter(InsertMulti_Crud_Model::isValid)
+                .map(item -> new Crud_multiReadModel(null, item.name(), item.email(), null, null, null, false, "Registro ya existe en la BD"))
+                .toList());
+            return readmodel;
         }
         List<Crud_Entity> filteredEntities = SearchList.stream()
             .filter(entity -> !existingNames.contains(entity.getName()))
             .collect(Collectors.toList());
             
-        List<Crud_multiReadModel> readmodel = new ArrayList<>();
         for (Crud_Entity entity : filteredEntities) {
             LocalDateTime now = LocalDateTime.now();
             entity.setId(nextId++);

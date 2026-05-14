@@ -3,6 +3,7 @@ package com.rj.MONOLIT.ADMIN.CRUD.application.service;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import com.rj.MONOLIT.ADMIN.CRUD.application.dto.InsertMulti_Crud_Model;
 import com.rj.MONOLIT.ADMIN.CRUD.application.dto.InsertUpdate_Crud_Model;
@@ -86,7 +87,13 @@ public class Crud_Service implements Crud_ServicePort {
             if(result.stream().filter(Crud_multiReadModel::isValid).count()==entityList.size()){
                 return helperEndpoints.buildResponse(1,"Registro masivo completo", result);
             }
-            return helperEndpoints.buildResponse(0,"Solo se registraron algunos de los elementos ingresados", result);
+            List<Crud_multiReadModel> success = result.stream()
+                .filter(Crud_multiReadModel::isValid)
+                .collect(Collectors.toList());
+            List<Crud_multiReadModel> error = result.stream()
+                .filter(k -> !k.isValid())
+                .collect(Collectors.toList());
+            return helperEndpoints.buildResponse(0,"Solo se registraron algunos de los elementos ingresados", success, error);
         }catch(Exception e){
             return helperEndpoints.buildResponse(-1, e.getMessage(), entityList);
         }
@@ -103,7 +110,13 @@ public class Crud_Service implements Crud_ServicePort {
             if(result.stream().filter(Crud_multiReadModel::isValid).count()==entityList.size()){
                 return helperEndpoints.buildResponse(1,"Registro masivo completo", result);
             }
-            return helperEndpoints.buildResponse(0,"Solo se registraron algunos de los elementos ingresados", result);
+            List<Crud_multiReadModel> success = result.stream()
+                .filter(Crud_multiReadModel::isValid)
+                .collect(Collectors.toList());
+            List<Crud_multiReadModel> error = result.stream()
+                .filter(k -> !k.isValid())
+                .collect(Collectors.toList());
+            return helperEndpoints.buildResponse(0,"Solo se registraron algunos de los elementos ingresados", success, error);
         }catch(Exception e){
             return helperEndpoints.buildResponse(-1, e.getMessage(), entityList);
         }
@@ -120,7 +133,13 @@ public class Crud_Service implements Crud_ServicePort {
             if(result.stream().filter(Crud_multiReadModel::isValid).count()==entityList.size()){
                 return helperEndpoints.buildResponse(1,"Registro masivo completo", result);
             }
-            return helperEndpoints.buildResponse(0,"Solo se registraron algunos de los elementos ingresados", result);
+            List<Crud_multiReadModel> success = result.stream()
+                .filter(Crud_multiReadModel::isValid)
+                .collect(Collectors.toList());
+            List<Crud_multiReadModel> error = result.stream()
+                .filter(k -> !k.isValid())
+                .collect(Collectors.toList());
+            return helperEndpoints.buildResponse(0,"Solo se registraron algunos de los elementos ingresados", success, error);
         }catch(Exception e){
             return helperEndpoints.buildResponse(-1, e.getMessage(), entityList);
         }
@@ -134,7 +153,19 @@ public class Crud_Service implements Crud_ServicePort {
         try{
             Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
             List<Crud_multiReadModel> result = repositoryPort.save_import_Crud_Entity(typeBean, entityList);
-            return helperEndpoints.buildResponse(1,"", result);
+            if(result.stream().filter(Crud_multiReadModel::isValid).count()==0){
+                return helperEndpoints.buildResponse(-1,"El registro masivo no se realizo", result);
+            }
+            if(result.stream().filter(Crud_multiReadModel::isValid).count()==entityList.size()){
+                return helperEndpoints.buildResponse(1,"Registro masivo completo", result);
+            }
+            List<Crud_multiReadModel> success = result.stream()
+                .filter(Crud_multiReadModel::isValid)
+                .collect(Collectors.toList());
+            List<Crud_multiReadModel> error = result.stream()
+                .filter(k -> !k.isValid())
+                .collect(Collectors.toList());
+            return helperEndpoints.buildResponse(0,"Solo se registraron algunos de los elementos ingresados", success, error);
         }catch(Exception e){
             return helperEndpoints.buildResponse(-1, e.getMessage(), entityList);
         }
@@ -145,7 +176,19 @@ public class Crud_Service implements Crud_ServicePort {
         try{
             Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
             List<Crud_multiReadModel> result = repositoryPort.save_import_Crud_Entity_JDBC_SP(typeBean, entityList);
-            return helperEndpoints.buildResponse(1,"", result);
+            if(result.stream().filter(Crud_multiReadModel::isValid).count()==0){
+                return helperEndpoints.buildResponse(-1,"El registro masivo no se realizo", result);
+            }
+            if(result.stream().filter(Crud_multiReadModel::isValid).count()==entityList.size()){
+                return helperEndpoints.buildResponse(1,"Registro masivo completo", result);
+            }
+            List<Crud_multiReadModel> success = result.stream()
+                .filter(Crud_multiReadModel::isValid)
+                .collect(Collectors.toList());
+            List<Crud_multiReadModel> error = result.stream()
+                .filter(k -> !k.isValid())
+                .collect(Collectors.toList());
+            return helperEndpoints.buildResponse(0,"Solo se registraron algunos de los elementos ingresados", success, error);
         }catch(Exception e){
             return helperEndpoints.buildResponse(-1, e.getMessage(), entityList);
         }
@@ -156,7 +199,19 @@ public class Crud_Service implements Crud_ServicePort {
         try{
             Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
             List<Crud_multiReadModel> result = repositoryPort.save_import_Crud_Entity_JPA_SP(typeBean, entityList);
-            return helperEndpoints.buildResponse(1,"", result);
+            if(result.stream().filter(Crud_multiReadModel::isValid).count()==0){
+                return helperEndpoints.buildResponse(-1,"El registro masivo no se realizo", result);
+            }
+            if(result.stream().filter(Crud_multiReadModel::isValid).count()==entityList.size()){
+                return helperEndpoints.buildResponse(1,"Registro masivo completo", result);
+            }
+            List<Crud_multiReadModel> success = result.stream()
+                .filter(Crud_multiReadModel::isValid)
+                .collect(Collectors.toList());
+            List<Crud_multiReadModel> error = result.stream()
+                .filter(k -> !k.isValid())
+                .collect(Collectors.toList());
+            return helperEndpoints.buildResponse(0,"Solo se registraron algunos de los elementos ingresados", success, error);
         }catch(Exception e){
             return helperEndpoints.buildResponse(-1, e.getMessage(), entityList);
         }

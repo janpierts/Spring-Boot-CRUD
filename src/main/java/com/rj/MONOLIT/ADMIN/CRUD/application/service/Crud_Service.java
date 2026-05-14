@@ -4,10 +4,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
+import com.rj.MONOLIT.ADMIN.CRUD.application.dto.InsertMulti_Crud_Model;
 import com.rj.MONOLIT.ADMIN.CRUD.application.dto.InsertUpdate_Crud_Model;
 import com.rj.MONOLIT.ADMIN.CRUD.application.ports.in.Crud_ServicePort;
 import com.rj.MONOLIT.ADMIN.CRUD.application.ports.out.Crud_RepositoryPort;
 import com.rj.MONOLIT.ADMIN.CRUD.domain.model.Crud_Entity;
+import com.rj.MONOLIT.ADMIN.CRUD.domain.readmodel.Crud_multiReadModel;
 import com.rj.MONOLIT.COMMON.utils.helperEndpoints;
 
 @Service
@@ -74,33 +76,51 @@ public class Crud_Service implements Crud_ServicePort {
     //region SaveMultiEntity
     /*@Param List<Crud_Entity> lista de entidades a guardar */
     @Override
-    public Object save_multi_Crud_Entity(String typeBean, List<Crud_Entity> entityList) {
+    public Object save_multi_Crud_Entity(String typeBean, List<InsertMulti_Crud_Model> entityList) {
         try{
             Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
-            List<Crud_Entity> result = repositoryPort.save_multi_Crud_Entity(typeBean, entityList).get();
-            return helperEndpoints.buildResponse(1,"", result);
+            List<Crud_multiReadModel> result = repositoryPort.save_multi_Crud_Entity(typeBean, entityList);
+            if(result.stream().filter(Crud_multiReadModel::isValid).count()==0){
+                return helperEndpoints.buildResponse(-1,"El registro masivo no se realizo", result);
+            }
+            if(result.stream().filter(Crud_multiReadModel::isValid).count()==entityList.size()){
+                return helperEndpoints.buildResponse(1,"Registro masivo completo", result);
+            }
+            return helperEndpoints.buildResponse(0,"Solo se registraron algunos de los elementos ingresados", result);
         }catch(Exception e){
             return helperEndpoints.buildResponse(-1, e.getMessage(), entityList);
         }
     }
 
     @Override
-    public Object save_multi_Crud_Entity_JDBC_SP(String typeBean, List<Crud_Entity> entityList) {
+    public Object save_multi_Crud_Entity_JDBC_SP(String typeBean, List<InsertMulti_Crud_Model> entityList) {
         try{
             Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
-            List<Crud_Entity> result = repositoryPort.save_multi_Crud_Entity_JDBC_SP(typeBean, entityList).get();
-            return helperEndpoints.buildResponse(1,"", result);
+            List<Crud_multiReadModel> result = repositoryPort.save_multi_Crud_Entity_JDBC_SP(typeBean, entityList);
+            if(result.stream().filter(Crud_multiReadModel::isValid).count()==0){
+                return helperEndpoints.buildResponse(-1,"El registro masivo no se realizo", result);
+            }
+            if(result.stream().filter(Crud_multiReadModel::isValid).count()==entityList.size()){
+                return helperEndpoints.buildResponse(1,"Registro masivo completo", result);
+            }
+            return helperEndpoints.buildResponse(0,"Solo se registraron algunos de los elementos ingresados", result);
         }catch(Exception e){
             return helperEndpoints.buildResponse(-1, e.getMessage(), entityList);
         }
     }
 
     @Override
-    public Object save_multi_Crud_Entity_JPA_SP(String typeBean, List<Crud_Entity> entityList) {
+    public Object save_multi_Crud_Entity_JPA_SP(String typeBean, List<InsertMulti_Crud_Model> entityList) {
         try{
             Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
-            List<Crud_Entity> result = repositoryPort.save_multi_Crud_Entity_JPA_SP(typeBean, entityList).get();
-            return helperEndpoints.buildResponse(1,"", result);
+            List<Crud_multiReadModel> result = repositoryPort.save_multi_Crud_Entity_JPA_SP(typeBean, entityList);
+            if(result.stream().filter(Crud_multiReadModel::isValid).count()==0){
+                return helperEndpoints.buildResponse(-1,"El registro masivo no se realizo", result);
+            }
+            if(result.stream().filter(Crud_multiReadModel::isValid).count()==entityList.size()){
+                return helperEndpoints.buildResponse(1,"Registro masivo completo", result);
+            }
+            return helperEndpoints.buildResponse(0,"Solo se registraron algunos de los elementos ingresados", result);
         }catch(Exception e){
             return helperEndpoints.buildResponse(-1, e.getMessage(), entityList);
         }
@@ -110,10 +130,10 @@ public class Crud_Service implements Crud_ServicePort {
     //region SaveImportEntity
     /*@Param MultipartFile file to decode */
     @Override
-    public Object save_import_Crud_Entity(String typeBean, List<Crud_Entity> entityList){
+    public Object save_import_Crud_Entity(String typeBean, List<InsertMulti_Crud_Model> entityList){
         try{
             Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
-            List<Crud_Entity> result = repositoryPort.save_import_Crud_Entity(typeBean, entityList).get();
+            List<Crud_multiReadModel> result = repositoryPort.save_import_Crud_Entity(typeBean, entityList);
             return helperEndpoints.buildResponse(1,"", result);
         }catch(Exception e){
             return helperEndpoints.buildResponse(-1, e.getMessage(), entityList);
@@ -121,10 +141,10 @@ public class Crud_Service implements Crud_ServicePort {
     }
 
     @Override
-    public Object save_import_Crud_Entity_JDBC_SP(String typeBean, List<Crud_Entity> entityList){
+    public Object save_import_Crud_Entity_JDBC_SP(String typeBean, List<InsertMulti_Crud_Model> entityList){
         try{
             Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
-            List<Crud_Entity> result = repositoryPort.save_import_Crud_Entity_JDBC_SP(typeBean, entityList).get();
+            List<Crud_multiReadModel> result = repositoryPort.save_import_Crud_Entity_JDBC_SP(typeBean, entityList);
             return helperEndpoints.buildResponse(1,"", result);
         }catch(Exception e){
             return helperEndpoints.buildResponse(-1, e.getMessage(), entityList);
@@ -132,10 +152,10 @@ public class Crud_Service implements Crud_ServicePort {
     }
 
     @Override
-    public Object save_import_Crud_Entity_JPA_SP(String typeBean, List<Crud_Entity> entityList){
+    public Object save_import_Crud_Entity_JPA_SP(String typeBean, List<InsertMulti_Crud_Model> entityList){
         try{
             Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
-            List<Crud_Entity> result = repositoryPort.save_import_Crud_Entity_JPA_SP(typeBean, entityList).get();
+            List<Crud_multiReadModel> result = repositoryPort.save_import_Crud_Entity_JPA_SP(typeBean, entityList);
             return helperEndpoints.buildResponse(1,"", result);
         }catch(Exception e){
             return helperEndpoints.buildResponse(-1, e.getMessage(), entityList);

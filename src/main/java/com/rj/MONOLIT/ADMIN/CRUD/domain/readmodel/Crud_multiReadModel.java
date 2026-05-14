@@ -9,5 +9,6 @@ public record Crud_multiReadModel(
     LocalDateTime created,
     LocalDateTime updated,
     Boolean state,
+    Boolean isValid,
     String message) {
 }

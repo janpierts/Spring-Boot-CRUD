@@ -31,7 +31,7 @@ public class helperEndpoints {
     }
 
     public static <T> Map<String, Object> buildResponse(int state, String message, T Body) {
-        return buildResponse(state, message, state == 1 ? Body : null, state == -1 ? Body : null, null);
+        return buildResponse(state, message, state == 1 || state == 0? Body : null, state == -1 ? Body : null, null);
     }
     //endregion
 

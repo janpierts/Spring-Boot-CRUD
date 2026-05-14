@@ -256,7 +256,7 @@ public class CrudController {
                 if(name == null || name.trim().isEmpty()){
                     return null;
                 }
-                InsertMulti_Crud_Model entity = new InsertMulti_Crud_Model(fileName, email, null, null);
+                InsertMulti_Crud_Model entity = new InsertMulti_Crud_Model(name, email, null, null);
                 return entity;
             };
             List<InsertMulti_Crud_Model> entitiesFromFileList = filesProcessor.excelToEntities(file, rowMapper);
@@ -334,7 +334,7 @@ public class CrudController {
                 if(name == null || name.trim().isEmpty()){
                     return null;
                 }
-                InsertMulti_Crud_Model entity = new InsertMulti_Crud_Model(fileName, email, null, null);
+                InsertMulti_Crud_Model entity = new InsertMulti_Crud_Model(name, email, null, null);
                 return entity;
             };
             List<InsertMulti_Crud_Model> entitiesFromFileList = filesProcessor.excelToEntities(file, rowMapper);
@@ -411,7 +411,7 @@ public class CrudController {
                 if(name == null || name.trim().isEmpty()){
                     return null;
                 }
-                InsertMulti_Crud_Model entity = new InsertMulti_Crud_Model(fileName, email, null, null);
+                InsertMulti_Crud_Model entity = new InsertMulti_Crud_Model(name, email, null, null);
                 return entity;
             };
             List<InsertMulti_Crud_Model> entitiesFromFileList = filesProcessor.excelToEntities(file, rowMapper);

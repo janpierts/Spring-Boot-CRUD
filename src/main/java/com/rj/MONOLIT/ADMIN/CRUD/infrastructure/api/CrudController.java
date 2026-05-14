@@ -9,7 +9,6 @@ import com.rj.MONOLIT.ADMIN.CRUD.application.dto.InsertMulti_Crud_Model;
 import com.rj.MONOLIT.ADMIN.CRUD.application.dto.InsertUpdate_Crud_Model;
 import com.rj.MONOLIT.ADMIN.CRUD.application.service.Crud_Service;
 import com.rj.MONOLIT.ADMIN.CRUD.domain.model.Crud_Entity;
-import com.rj.MONOLIT.ADMIN.CRUD.domain.readmodel.Crud_multiReadModel;
 import com.rj.MONOLIT.COMMON.utils.filesProcessor;
 import com.rj.MONOLIT.COMMON.utils.helperEndpoints;
 import java.io.IOException;

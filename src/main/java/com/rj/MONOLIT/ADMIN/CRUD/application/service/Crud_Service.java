@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
-
 import com.rj.MONOLIT.ADMIN.CRUD.application.dto.InsertMulti_Crud_Model;
 import com.rj.MONOLIT.ADMIN.CRUD.application.dto.InsertUpdate_Crud_Model;
 import com.rj.MONOLIT.ADMIN.CRUD.application.ports.in.Crud_ServicePort;
@@ -131,10 +130,10 @@ public class Crud_Service implements Crud_ServicePort {
     //region SaveImportEntity
     /*@Param MultipartFile file to decode */
     @Override
-    public Object save_import_Crud_Entity(String typeBean, List<Crud_Entity> entityList){
+    public Object save_import_Crud_Entity(String typeBean, List<InsertMulti_Crud_Model> entityList){
         try{
             Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
-            List<Crud_Entity> result = repositoryPort.save_import_Crud_Entity(typeBean, entityList).get();
+            List<Crud_multiReadModel> result = repositoryPort.save_import_Crud_Entity(typeBean, entityList);
             return helperEndpoints.buildResponse(1,"", result);
         }catch(Exception e){
             return helperEndpoints.buildResponse(-1, e.getMessage(), entityList);
@@ -142,10 +141,10 @@ public class Crud_Service implements Crud_ServicePort {
     }
 
     @Override
-    public Object save_import_Crud_Entity_JDBC_SP(String typeBean, List<Crud_Entity> entityList){
+    public Object save_import_Crud_Entity_JDBC_SP(String typeBean, List<InsertMulti_Crud_Model> entityList){
         try{
             Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
-            List<Crud_Entity> result = repositoryPort.save_import_Crud_Entity_JDBC_SP(typeBean, entityList).get();
+            List<Crud_multiReadModel> result = repositoryPort.save_import_Crud_Entity_JDBC_SP(typeBean, entityList);
             return helperEndpoints.buildResponse(1,"", result);
         }catch(Exception e){
             return helperEndpoints.buildResponse(-1, e.getMessage(), entityList);
@@ -153,10 +152,10 @@ public class Crud_Service implements Crud_ServicePort {
     }
 
     @Override
-    public Object save_import_Crud_Entity_JPA_SP(String typeBean, List<Crud_Entity> entityList){
+    public Object save_import_Crud_Entity_JPA_SP(String typeBean, List<InsertMulti_Crud_Model> entityList){
         try{
             Crud_RepositoryPort repositoryPort = getRepositoryPort(typeBean);
-            List<Crud_Entity> result = repositoryPort.save_import_Crud_Entity_JPA_SP(typeBean, entityList).get();
+            List<Crud_multiReadModel> result = repositoryPort.save_import_Crud_Entity_JPA_SP(typeBean, entityList);
             return helperEndpoints.buildResponse(1,"", result);
         }catch(Exception e){
             return helperEndpoints.buildResponse(-1, e.getMessage(), entityList);

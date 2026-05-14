@@ -14,9 +14,9 @@ public interface Crud_RepositoryPort {
     List<Crud_multiReadModel> save_multi_Crud_Entity(String typeBean,List<InsertMulti_Crud_Model> entityList);
     List<Crud_multiReadModel> save_multi_Crud_Entity_JDBC_SP(String typeBean,List<InsertMulti_Crud_Model> entityList);
     List<Crud_multiReadModel> save_multi_Crud_Entity_JPA_SP(String typeBean,List<InsertMulti_Crud_Model> entityList);
-    Optional<List<Crud_Entity>> save_import_Crud_Entity(String typeBean,List<Crud_Entity>entityList);
-    Optional<List<Crud_Entity>> save_import_Crud_Entity_JDBC_SP(String typeBean,List<Crud_Entity>entityList);
-    Optional<List<Crud_Entity>> save_import_Crud_Entity_JPA_SP(String typeBean,List<Crud_Entity>entityList);
+    List<Crud_multiReadModel> save_import_Crud_Entity(String typeBean,List<InsertMulti_Crud_Model>entityList);
+    List<Crud_multiReadModel> save_import_Crud_Entity_JDBC_SP(String typeBean,List<InsertMulti_Crud_Model>entityList);
+    List<Crud_multiReadModel> save_import_Crud_Entity_JPA_SP(String typeBean,List<InsertMulti_Crud_Model>entityList);
     Optional<Crud_Entity> find_Crud_EntityById(String typeBean,Long id);
     Optional<Crud_Entity> find_Crud_Entity_JDBC_SP_ById(String typeBean,Long id);
     Optional<Crud_Entity> find_Crud_Entity_JPA_SP_ById(String typeBean,Long id);

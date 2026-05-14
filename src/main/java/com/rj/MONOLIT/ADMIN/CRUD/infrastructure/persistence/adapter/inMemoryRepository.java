@@ -59,7 +59,7 @@ public class inMemoryRepository implements Crud_RepositoryPort{
                 .filter(InsertMulti_Crud_Model::isValid)
                 .map(item -> new Crud_multiReadModel(null, item.name(), item.email(), null, null, null, false, item.message())).toList());
             readmodel.addAll(entityList.stream()
-                .filter(InsertMulti_Crud_Model::isValid)
+                .filter(k -> k.isValid() && existingNames.contains(k.name()))
                 .map(item -> new Crud_multiReadModel(null, item.name(), item.email(), null, null, null, false, "Registro ya existe en la BD"))
                 .toList());
             return readmodel;
@@ -93,7 +93,7 @@ public class inMemoryRepository implements Crud_RepositoryPort{
     //region import entities
     @Override
     @Transactional
-    public Optional<List<Crud_Entity>> save_import_Crud_Entity(String typeBean,List<Crud_Entity> entityList) {
+    public List<Crud_multiReadModel> save_import_Crud_Entity(String typeBean,List<InsertMulti_Crud_Model> entityList) {
         return save_multi_Crud_Entity(typeBean, entityList);
     }
     //endregion
@@ -261,11 +261,11 @@ public class inMemoryRepository implements Crud_RepositoryPort{
         throw new UnsupportedOperationException("Unimplemented method 'find_Crud_Entity_JPA_SP_ByNames'");
     }
     @Override
-    public Optional<List<Crud_Entity>> save_import_Crud_Entity_JDBC_SP(String typeBean, List<Crud_Entity> entityList) {
+    public List<Crud_multiReadModel> save_import_Crud_Entity_JDBC_SP(String typeBean, List<InsertMulti_Crud_Model> entityList) {
         throw new UnsupportedOperationException("Unimplemented method 'save_import_Crud_Entity_JDBC_SP'");
     }
     @Override
-    public Optional<List<Crud_Entity>> save_import_Crud_Entity_JPA_SP(String typeBean, List<Crud_Entity> entityList) {
+    public List<Crud_multiReadModel> save_import_Crud_Entity_JPA_SP(String typeBean, List<InsertMulti_Crud_Model> entityList) {
         throw new UnsupportedOperationException("Unimplemented method 'save_import_Crud_Entity_JPA_SP'");
     }
     //endregion

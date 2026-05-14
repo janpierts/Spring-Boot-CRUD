@@ -2,9 +2,11 @@ package com.rj.MONOLIT.ADMIN.CRUD.infrastructure.persistence.adapter;
 
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Component;
+import com.rj.MONOLIT.ADMIN.CRUD.application.dto.InsertMulti_Crud_Model;
 import com.rj.MONOLIT.ADMIN.CRUD.application.dto.InsertUpdate_Crud_Model;
 import com.rj.MONOLIT.ADMIN.CRUD.application.ports.out.Crud_RepositoryPort;
 import com.rj.MONOLIT.ADMIN.CRUD.domain.model.Crud_Entity;
+import com.rj.MONOLIT.ADMIN.CRUD.domain.readmodel.Crud_multiReadModel;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,17 +42,29 @@ public class inMemoryRepository implements Crud_RepositoryPort{
 
     //region save multiple entities
     @Override
-    public Optional<List<Crud_Entity>> save_multi_Crud_Entity(String typeBean, List<Crud_Entity> entityList) {
-        List<String> existingNames = find_Crud_EntityByNames(typeBean, entityList)
+    public List<Crud_multiReadModel> save_multi_Crud_Entity(String typeBean, List<InsertMulti_Crud_Model> entityList) {
+        List<Crud_Entity> SearchList = entityList.stream()
+            .filter(InsertMulti_Crud_Model::isValid)
+            .map(model -> new Crud_Entity(null,model.name(),model.email(),null,null,null))
+            .toList();
+        List<String> existingNames = find_Crud_EntityByNames(typeBean, SearchList)
             .map(list -> list.stream()
                 .map(Crud_Entity::getName)
                 .collect(Collectors.toList()))
             .orElse(new ArrayList<>());
         
+        List<Crud_multiReadModel> readmodel = new ArrayList<>();
         if(existingNames.size() >= entityList.size()) {
-            throw new RuntimeException("Ninguna entidad para guardar después de filtrar los nombres existentes en base de datos.");
+            readmodel.addAll(entityList.stream()
+                .filter(InsertMulti_Crud_Model::isValid)
+                .map(item -> new Crud_multiReadModel(null, item.name(), item.email(), null, null, null, false, item.message())).toList());
+            readmodel.addAll(entityList.stream()
+                .filter(k -> k.isValid() && existingNames.contains(k.name()))
+                .map(item -> new Crud_multiReadModel(null, item.name(), item.email(), null, null, null, false, "Registro ya existe en la BD"))
+                .toList());
+            return readmodel;
         }
-        List<Crud_Entity> filteredEntities = entityList.stream()
+        List<Crud_Entity> filteredEntities = SearchList.stream()
             .filter(entity -> !existingNames.contains(entity.getName()))
             .collect(Collectors.toList());
             
@@ -60,15 +74,26 @@ public class inMemoryRepository implements Crud_RepositoryPort{
             entity.setCreated(now);
             entity.setState(true);
             entities.add(entity);
+            readmodel.add(new Crud_multiReadModel(entity.getId(), entity.getName(), entity.getEmail(), now, null, true, true, "OK"));
         }
-        return Optional.of(filteredEntities);
+        readmodel.addAll(entityList.stream()
+            .filter(k -> !k.isValid())
+            .map(item -> new Crud_multiReadModel(null, item.name(), item.email(), null, null, null, item.isValid(), item.message()))
+            .toList()
+        );
+        readmodel.addAll(entityList.stream()
+            .filter(k -> k.isValid() && existingNames.contains(k.name()))
+            .map(item -> new Crud_multiReadModel(null, item.name(), item.email(), null, null, null, false, "Registro ya existe en la BD"))
+            .toList()
+        );
+        return readmodel;
     }
     //endregion
 
     //region import entities
     @Override
     @Transactional
-    public Optional<List<Crud_Entity>> save_import_Crud_Entity(String typeBean,List<Crud_Entity> entityList) {
+    public List<Crud_multiReadModel> save_import_Crud_Entity(String typeBean,List<InsertMulti_Crud_Model> entityList) {
         return save_multi_Crud_Entity(typeBean, entityList);
     }
     //endregion
@@ -220,11 +245,11 @@ public class inMemoryRepository implements Crud_RepositoryPort{
         throw new UnsupportedOperationException("Unimplemented method 'find_Crud_Entity_JPA_SP_ByName'");
     }
     @Override
-    public Optional<List<Crud_Entity>> save_multi_Crud_Entity_JDBC_SP(String typeBean, List<Crud_Entity> entity) {
+    public List<Crud_multiReadModel> save_multi_Crud_Entity_JDBC_SP(String typeBean, List<InsertMulti_Crud_Model> entity) {
         throw new UnsupportedOperationException("Unimplemented method 'save_multi_Crud_Entity_JDBC_SP'");
     }
     @Override
-    public Optional<List<Crud_Entity>> save_multi_Crud_Entity_JPA_SP(String typeBean, List<Crud_Entity> entity) {
+    public List<Crud_multiReadModel> save_multi_Crud_Entity_JPA_SP(String typeBean, List<InsertMulti_Crud_Model> entity) {
         throw new UnsupportedOperationException("Unimplemented method 'save_multi_Crud_Entity_JPA_SP'");
     }
     @Override
@@ -236,11 +261,11 @@ public class inMemoryRepository implements Crud_RepositoryPort{
         throw new UnsupportedOperationException("Unimplemented method 'find_Crud_Entity_JPA_SP_ByNames'");
     }
     @Override
-    public Optional<List<Crud_Entity>> save_import_Crud_Entity_JDBC_SP(String typeBean, List<Crud_Entity> entityList) {
+    public List<Crud_multiReadModel> save_import_Crud_Entity_JDBC_SP(String typeBean, List<InsertMulti_Crud_Model> entityList) {
         throw new UnsupportedOperationException("Unimplemented method 'save_import_Crud_Entity_JDBC_SP'");
     }
     @Override
-    public Optional<List<Crud_Entity>> save_import_Crud_Entity_JPA_SP(String typeBean, List<Crud_Entity> entityList) {
+    public List<Crud_multiReadModel> save_import_Crud_Entity_JPA_SP(String typeBean, List<InsertMulti_Crud_Model> entityList) {
         throw new UnsupportedOperationException("Unimplemented method 'save_import_Crud_Entity_JPA_SP'");
     }
     //endregion
